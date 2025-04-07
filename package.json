@@ -1,0 +1,29 @@
+{
+  "name": "sound-swipe",
+  "version": "1.0.0",
+  "description": "Find new music with the swipe of your mouse",
+  "main": "index.js",
+  "scripts": {
+    "client": "npm run dev --prefix client",
+    "server": "nodemon server/src/server.js",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build": "npm run build --prefix client",
+    "start": "node server/src/server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^2.0.22"
+  },
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JaMurp/Sound-Swipe.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JaMurp/Sound-Swipe/issues"
+  },
+  "homepage": "https://github.com/JaMurp/Sound-Swipe#readme"
+}
+

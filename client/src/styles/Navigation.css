@@ -1,0 +1,122 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+
+/* Navigation Container */
+nav {
+    background-color: #2c2d33;
+    padding: 0.25rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 38px;
+    border-bottom: 1px solid #3d3d3d;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Logo Container */
+nav a:first-child {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: white;
+    padding: 0;
+    gap: 0.5rem;
+}
+
+/* Main Logo Image */
+nav a:first-child img {
+    height: 40px;
+    width: auto;
+    margin-right: 0.75rem;
+    object-fit: contain;
+    filter: drop-shadow(0 0 5px rgba(255, 0, 130, 0.5));
+    transition: all 0.3s ease;
+}
+
+/* Settings Icon */
+nav a[href='/settings'] img {
+    height: 20px;
+    width: 20px;
+    object-fit: contain;
+    transform: translateY(4px);
+    margin-right: -8px; 
+}
+
+/* Logo Hover Animation - Only for main logo */
+nav a:first-child:hover img {
+    transform: scale(1.1) rotate(10deg);
+    filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.8));
+}
+
+/* Navigation Links - Exclude first child (logo) */
+nav a:not(:first-child) {
+    color: #fefefe;
+    text-decoration: none;
+    padding: 0.25rem 1rem;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Button Styles */
+nav a button {
+    background-color: #8ac3a6;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.7rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Button Hover Effect */
+nav a button:hover {
+    background-color: #b1f7d3;
+}
+
+/* Button Active State */
+nav a button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* Hover Effect - Exclude first child (logo) and NavLinks with buttons */
+nav a:not(:first-child):hover:not(:has(button)) {
+    background-color: #242424;
+}
+
+/* Active Link - Exclude first child (logo) and NavLinks with buttons */
+nav a:not(:first-child).active:not(:has(button)) {
+    background-color: #242424;
+}
+
+/* Navigation Title */
+nav h1 {
+    font-size: 1.1rem;
+    margin: 0;
+    font-weight: 600;
+    color: white;
+    transition: color 0.3s ease;
+}
+
+/* Right-aligned items container */
+nav .right-items, 
+nav > a[href='/login'] {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Media Query for Mobile */
+@media (max-width: 768px) {
+    nav > a:not(:first-child) {
+        display: none;
+    }
+} 
