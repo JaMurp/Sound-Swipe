@@ -1,12 +1,17 @@
-// firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyBsdOMLtx8XA3U3vxIBj-x_8dik4g_4pwE",
-  authDomain: "sound-swipe-d6797.firebaseapp.com",
-  projectId: "sound-swipe-d6797",
-  storageBucket: "sound-swipe-d6797.firebasestorage.app",
-  messagingSenderId: "239420373628",
-  appId: "1:239420373628:web:42346f553a60564764a7f9"
+import { initializeApp } from 'firebase/app';
+
+export const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+export default app;
 
-export default firebaseConfig;
+
+

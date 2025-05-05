@@ -1,14 +1,13 @@
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css'
 import App from './App.jsx'
-import fbconfig from './firebase/FirebaseConfig.js'
-import { initializeApp } from 'firebase/app'
+import { BrowserRouter } from 'react-router-dom'
 
-const app = initializeApp(fbconfig)
+
 
 createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
+    <BrowserRouter>
       <App />
-  </BrowserRouter>
+    </BrowserRouter>
 )

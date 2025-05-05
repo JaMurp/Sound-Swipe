@@ -10,4 +10,3 @@ const constructor = (app) => {
 };
 
 export default constructor;
-

@@ -1,68 +1,35 @@
-import './App.css'
-import {AuthProvider} from './context/AuthContext';
-import {Routes, Route} from 'react-router-dom';
-import {Navigate} from 'react-router-dom';
+import React from 'react';
+import {Route, Routes} from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext.jsx';
+import * as Middleware from './components/Middleware/Middleware.jsx'
+import DashboardPage from './components/pages/private/DashboardPage.jsx';
+import HomePage from './components/pages/public/HomePage.jsx';
+import { Navigate } from 'react-router-dom';
+import './App.css';
 
-// components
-import PrivateRoute from './components/PrivateRoute.jsx';
-import PublicRoute from './components/PublicRoute.jsx';
-import Navigation from './components/Navigation.jsx';
-import Home from './components/Public/Home.jsx';
-import Leaderboard from './components/Leaderboard.jsx';
-import Profile from './components/Private/Profile.jsx';
-import SignOut from './components/Private/SignOut.jsx';
-import Dashboard from './components/Private/Dashboard.jsx';
-import FinishProfile from './components/Private/FinishProfile.jsx';
-import { FinishProfileProvider } from './context/FinishedProfileContext.jsx';
-import FinishProfileGuard from './components/FinishProfileGuard.jsx';
-import Settings from './components/Private/Settings.jsx';
-
-
-
-// this is the main app component 
-const App = () => {
+function App() {
   return (
     <AuthProvider>
-      <FinishProfileProvider>
-        <div>
-          {/* this is the header component */}
-          <header>
-            <Navigation/>
-          </header>
+      <Routes>
+        
+        {/* these are the public routes */}
+        <Route path='/' element={< Middleware.PublicRoute />} >
+          <Route path='/' element={< HomePage/>} />
+        </Route>
 
-          {/* this is the routes component */}
-          <Routes>
+        {/* thes are the private routes */}
+        <Route path='/' element={< Middleware.PrivateRoute />} >
+          <Route path='/dashboard' element={< DashboardPage/>} />
+        </Route>
 
-            {/* public routes */}
-            <Route element={<PublicRoute/>}>
-              <Route path='/' element={<Home/>} />
-            </Route>
-
-           <Route element={<PrivateRoute />}>
-              <Route path='/dashboard' element={<Dashboard />} />
-              <Route path='/signout' element={<SignOut />} />
-              <Route path='/profile' element={<Profile />} />
-              <Route path='/leaderboard' element={<Leaderboard/>} />
-              {/* <Route path='/settings' element={<Settings/>} /> */}
-            </Route>
-
-          <Route element={<FinishProfileGuard/>}>
-              <Route path='/setup-profile' element={<FinishProfile />} />
-          </Route>
+        <Route path='*' element={<Navigate to='/' />} />
 
 
-            {/* <Route path='/leaderboard' element={<Leaderboard/>} /> */}
-
-            {/* catch all route */}
-            <Route path='*' element={<Navigate to='/' />} />
-            
-          </Routes>
-
-        </div>
-
-      </FinishProfileProvider>
+      </Routes>
     </AuthProvider>
-  )
+  );
 }
 
-export default App
+
+
+export default App;

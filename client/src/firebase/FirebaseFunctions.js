@@ -1,112 +1,59 @@
-// firebase functions
 import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    signOut,
-    updateProfile,
-    signInWithEmailAndPassword,
-    updatePassword,
-    signInWithPopup,
-    GoogleAuthProvider,
-    sendPasswordResetEmail,
-    EmailAuthProvider,
-    reauthenticateWithCredential,
-    deleteUser,
-} from 'firebase/auth'
+  getAuth,
+  createUserWithEmailAndPassword,
+  signOut,
+  updateProfile,
+  signInWithEmailAndPassword,
+  updatePassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  sendPasswordResetEmail,
+  EmailAuthProvider,
+  reauthenticateWithCredential
+} from 'firebase/auth';
 
-const doDeleteCurrentUser = async () => {
-    const auth = getAuth();
-    try {
-        const user = auth.currentUser;
-        if (user) {
-            await deleteUser(user);
-        } else {
-            throw new Error('No user currently signed in');
-        }
-    } catch (e) {
-        throw e;
-    }
-};
-
-const doCreateUserWithEmailAndPassword = async(email, password, displayName) => {
-    const auth = getAuth();
-    try {
-        await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(auth.currentUser, { displayName: displayName });
-    } catch (e) {
-        throw e
-    }
-}
-const doChangePassword = async (email, oldPassword, newPassword) => {
-    const auth = getAuth();
-    try {
-        let credential = EmailAuthProvider.credential(email, oldPassword);
-        await reauthenticateWithCredential(auth.currentUser, credential);
-        await updatePassword(auth.currentUser, newPassword);
-        await doSignOut();
-    } catch (e) {
-        throw e
-    }
-}
-const doSignInWithEmailAndPassword = async (email, password) => {
-    const auth = getAuth();
-    try {
-        const userCredentials = await signInWithEmailAndPassword(auth, email, password);
-        return userCredentials;
-    } catch (e) {
-        throw e
-    }
-}
-const doSocialSignIn = async () => {
-    const auth = getAuth();
-    try {
-        const socialProvider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, socialProvider);
-        return result.user;
-    } catch (e) {
-        throw e
-    }
+async function doCreateUserWithEmailAndPassword(email, password, displayName) {
+  const auth = getAuth();
+  await createUserWithEmailAndPassword(auth, email, password);
+  await updateProfile(auth.currentUser, {displayName: displayName});
 }
 
-const doPasswordReset = async (email) => {
-    const auth = getAuth();
-    try {
-        await sendPasswordResetEmail(auth, email);
-    } catch (e) {
-        throw e
-    }
+async function doChangePassword(email, oldPassword, newPassword) {
+  const auth = getAuth();
+  let credential = EmailAuthProvider.credential(email, oldPassword);
+  console.log(credential);
+  await reauthenticateWithCredential(auth.currentUser, credential);
+
+  await updatePassword(auth.currentUser, newPassword);
+  await doSignOut();
 }
 
-const doSignOut = async () => {
-    const auth = getAuth();
-    try {
-        await signOut(auth);
-    } catch (e) {
-        throw e
-    }
+async function doSignInWithEmailAndPassword(email, password) {
+  let auth = getAuth();
+  await signInWithEmailAndPassword(auth, email, password);
+}
+
+async function doSocialSignIn() {
+  let auth = getAuth();
+  let socialProvider = new GoogleAuthProvider();
+  await signInWithPopup(auth, socialProvider);
+}
+
+async function doPasswordReset(email) {
+  let auth = getAuth();
+  await sendPasswordResetEmail(auth, email);
+}
+
+async function doSignOut() {
+  let auth = getAuth();
+  await signOut(auth);
 }
 
 export {
-    doCreateUserWithEmailAndPassword,
-    doChangePassword,
-    doSignInWithEmailAndPassword,
-    doSocialSignIn,
-    doPasswordReset,
-    doSignOut,
-    doDeleteCurrentUser,
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  doCreateUserWithEmailAndPassword,
+  doSocialSignIn,
+  doSignInWithEmailAndPassword,
+  doPasswordReset,
+  doSignOut,
+  doChangePassword
+};
