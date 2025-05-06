@@ -16,7 +16,7 @@ const LoadingContainer = styled.div`
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #f8f9fa;
+  background:rgb(254, 255, 255);
   //background: black; 
 `;
 

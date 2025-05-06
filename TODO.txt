@@ -1,0 +1,10 @@
+client:
+    - Need to input cleanse all the form data
+    - Need the ability to updload pofile picture
+server:
+    - need to do all error handling in routes(checking the data sent)
+    - need to handle the profile pic upload
+    - need to error handle in the db functions(all)
+
+overall:
+    - thers a bug when you sign in you have to do it twice( when you make a new account)

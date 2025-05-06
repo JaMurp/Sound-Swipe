@@ -57,7 +57,13 @@ export const PrivateNavigation = () => {
         <Navbar.Collapse>
           <Nav className="me-auto">
             <Nav.Link href="/dashboard">Dashboard</Nav.Link>
+            <Nav.Link href="/leaderboard">Leaderboard</Nav.Link>
           </Nav>
+
+          <Nav>
+            <Nav.Link href="/notifications">Notifications</Nav.Link>
+          </Nav>
+
           <Nav>
             <NavDropdown title="Profile" align="end">
               <NavDropdown.Item href="/profile">Profile</NavDropdown.Item>
