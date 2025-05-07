@@ -93,7 +93,7 @@ export const createUser = async (uid, displayName, photoUrl) => {
             username: uid,
             bio: '',
             avatar_url: photoUrl,
-            createdAt: new Date()
+            createdAt: new Date(),
         }
         // Use set with document ID instead of add
         await db.collection("users").doc(uid).set(newUser);
