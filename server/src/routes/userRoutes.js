@@ -37,6 +37,7 @@ router.delete('/profile', async (req, res) => {
 });
 
 router.post('/sync-user', async (req, res) => {
+    // #TODO chdeck the inputs 
     try {
     
       const userExists = await userDataFunctions.userExists(req.user.uid);

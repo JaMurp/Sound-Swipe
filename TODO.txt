@@ -8,3 +8,18 @@ server:
 
 overall:
     - thers a bug when you sign in you have to do it twice( when you make a new account)
+
+
+
+
+
+
+
+
+
+
+Refresh with New Songs Daily
+Hits /editorial/0/releases to get brand-new songs
+Hits genre/artist APIs again to get recent top tracks
+Inserts new tracks (skip ones already have)
+
