@@ -94,7 +94,36 @@ export const createUser = async (uid, displayName, photoUrl) => {
             bio: '',
             avatar_url: photoUrl,
             createdAt: new Date(),
-        }
+            genres : {
+                "Pop": true,
+                "Rap/Hip Hop": true,
+                "Reggaeton": true,
+                "Rock": true,
+                "Dance": true,
+                "R&B": true,
+                "Alternative": true,
+                "Christian": true,
+                "Electro": true,
+                "Folk": true,
+                "Reggae": true,
+                "Jazz": true,
+                "Country": true,
+                "Salsa": true,
+                "Traditional Mexicano": true,
+                "Classical": true,
+                "Films/Games": true,
+                "Metal": true,
+                "Soul & Funk": true,
+                "African Music": true,
+                "Asian Music": true,
+                "Blues": true,
+                "Brazilian Music": true,
+                "Cumbia": true,
+                "Indian Music": true,
+                "Kids": true,
+                "Latin Music": true
+            }
+            }
         // Use set with document ID instead of add
         await db.collection("users").doc(uid).set(newUser);
         return { id: uid, ...newUser };

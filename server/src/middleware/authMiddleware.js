@@ -23,7 +23,8 @@ export async function verifyFirebaseToken(req, res, next) {
       displayName: userRecord.displayName,
       photoURL: userRecord.photoURL,
       lastSignInTime: userRecord.metadata.lastSignInTime,
-      creationTime: userRecord.metadata.creationTime
+      creationTime: userRecord.metadata.creationTime,
+      explicitFlag: userRecord.explicitFlag,
     };
 
     next();
