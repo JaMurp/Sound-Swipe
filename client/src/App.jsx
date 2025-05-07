@@ -16,7 +16,7 @@ import FinishProfile from './components/Private/FinishProfile.jsx';
 import { FinishProfileProvider } from './context/FinishedProfileContext.jsx';
 import FinishProfileGuard from './components/FinishProfileGuard.jsx';
 import Settings from './components/Private/Settings.jsx';
-
+import Friends from './components/Private/Friends.jsx';
 
 
 // this is the main app component 
@@ -43,6 +43,7 @@ const App = () => {
               <Route path='/signout' element={<SignOut />} />
               <Route path='/profile' element={<Profile />} />
               <Route path='/leaderboard' element={<Leaderboard/>} />
+              <Route path='/friends' element={<Friends/>}/>
               {/* <Route path='/settings' element={<Settings/>} /> */}
             </Route>
 

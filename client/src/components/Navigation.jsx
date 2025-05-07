@@ -35,6 +35,7 @@ const NavigationAuth = () => {
             
             <div className="right-items">
                 <NavLink to='/profile'>Profile</NavLink>
+                <NavLink to='/friends'>Friends</NavLink>
                 <Link to='/settings' onClick={handleOpen}>
                     <img src={settings} alt='settings' className='logo'/>
                 </Link>
