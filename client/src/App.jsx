@@ -9,6 +9,8 @@ import './App.css';
 import ProfilePage from './components/pages/public/ProfilePage.jsx';
 import SettingsPage from './components/pages/public/SettingsPage.jsx';
 import FriendsPage from './components/pages/private/FriendsPage.jsx';
+import Leaderboard from './components/pages/private/Leaderboard.jsx';
+
 
 function App() {
 
@@ -28,6 +30,7 @@ function App() {
           <Route path='/profile/:userId' element={<ProfilePage />} />
           <Route path='/settings' element={<SettingsPage />} />
           <Route path='/friends' element={<FriendsPage />} />
+          <Route path='/leaderboard' element={<Leaderboard />} />
         </Route>
 
         <Route path='*' element={<Navigate to='/' />} />

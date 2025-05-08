@@ -10,7 +10,8 @@ overall:
     - thers a bug when you sign in you have to do it twice( when you make a new account)
 
 
-
+user:
+    delete friends when user deletes profile
 
 
 

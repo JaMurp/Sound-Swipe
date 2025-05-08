@@ -146,7 +146,7 @@ const DashboardPage = () => {
         try {
             const idToken = await currentUser.getIdToken();
             const {data} = await axios.post('http://localhost:3000/api/songs/like', {
-                songId: swipeSongs[index].songId
+                songId: swipeSongs[index].id
             }, {
             headers: {
                     'Authorization': `Bearer ${idToken}`

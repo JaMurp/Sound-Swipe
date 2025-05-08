@@ -43,7 +43,10 @@ router.delete('/profile', async (req, res) => {
         await userDataFunctions.deleteUser(req.user.uid)
         return res.status(200).json({success: true, message: 'deleted profile successfully'})
     } catch(e){
+        console.log(e)
+
         return res.status(500).json({error:e})
+
     }
 
 });

@@ -83,7 +83,7 @@ export const getSongsByGenreRandom = async (genre, explicitFlag) => {
 // https://www.netguru.com/blog/querying-and-sorting-firestore-data
 export const getTopLikedSongs = async () => {
     const songsRef = db.collection('songs');
-    const execQuery = await songsRef.orderBy('likedCounter', 'desc').limit(10).get();
+    const execQuery = await songsRef.orderBy('likeCounter', 'desc').limit(10).get();
 
     if (execQuery.empty) {
         throw new Error('There are no songs in the db');
@@ -120,6 +120,13 @@ export const incrementSongLikes = async (songId) => {
 
     });
     return {success: true, message: 'Incremented the liked song'}
+};
+export const decrementSongLikes = async (songId) => {
+    const requestRef = db.collection('songs').doc(songId)
+    await requestRef.update({
+        likeCounter: FieldValue.increment(-1)
+    });
+    return {success: true, message: 'Decremented the liked song'}
 };
 // #TODO check input
 export const addLikedSong = async (songId, userId) => {

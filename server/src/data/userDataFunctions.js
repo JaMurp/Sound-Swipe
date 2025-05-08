@@ -1,4 +1,5 @@
 import { db, auth } from "../db/firebase.js"
+import * as songsDataFunctions from './songsDataFunctions.js'
 
 
 export const deleteUser = async (uid) => {
@@ -6,7 +7,18 @@ export const deleteUser = async (uid) => {
 
     // need to delete the user auth profile
     await auth.deleteUser(uid);
-    // need to delete the user users collection as well
+
+    // need to get the liked songs id then decrement the likeCounter
+    const likedSongsRef = db.collection('users').doc(uid).collection('likedSongs');
+    const likedSongsSnapshot = await likedSongsRef.get();
+    
+    for (const song of likedSongsSnapshot.docs) {
+        const songId = song.id;
+        await songsDataFunctions.decrementSongLikes(songId.toString());
+        await song.ref.delete();
+    }
+
+    // Delete the user document
     await db.collection('users').doc(uid).delete();
 
     return; 

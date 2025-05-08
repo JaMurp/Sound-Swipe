@@ -30,6 +30,25 @@ router.post('/like', async (req, res) => {
     }
 });
 
+router.get('/trending', async (req, res) => {
+    try {
+        const trendingSongs = await songsDataFunctions.getTopLikedSongs();
+        return res.status(200).json(trendingSongs);
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({error: e});
+    }
+});
 
+router.post('/song/alreadyLiked', async (req, res) => {
+    const {songId} = req.body;
+    try {
+        const alreadyLiked = await songsDataFunctions.likedSongExist(songId, req.user.uid);
+        return res.status(200).json({alreadyLiked: alreadyLiked});
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({error: e});
+    }
+});
 
 export default router;
