@@ -122,8 +122,9 @@ export const createUser = async (uid, displayName, photoUrl) => {
                 "Indian Music": true,
                 "Kids": true,
                 "Latin Music": true
-            }
-            }
+            },
+            friends : []
+        }
         // Use set with document ID instead of add
         await db.collection("users").doc(uid).set(newUser);
         return { id: uid, ...newUser };

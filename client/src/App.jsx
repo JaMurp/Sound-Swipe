@@ -25,7 +25,7 @@ function App() {
         <Route path='/' element={< Middleware.PrivateRoute />} >
           <Route path='/dashboard' element={< DashboardPage/>} />
           <Route path='/profile' element={<ProfilePage />} />
-          <Route path='/profile/:id' element={<ProfilePage />} />
+          <Route path='/profile/:userId' element={<ProfilePage />} />
           <Route path='/settings' element={<SettingsPage />} />
           <Route path='/friends' element={<FriendsPage />} />
         </Route>

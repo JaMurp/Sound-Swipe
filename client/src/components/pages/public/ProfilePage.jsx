@@ -213,7 +213,7 @@ const ProfilePage = () => {
                     }
                 });
 
-                
+                console.log(data);
                 setUserData(data);
                 setFriendsCount(data.friends.length);
                 setLoading(false);
