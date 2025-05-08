@@ -44,6 +44,11 @@ export const updateUser = async (uid, userObj) => {
         updatedObj['bio'] = updatedObj.bio;
     }
 
+    if (userObj.genres) {
+        hasInput = true;
+        updatedObj['genres'] = userObj.genres;
+    }
+
     if (userObj.avatar_url) {
         hasInput = true;
         updatedObj['avatar_url'] = updatedObj.avatar_url;

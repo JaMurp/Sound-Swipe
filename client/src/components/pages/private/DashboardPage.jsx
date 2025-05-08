@@ -7,6 +7,7 @@ import Switch from '@mui/material/Switch';
 import axios from "axios";
 
 const DashboardPage = () => {
+    
     const genres = [
         "Pop",
         "Rap/Hip Hop",
@@ -36,6 +37,7 @@ const DashboardPage = () => {
         "Kids",
         "Latin Music"
     ]
+    
 
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -43,56 +45,147 @@ const DashboardPage = () => {
     const [currentSong, setCurrentSong] = useState(null);
     const [swipeSongs, setSwipeSongs] = useState(null);
     const [index, setIndex] = useState(0);
-    const [selectedGenre, setSelectedGenre] = useState({
-        "Pop": true,
-        "Rap/Hip Hop": true,
-        "Reggaeton": true,
-        "Rock": true,
-        "Dance": true,
-        "R&B": true,
-        "Alternative": true,
-        "Christian": true,
-        "Electro": true,
-        "Folk": true,
-        "Reggae": true,
-        "Jazz": true,
-        "Country": true,
-        "Salsa": true,
-        "Traditional Mexicano": true,
-        "Classical": true,
-        "Films/Games": true,
-        "Metal": true,
-        "Soul & Funk": true,
-        "African Music": true,
-        "Asian Music": true,
-        "Blues": true,
-        "Brazilian Music": true,
-        "Cumbia": true,
-        "Indian Music": true,
-        "Kids": true,
-        "Latin Music": true
-    });
+
+    // const [selectedGenre, setSelectedGenre] = useState({
+    //     "Pop": true,
+    //     "Rap/Hip Hop": true,
+    //     "Reggaeton": true,
+    //     "Rock": true,
+    //     "Dance": true,
+    //     "R&B": true,
+    //     "Alternative": true,
+    //     "Christian": true,
+    //     "Electro": true,
+    //     "Folk": true,
+    //     "Reggae": true,
+    //     "Jazz": true,
+    //     "Country": true,
+    //     "Salsa": true,
+    //     "Traditional Mexicano": true,
+    //     "Classical": true,
+    //     "Films/Games": true,
+    //     "Metal": true,
+    //     "Soul & Funk": true,
+    //     "African Music": true,
+    //     "Asian Music": true,
+    //     "Blues": true,
+    //     "Brazilian Music": true,
+    //     "Cumbia": true,
+    //     "Indian Music": true,
+    //     "Kids": true,
+    //     "Latin Music": true
+    // });
+
+
+
+    const [selectedGenre, setSelectedGenre] = useState(null);
+    const [genreChange, setGenreChange] = useState(false);
+    const [tempSelectedGenre, setTempSelectedGenre] = useState(null);
+    const [noGenres, setNoGenres] = useState(false);
 
     const { currentUser } = useAuth();
     const navigate = useNavigate();
 
 
 
-    const buildSelectedGenres = () => {
+     const buildSelectedGenres = () => {
         return Object.keys(selectedGenre).filter((genre) => selectedGenre[genre]);
     }
 
+
+
+
+
+    const handleGenreChange = async () => {
+        try {
+            // build the genres object
+            const sendGenreArray = [];
+            const genreKeys = Object.keys(tempSelectedGenre);
+
+            for (const key of genreKeys) {
+                sendGenreArray.push({
+                    genre: key,
+                    enabled: tempSelectedGenre[key]
+                })
+            }
+
+            const idToken = await currentUser.getIdToken();
+            const {data} = await axios.patch('http://localhost:3000/api/users/profile', {
+                genres: sendGenreArray
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${idToken}`
+                }
+            });
+
+            if (!data.success) {
+                throw new Error(data.error);
+            }
+
+            setSelectedGenre(tempSelectedGenre);
+            setNoGenres(false);
+            setRefresh(!refresh);
+
+        } catch (error) {
+            setError(error);
+        }
+    }
+
+
+    useEffect(() => {
+        const fetchSelectedGenresFromProfile = async () => {
+            setLoading(true);
+            try {
+                const idToken = await currentUser.getIdToken();
+                const {data} = await axios.get('http://localhost:3000/api/users/profile', {
+                    headers: {
+                    'Authorization': `Bearer ${idToken}`
+                }
+            });
+            if (!data) {
+                throw new Error('No data received');
+            }
+
+            const tempGenresObject = {};
+
+            for (let i = 0; i < data.genres.length; i++) {
+                tempGenresObject[data.genres[i].genre] = data.genres[i].enabled;
+            }
+
+            setSelectedGenre(tempGenresObject);
+            setTempSelectedGenre(tempGenresObject);
+            setLoading(false);
+
+            } catch (error) {
+                setError(error);
+            }
+        }
+        fetchSelectedGenresFromProfile();
+    },[])
+
+
+
     useEffect(() => {
         const fetchSongs = async () => {
+            if (!selectedGenre) return; 
+
             setLoading(true);
             setIndex(0)
             setError(null)
             try {
+
+
+
                 if (!currentUser) {
                     navigate('/');
                     return;
                 }
                 const sendGenres = buildSelectedGenres();
+                if (sendGenres.length === 0) {
+                    setNoGenres(true);
+                    setLoading(false);
+                    return;
+                }
 
                 const idToken = await currentUser.getIdToken();
                 const { data } = await axios.post('http://localhost:3000/api/songs', {
@@ -104,7 +197,6 @@ const DashboardPage = () => {
                     }
                 });
 
-                console.log('Received songs data:', JSON.stringify(data, null, 2));
 
                 if (!data) {
                     throw new Error('No data received');
@@ -121,10 +213,11 @@ const DashboardPage = () => {
         }
 
         fetchSongs();
-    }, [refresh])
+    }, [refresh, selectedGenre]) 
 
 
-    if (error) return <div>{error}</div>;
+
+    if (error) return <div>Error: {error.message || 'An error occurred'}</div>;
     if (loading) return <div><LoadingSpinner /></div>;
 
 
@@ -181,10 +274,41 @@ const DashboardPage = () => {
     };
 
 
-    if (!swipeSongs || swipeSongs.length === 0) {
+    if (!swipeSongs || swipeSongs.length === 0 || !selectedGenre || noGenres) {
         return (
             <div>
                 {error && <div>{error}</div>}
+                <div>
+                     <Dropdown autoClose="outside" onToggle={(isOpen) => {
+                    if (!isOpen && genreChange) {
+                        handleGenreChange();
+                        setGenreChange(false);
+                    } else if (!isOpen && !genreChange) {
+                        setTempSelectedGenre(selectedGenre);
+                    }
+                }}>
+                    {error && <div>{error}</div>}
+
+                    <Dropdown.Toggle variant="success" id="dropdown-basic">
+                        Select Genre
+                    </Dropdown.Toggle>
+
+
+                    <Dropdown.Menu>
+                        { genres && genres.length > index && genres.map((genre) => (
+                            <Dropdown.Item key={genre} onClick={() => {
+                                setTempSelectedGenre({ ...tempSelectedGenre, [genre]: !tempSelectedGenre[genre] });
+                                setGenreChange(true);
+                            }}>
+                                <Switch checked={tempSelectedGenre[genre]} />
+                                {genre}
+                            </Dropdown.Item>
+                        ))}
+                    </Dropdown.Menu>
+
+                </Dropdown>
+                </div>
+
                 <div>
                     <h1>No songs found</h1>
                     <button onClick={() => setRefresh(!refresh)}>Try refreshing or changing genres</button>
@@ -199,8 +323,11 @@ const DashboardPage = () => {
         <>
             <div>
                 <Dropdown autoClose="outside" onToggle={(isOpen) => {
-                    if (!isOpen) {
-                        setRefresh(!refresh);
+                    if (!isOpen && genreChange) {
+                        handleGenreChange();
+                        setGenreChange(false);
+                    } else if (!isOpen && !genreChange) {
+                        setTempSelectedGenre(selectedGenre);
                     }
                 }}>
                     {error && <div>{error}</div>}
@@ -209,12 +336,14 @@ const DashboardPage = () => {
                         Select Genre
                     </Dropdown.Toggle>
 
+
                     <Dropdown.Menu>
                         { genres && genres.length > index && genres.map((genre) => (
                             <Dropdown.Item key={genre} onClick={() => {
-                                setSelectedGenre({ ...selectedGenre, [genre]: !selectedGenre[genre] });
+                                setTempSelectedGenre({ ...tempSelectedGenre, [genre]: !tempSelectedGenre[genre] });
+                                setGenreChange(true);
                             }}>
-                                <Switch checked={selectedGenre[genre]} />
+                                <Switch checked={tempSelectedGenre[genre]} />
                                 {genre}
                             </Dropdown.Item>
                         ))}
