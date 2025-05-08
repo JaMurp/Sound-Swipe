@@ -460,7 +460,7 @@ const SettingsContent = () => {
                 setError(e.message)
             }
     };
-    
+
 
     return (
         <>

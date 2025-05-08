@@ -35,6 +35,7 @@ export const addSong = async (songObj) => {
         },
         randomSeed: songObj.randomSeed || Math.random(),
         likeCounter: 0,
+        explicitFlag: songObj.explicitLyrics || false,
 
     };
 
@@ -52,11 +53,13 @@ const sizeOfCollection = async (collection) => {
 //https://stackoverflow.com/questions/46798981/firestore-how-to-get-random-documents-in-a-collection
 // #TODO add the ability to filter by explicit tag and also for more then 1 genre
 export const getSongsByGenreRandom = async (genre, explicitFlag) => {
+    console.log(genre, explicitFlag);
   const seed = Math.random(); 
   const arr = [];
 
   let ref = db.collection('songs')
     .where('genre.genre', '==', genre)
+    .where('explicitFlag', '==', explicitFlag)
     .where('randomSeed', '>=', seed)
     .orderBy('randomSeed')
     .limit(5);
@@ -66,6 +69,7 @@ export const getSongsByGenreRandom = async (genre, explicitFlag) => {
   if (snapshot.empty) {
     ref = db.collection('songs')
       .where('genre.genre', '==', genre)
+      .where('explicitFlag', '==', explicitFlag)
       .where('randomSeed', '<', seed)
       .orderBy('randomSeed', 'desc')
       .limit(5);

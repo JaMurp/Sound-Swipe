@@ -166,6 +166,21 @@ const DashboardPage = () => {
 
     };
 
+
+    if (!swipeSongs || swipeSongs.length === 0) {
+        return (
+            <div>
+                {error && <div>{error}</div>}
+                <div>
+                    <h1>No songs found</h1>
+                    <button onClick={() => setRefresh(!refresh)}>Try refreshing or changing genres</button>
+                </div>
+            </div>
+        )
+    };
+
+
+
     return (
         <>
             <div>

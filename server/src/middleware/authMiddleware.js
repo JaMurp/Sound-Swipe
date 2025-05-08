@@ -16,6 +16,7 @@ export async function verifyFirebaseToken(req, res, next) {
     // Get additional user information
     const userRecord = await auth.getUser(decodedToken.uid);
 
+
     req.user = {
       uid: decodedToken.uid,
       email: userRecord.email,
@@ -24,7 +25,6 @@ export async function verifyFirebaseToken(req, res, next) {
       photoURL: userRecord.photoURL,
       lastSignInTime: userRecord.metadata.lastSignInTime,
       creationTime: userRecord.metadata.creationTime,
-      explicitFlag: userRecord.explicitFlag,
     };
 
     next();
