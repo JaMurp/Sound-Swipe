@@ -167,7 +167,7 @@ const EditButton = styled.button`
     }
 `;
 
-const AddButton = styled.button`
+const FriendButton = styled.button`
     background: transparent;
     border: 1px solid #727272;
     border-radius: 4px;
@@ -199,6 +199,9 @@ const ProfilePage = () => {
     const [friendsCount, setFriendsCount] = useState(0);
     const [profileOwner, setProfileOwner] = useState(false);
     const [friended, setFriended] = useState(false);
+    const [requested, setRequested] = useState(false);
+    const [friendDefault, setFriendDefault] = useState(false);
+    const [receivedRequest, setRecievedRequest] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
@@ -219,23 +222,42 @@ const ProfilePage = () => {
                 // #TODO make sure currentUser cannot change or delete user(username)
                 //  if currentUser is not the owner of the profile 
                 const idToken = await currentUser.getIdToken();
-                let url = `http://localhost:3000/api/users/profile/${userId}`;
-                if (currentUser.uid === userId) {
-                    setProfileOwner(true)
-                    url = `http://localhost:3000/api/users/profile/`;
-                }
-                const { data } = await axios.get(url, {
+                const currentUserResponse = await axios.get(`http://localhost:3000/api/users/profile/`, {
                     headers: {
                         'Authorization': `Bearer ${idToken}`,
                         'Content-Type': 'application/json'
                     }
                 });
-                if (data.friends.includes(currentUser)) setFriended(true);
+                let data;
+                if (currentUser.uid === userId) {
+                    setProfileOwner(true);
+                    data = currentUserResponse.data;
+                }
+                else {
+                    const otherUserResponse = await axios.get(`http://localhost:3000/api/users/profile/${userId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${idToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    console.log(otherUserResponse)
+                    console.log('----------------------------------------------------------------------------------------------------')
+
+                    data = otherUserResponse.data;
+                    console.log(data)
+
+
+                    if (data.friends.some(friend => friend.id === currentUser.uid)) setFriended(true);
+                    else if (data.friends.some(requester => requester.id === currentUser.uid)) setRequested(true);
+                    else if (currentUserResponse.data.friends.some(requester => requester.id === userId)) setRecievedRequest(true);
+                    else setFriendDefault(true);
+                }
+
                 setUserData(data);
                 setFriendsCount(data.friends.length);
                 setLoading(false);
-            } catch (err) {
-                setError(err.message);
+            } catch (e) {
+                setError(e.message);
                 setLoading(false);
             }
         };
@@ -251,10 +273,10 @@ const ProfilePage = () => {
         navigate(`/friends/${userId}`);
     };
 
-    const handleAddFriend = async () => {
+    const handleRequestFriend = async () => {
         try {
             const idToken = await currentUser.getIdToken();
-            await axios.post(`http://localhost:3000/api/users/add-friend/${userId}`, {
+            await axios.post(`http://localhost:3000/api/users/friend-request/${userId}`, {
             }, {
                 headers: {
                     Authorization: `Bearer ${idToken}`,
@@ -262,7 +284,55 @@ const ProfilePage = () => {
                 }
             }
             );
-            setFriendsCount(prev => prev + 1);
+        } catch (e) {
+            setError(e);
+        }
+    };
+
+    const handleAcceptFriend = async () => {
+        try {
+            const idToken = await currentUser.getIdToken();
+            await axios.post(`http://localhost:3000/api/users/accept-request/${userId}`, {
+            }, {
+                headers: {
+                    Authorization: `Bearer ${idToken}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+            );
+            navigate(`/profile/${userId}`)
+        } catch (e) {
+            setError(e);
+        }
+    };
+
+    const handleRejectFriend = async () => {
+        try {
+            const idToken = await currentUser.getIdToken();
+            await axios.post(`http://localhost:3000/api/users/reject-request/${userId}`, {
+            }, {
+                headers: {
+                    Authorization: `Bearer ${idToken}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+            );
+        } catch (e) {
+            setError(e);
+        }
+    };
+
+    const handleRemoveFriend = async () => {
+        try {
+            const idToken = await currentUser.getIdToken();
+            await axios.post(`http://localhost:3000/api/users/remove-friend/${userId}`, {
+            }, {
+                headers: {
+                    Authorization: `Bearer ${idToken}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+            );
             navigate(`/profile/${userId}`)
         } catch (e) {
             setError(e);
@@ -297,10 +367,30 @@ const ProfilePage = () => {
                                         Edit profile
                                     </EditButton>
                                 )}
-                                {!profileOwner && !friended && (
-                                    <AddButton onClick={handleAddFriend}>
-                                        Add
-                                    </AddButton>
+                                {friendDefault && (
+                                    <FriendButton onClick={handleRequestFriend}>
+                                        Request
+                                    </FriendButton>
+                                )}
+                                {friended && (
+                                    <FriendButton onClick={handleRemoveFriend}>
+                                        Remove
+                                    </FriendButton>
+                                )}
+                                {requested && (
+                                    <span>
+                                        Requested!
+                                    </span>
+                                )}
+                                {receivedRequest && (
+                                    <span>
+                                        <FriendButton onClick={handleAcceptFriend}>
+                                            Accept
+                                        </FriendButton>
+                                        <FriendButton onClick={handleRejectFriend}>
+                                            Reject
+                                        </FriendButton>
+                                    </span>
                                 )}
                                 {userData.bio && <Bio>{userData.bio}</Bio>}
                             </ProfileText>

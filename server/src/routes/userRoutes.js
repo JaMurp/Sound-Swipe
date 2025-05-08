@@ -76,7 +76,7 @@ router.post('/sync-user', async (req, res) => {
   }
 });
 
-router.post('/add-friend/:id', async (req, res) => {
+router.post('/friend-request/:id', async (req, res) => {
   try {
     const currentUserId = req.user.uid;
     const friendId = req.params.id;
@@ -92,14 +92,113 @@ router.post('/add-friend/:id', async (req, res) => {
       return res.status(400).json({ error: 'Invalid friend ID' });
     }
 
-    const status = await userDataFunctions.addFriend(currentUserId, friendId);
+    const status = await userDataFunctions.requestFriend(currentUserId, friendId);
     return res.status(200).json(status);
 
   } catch (e) {
     console.log(e);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
+});
 
+router.post('/friend-request/:id', async (req, res) => {
+  try {
+    const currentUserId = req.user.uid;
+    const friendId = req.params.id;
+    const userExists = await userDataFunctions.userExists(currentUserId);
+    const friendExists = await userDataFunctions.userExists(friendId);
+    if (!userExists) {
+      return res.status(404).json({ error: `Could not fetch profile ${currentUserId}` });
+    }
+    if (!friendExists) {
+      return res.status(404).json({ error: `Could not fetch profile ${friendId}` });
+    }
+    if (!friendId || currentUserId === friendId) {
+      return res.status(400).json({ error: 'Invalid friend ID' });
+    }
+
+    const status = await userDataFunctions.requestFriend(currentUserId, friendId);
+    return res.status(200).json(status);
+
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.post('/accept-request/:id', async (req, res) => {
+  try {
+    const currentUserId = req.user.uid;
+    const friendId = req.params.id;
+    const userExists = await userDataFunctions.userExists(currentUserId);
+    const friendExists = await userDataFunctions.userExists(friendId);
+    if (!userExists) {
+      return res.status(404).json({ error: `Could not fetch profile ${currentUserId}` });
+    }
+    if (!friendExists) {
+      return res.status(404).json({ error: `Could not fetch profile ${friendId}` });
+    }
+    if (!friendId || currentUserId === friendId) {
+      return res.status(400).json({ error: 'Invalid friend ID' });
+    }
+
+    const status = await userDataFunctions.acceptRequest(currentUserId, friendId);
+    return res.status(200).json(status);
+
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.post('/reject-request/:id', async (req, res) => {
+  try {
+    const currentUserId = req.user.uid;
+    const friendId = req.params.id;
+    const userExists = await userDataFunctions.userExists(currentUserId);
+    const friendExists = await userDataFunctions.userExists(friendId);
+    if (!userExists) {
+      return res.status(404).json({ error: `Could not fetch profile ${currentUserId}` });
+    }
+    if (!friendExists) {
+      return res.status(404).json({ error: `Could not fetch profile ${friendId}` });
+    }
+    if (!friendId || currentUserId === friendId) {
+      return res.status(400).json({ error: 'Invalid friend ID' });
+    }
+
+    const status = await userDataFunctions.rejectRequest(currentUserId, friendId);
+    return res.status(200).json(status);
+
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.post('/remove-friend/:id', async (req, res) => {
+  try {
+    const currentUserId = req.user.uid;
+    const friendId = req.params.id;
+    const userExists = await userDataFunctions.userExists(currentUserId);
+    const friendExists = await userDataFunctions.userExists(friendId);
+    if (!userExists) {
+      return res.status(404).json({ error: `Could not fetch profile ${currentUserId}` });
+    }
+    if (!friendExists) {
+      return res.status(404).json({ error: `Could not fetch profile ${friendId}` });
+    }
+    if (!friendId || currentUserId === friendId) {
+      return res.status(400).json({ error: 'Invalid friend ID' });
+    }
+
+    const status = await userDataFunctions.removeFriend(currentUserId, friendId);
+    return res.status(200).json(status);
+
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 export default router;

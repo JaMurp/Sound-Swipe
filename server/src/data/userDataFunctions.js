@@ -71,7 +71,7 @@ export const updateUser = async (uid, userObj) => {
 
 };
 
-export const addFriend = async (currentUserId, friendId) => {
+export const requestFriend = async (currentUserId, friendId) => {
     const uidRef = db.collection('users').doc(currentUserId);
     const fidRef = db.collection('users').doc(friendId);
     const user = await uidRef.get()
@@ -82,12 +82,62 @@ export const addFriend = async (currentUserId, friendId) => {
     const userData = user.data();
     const friendData = friend.data();
 
-    if (userData.friends.includes(friendId)) return { success: true, message: 'Friend Already Added!' };
+    if (userData.friends.some(currentFriend => currentFriend.id === friendId)) return { success: true, message: 'Friend Already Added' };
 
-    await uidRef.update({ friends: [...(userData.friends), {id: friendId, avatar_url: friendData.avatar_url, username: friendData.username}] });
+    await fidRef.update({ incomingRequests: [...(friendData.incomingRequests), { id: currentUserId, avatar_url: userData.avatar_url, username: userData.username }] });
+    return { success: true, message: 'Request Sent!' };
+};
+
+export const acceptRequest = async (currentUserId, friendId) => {
+    const uidRef = db.collection('users').doc(currentUserId);
+    const fidRef = db.collection('users').doc(friendId);
+    const user = await uidRef.get()
+    const friend = await fidRef.get();
+
+    if (!user.exists || !friend.exists) throw 'User not found';
+
+    const userData = user.data();
+    const friendData = friend.data();
+
+    if (userData.friends.some(currentFriend => currentFriend.id === friendId)) return { success: true, message: 'Friend Already Added' };
+
+    await uidRef.update({
+        friends: [...(userData.friends), {id: friendId, avatar_url: friendData.avatar_url, username: friendData.username}],
+        incomingRequests: (userData.incomingRequests).filter(request => request.id !== friendId)
+    });
+    await fidRef.update({friends: [...(friendData.friends), { id: currentUserId, avatar_url: userData.avatar_url, username: userData.username }]});
     return { success: true, message: 'Friend Added!' };
 };
 
+export const rejectRequest = async (currentUserId, friendId) => {
+    const uidRef = db.collection('users').doc(currentUserId);
+    const user = await uidRef.get();
+
+    if (!user.exists) throw 'User not found';
+
+    const userData = user.data();
+
+    await uidRef.update({ incomingRequests: (userData.incomingRequests).filter(request => request.id !== friendId) });
+
+    return { success: true, message: 'Friend Request Rejected' };
+};
+
+export const removeFriend = async (currentUserId, friendId) => {
+    const uidRef = db.collection('users').doc(currentUserId);
+    const fidRef = db.collection('users').doc(friendId);
+    const user = await uidRef.get()
+    const friend = await fidRef.get();
+
+    if (!user.exists || !friend.exists) throw 'User not found';
+
+    const userData = user.data();
+    const friendData = friend.data();
+
+    await uidRef.update({ friends: (userData.friends).filter(friend => friend.id !== friendId) });
+    await fidRef.update({ friends: (friendData.friends).filter(currentUser => currentUser.id !== currentUserId) });
+
+    return { success: true, message: 'Friend Removed' };
+};
 
 export const getUser = async (uid) => {
     // #TODO check the uid 
@@ -106,8 +156,6 @@ export const getUser = async (uid) => {
 
     for (const doc of allUsers.docs) {
         const docId = doc.id;
-        console.log(doc)
-        console.log('-----------------------------------------')
         if (!(docId === uid || userFriends.some(friend => friend.id === docId))) {
 
             const otherUserLikes = await db.collection("users").doc(docId).collection("likedSongs").get();
@@ -183,7 +231,8 @@ export const createUser = async (uid, displayName, photoUrl) => {
                 "Kids": true,
                 "Latin Music": true
             },
-            friends: []
+            friends: [],
+            incomingRequests: []
         }
         // Use set with document ID instead of add
         await db.collection("users").doc(uid).set(newUser);
