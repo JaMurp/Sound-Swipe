@@ -109,13 +109,19 @@ export const getSongById = async (songId) => {
     return findSongSnapshot.data();
 
 };
-// # TOD check input 
+// # TODO check input (depricated)
 export const likedSongExist = async (songId, userId) => {
-
     const likedSongRef = db.collection('users').doc(userId).collection('likedSongs').doc(songId.toString());
     const likedSongDoc = await likedSongRef.get();
     return likedSongDoc.exists;
 };
+// # TODO check input 
+export const seenSongExist = async (songId, userId) => {
+    const seenSongRef = db.collection('users').doc(userId).collection('seenSongs').doc(songId.toString());
+    const seenSongDoc = await seenSongRef.get();
+    return seenSongDoc.exists;
+};
+
 //https://stackoverflow.com/questions/50762923/how-to-increment-existing-number-field-in-cloud-firestore
 export const incrementSongLikes = async (songId) => {
     const requestRef = db.collection('songs').doc(songId)
@@ -158,6 +164,31 @@ export const addLikedSong = async (songId, userId) => {
 
 };
 
+// #TODO check input
+export const addSeenSong = async (songId, userId, liked) => {
+    // check to make sure it is a valid song
+    songId = String(songId);
+
+    const getSong = await getSongById(songId);
+    if (!getSong) throw "Song not found"
+
+    // check to make sure the song is not in the collection
+    const inCollectionFlag = await seenSongExist(songId, userId);  
+    if (inCollectionFlag) throw "Song already seen"
+
+    // need to add the song to the seen sub collection
+    const newSeenSong = {
+        songId: songId,
+        songTitle: getSong.songTitle,
+        genre: getSong.genre,
+        youLiked: liked,
+
+    }
+    await db.collection('users').doc(userId).collection('seenSongs').doc(songId).set(newSeenSong);
+    return {success: true, message: 'Song added to seen songs'}
+
+};
+
 
 const shuffleArray = (array) => {
     return array.sort(() => Math.random() - 0.5);
@@ -170,7 +201,7 @@ export const getSongsByGenre = async (genres, explicitFlag, userId) => {
     for (const genre of selectedGenres) {
         const songsByGenre = await getSongsByGenreRandom(genre, explicitFlag);
         for (const song of songsByGenre) {
-            const inCollectionFlag = await likedSongExist(song.id, userId);
+            const inCollectionFlag = await seenSongExist(song.id, userId);
             if (song.explicitFlag === explicitFlag && !inCollectionFlag) {
                 songs.push(song);
             }
@@ -181,7 +212,19 @@ export const getSongsByGenre = async (genres, explicitFlag, userId) => {
     // shuffle the songs
     songs = shuffleArray(songs);
 
-    return songs;
+
+    // remove duplicates
+    const uniqueSongs = new Set();
+    const filteredSongs = [];
+    for (const song of songs) {
+        if (!uniqueSongs.has(song.id)) {
+            uniqueSongs.add(song.id);
+            filteredSongs.push(song);
+        }
+    }
+
+
+    return filteredSongs;
 }
 
 

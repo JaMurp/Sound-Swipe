@@ -44,6 +44,19 @@ router.post('/like', async (req, res) => {
     }
 });
 
+router.post('/seen', async (req, res) => {
+    // #TODO check the inputs
+    const {songId, liked} = req.body;
+
+    try {
+        await songsDataFunctions.addSeenSong(songId, req.user.uid, liked);
+        return res.status(200).json({success: true, message: 'Song seen successfully'});
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({error: e});
+    }
+});
+
 router.get('/trending', async (req, res) => {
     try {
         const trendingSongs = await songsDataFunctions.getTopLikedSongs();

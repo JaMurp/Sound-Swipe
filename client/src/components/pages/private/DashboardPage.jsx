@@ -130,40 +130,54 @@ const DashboardPage = () => {
 
 
 
-    const handleDislikeButton = () => {
-        if (index > 24) {
-            setRefresh(!refresh)
-        }
-
-        setIndex(index + 1)
-
-    };
-
-    const handleLikeButton = async () => {
-        if (index > 24) {
-            setRefresh(!refresh)
+    const handleDislikeButton = async () => {
+        if (index >= swipeSongs.length - 1) {
+            setRefresh(!refresh);
+            return;
         }
         try {
             const idToken = await currentUser.getIdToken();
-            const {data} = await axios.post('http://localhost:3000/api/songs/like', {
-                songId: swipeSongs[index].id
+            const {data} = await axios.post('http://localhost:3000/api/songs/seen', {
+                songId: swipeSongs[index].id,
+                liked: false
             }, {
-            headers: {
+                headers: {
                     'Authorization': `Bearer ${idToken}`
                 }
-            })
+            });
             if (data.success) {
-                setIndex(index + 1)
+                setIndex(index + 1);
             } else {
-                setError(data.error)
+                setError(data.error);
             }
-
         } catch (error) {
-            setError(error)
+            setError(error);
         }
+    };
 
-        setIndex(index + 1)
-
+    const handleLikeButton = async () => {
+        if (index >= swipeSongs.length - 1) {
+            setRefresh(!refresh);
+            return;
+        }
+        try {
+            const idToken = await currentUser.getIdToken();
+            const {data} = await axios.post('http://localhost:3000/api/songs/seen', {
+                songId: swipeSongs[index].id,
+                liked: true
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${idToken}`
+                }
+            });
+            if (data.success) {
+                setIndex(index + 1);
+            } else {
+                setError(data.error);
+            }
+        } catch (error) {
+            setError(error);
+        }
     };
 
 
@@ -196,7 +210,7 @@ const DashboardPage = () => {
                     </Dropdown.Toggle>
 
                     <Dropdown.Menu>
-                        {genres.map((genre) => (
+                        { genres && genres.length > index && genres.map((genre) => (
                             <Dropdown.Item key={genre} onClick={() => {
                                 setSelectedGenre({ ...selectedGenre, [genre]: !selectedGenre[genre] });
                             }}>
