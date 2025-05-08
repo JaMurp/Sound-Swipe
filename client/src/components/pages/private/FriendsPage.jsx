@@ -120,14 +120,14 @@ const FriendsPage = () => {
                 ))}
             </FriendsList>
             <h3>Recommended Friends</h3>
-            <FriendsList>
+            {/* <FriendsList>
                 {recommendedFriends.map(user => (
                     <FriendContainer key={user.id} onClick={() => handleFriendClick(user.id)}>
                         <img src={user.avatar_url} alt={user.username} />
                         <h3>{user.username}</h3>
                     </FriendContainer>
                 ))}
-            </FriendsList>
+            </FriendsList> */}
         </FriendsContainer>
     );
 };
