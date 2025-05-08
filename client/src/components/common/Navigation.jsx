@@ -39,6 +39,7 @@ export const PublicNavigation = () => {
 
 export const PrivateNavigation = () => {
   const navigate= useNavigate()
+  const { currentUser } = useAuth(); 
 
   const handleLogout = async () => {
     try {
@@ -60,14 +61,16 @@ export const PrivateNavigation = () => {
             <Nav.Link href="/dashboard">Dashboard</Nav.Link>
             <Nav.Link href="/leaderboard">Leaderboard</Nav.Link>
           </Nav>
-
+          <Nav>
+            <Nav.Link href="/friends">Friends</Nav.Link>
+          </Nav>
           <Nav>
             <Nav.Link href="/notifications">Notifications</Nav.Link>
           </Nav>
 
           <Nav>
             <NavDropdown title="Profile" align="end">
-              <NavDropdown.Item href="/profile">Profile</NavDropdown.Item>
+              <NavDropdown.Item onClick={() => navigate(`/profile/${currentUser.uid}`)}>Profile</NavDropdown.Item>
               <NavDropdown.Item href="/settings">Settings</NavDropdown.Item>
               <NavDropdown.Divider />
               <NavDropdown.Item onClick={handleLogout}>Sign Out</NavDropdown.Item>

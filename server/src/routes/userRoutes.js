@@ -4,13 +4,25 @@ import userDataFunctions from '../data/index.js'
 const router = Router();
 
 router.get('/profile', async (req, res) => {
-    // #TODO check the uid
+  // #TODO check the uid
+  try {
+      const getProfile = await userDataFunctions.getUser(req.user.uid) 
+      if (!getProfile) return res.status(500).json({error: 'Internal Server Error'})
+      return res.status(200).json(getProfile);
+  } catch(e) {
+      return res.status(500).json({error: 'Interal Server Error'})
+  }
+});
+
+router.get('/profile/:id', async (req, res) => {
+    // #TODO check the uid 
+    //  (updated to not getUser using uid, may no longer be necessary)
     try {
-        const getProfile = await userDataFunctions.getUser(req.user.uid) 
-        if (!getProfile) return res.status(500).json({error: 'Internal Server Error'})
+        const getProfile = await userDataFunctions.getUser(req.params.id) 
+        if (!getProfile) return res.status(404).json({error: 'Profile not found'})
         return res.status(200).json(getProfile);
     } catch(e) {
-        return res.status(404).json({error: 'Interal Server Error'})
+        return res.status(500).json({error: 'Interal Server Error'})
     }
 });
 

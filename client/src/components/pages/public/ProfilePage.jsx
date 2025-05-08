@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import axios from "axios";
 import LoadingSpinner from "../../common/LoadingSpinner";
@@ -167,12 +167,24 @@ const EditButton = styled.button`
     }
 `;
 
+const FriendCounter = styled.span`
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    &:hover {
+        text-decoration: underline;
+    }
+`;
+
 const ProfilePage = () => {
     const [userData, setUserData] = useState(null);
+    const [friendsCount, setFriendsCount] = useState(0);
+    const [profileOwner, setProfileOwner] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const { currentUser } = useAuth();
+    const { userId } = useParams();
 
     useEffect(() => {
         const getProfileData = async () => {
@@ -181,16 +193,29 @@ const ProfilePage = () => {
                     navigate('/');
                     return;
                 }
-
+                if (!userId) {
+                    navigate(`/profile/${currentUser.uid}`)
+                    return;
+                }
+                console.log(userId)
+                // #TODO make sure currentUser cannot change or delete user(username)
+                //  if currentUser is not the owner of the profile 
                 const idToken = await currentUser.getIdToken();
-                const { data } = await axios.get('http://localhost:3000/api/users/profile', {
+                let url = `http://localhost:3000/api/users/profile/${userId}`;
+                if (currentUser.uid === userId){
+                    setProfileOwner(true)
+                    url = `http://localhost:3000/api/users/profile/`;
+                }
+                const { data } = await axios.get(url, {
                     headers: {
                         'Authorization': `Bearer ${idToken}`,
                         'Content-Type': 'application/json'
                     }
                 });
 
+                
                 setUserData(data);
+                setFriendsCount(data.friends.length);
                 setLoading(false);
             } catch (err) {
                 setError(err.message);
@@ -199,10 +224,14 @@ const ProfilePage = () => {
         };
 
         getProfileData();
-    }, [currentUser, navigate]);
+    }, [currentUser, navigate, userId]);
 
     const handleEditProfile = () => {
         navigate('/settings');
+    };
+
+    const handleFriendsClick = () => {
+        navigate('/friends');
     };
 
     if (loading) return <LoadingContainer><LoadingSpinner /></LoadingContainer>;
@@ -223,10 +252,16 @@ const ProfilePage = () => {
                                 <ProfileName>{userData.username}</ProfileName>
                                 <ProfileStats>
                                     <span>Member since {new Date(userData.createdAt._seconds * 1000).getFullYear()}</span>
+                                    <FriendCounter onClick={handleFriendsClick}>
+                                        Friends:
+                                        {friendsCount}
+                                    </FriendCounter>
                                 </ProfileStats>
-                                <EditButton onClick={handleEditProfile}>
-                                    Edit profile
-                                </EditButton>
+                                {profileOwner && (
+                                    <EditButton onClick={handleEditProfile}>
+                                        Edit profile
+                                    </EditButton>
+                                )}
                                 {userData.bio && <Bio>{userData.bio}</Bio>}
                             </ProfileText>
                         </ProfileInfo>

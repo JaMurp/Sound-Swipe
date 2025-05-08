@@ -1,6 +1,6 @@
 import React from 'react';
 import {Route, Routes} from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext.jsx';
+import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import * as Middleware from './components/Middleware/Middleware.jsx'
 import DashboardPage from './components/pages/private/DashboardPage.jsx';
 import HomePage from './components/pages/public/HomePage.jsx';
@@ -8,10 +8,12 @@ import { Navigate } from 'react-router-dom';
 import './App.css';
 import ProfilePage from './components/pages/public/ProfilePage.jsx';
 import SettingsPage from './components/pages/public/SettingsPage.jsx';
+import FriendsPage from './components/pages/private/FriendsPage.jsx';
 
 function App() {
+
   return (
-    <AuthProvider>
+    <AuthProvider>  
       <Routes>
         
         {/* these are the public routes */}
@@ -23,7 +25,9 @@ function App() {
         <Route path='/' element={< Middleware.PrivateRoute />} >
           <Route path='/dashboard' element={< DashboardPage/>} />
           <Route path='/profile' element={<ProfilePage />} />
+          <Route path='/profile/:id' element={<ProfilePage />} />
           <Route path='/settings' element={<SettingsPage />} />
+          <Route path='/friends' element={<FriendsPage />} />
         </Route>
 
         <Route path='*' element={<Navigate to='/' />} />
