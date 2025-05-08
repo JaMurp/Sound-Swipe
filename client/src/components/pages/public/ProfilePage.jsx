@@ -167,6 +167,24 @@ const EditButton = styled.button`
     }
 `;
 
+const AddButton = styled.button`
+    background: transparent;
+    border: 1px solid #727272;
+    border-radius: 4px;
+    color: white;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: all 0.2s ease;
+
+    &:hover {
+        border-color: white;
+        transform: scale(1.02);
+    }
+`;
+
 const FriendCounter = styled.span`
     color: #fff;
     font-weight: bold;
@@ -180,6 +198,7 @@ const ProfilePage = () => {
     const [userData, setUserData] = useState(null);
     const [friendsCount, setFriendsCount] = useState(0);
     const [profileOwner, setProfileOwner] = useState(false);
+    const [friended, setFriended] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
@@ -197,12 +216,11 @@ const ProfilePage = () => {
                     navigate(`/profile/${currentUser.uid}`)
                     return;
                 }
-                console.log(userId)
                 // #TODO make sure currentUser cannot change or delete user(username)
                 //  if currentUser is not the owner of the profile 
                 const idToken = await currentUser.getIdToken();
                 let url = `http://localhost:3000/api/users/profile/${userId}`;
-                if (currentUser.uid === userId){
+                if (currentUser.uid === userId) {
                     setProfileOwner(true)
                     url = `http://localhost:3000/api/users/profile/`;
                 }
@@ -212,8 +230,7 @@ const ProfilePage = () => {
                         'Content-Type': 'application/json'
                     }
                 });
-
-                console.log(data);
+                if (data.friends.includes(currentUser)) setFriended(true);
                 setUserData(data);
                 setFriendsCount(data.friends.length);
                 setLoading(false);
@@ -231,7 +248,25 @@ const ProfilePage = () => {
     };
 
     const handleFriendsClick = () => {
-        navigate('/friends');
+        navigate(`/friends/${userId}`);
+    };
+
+    const handleAddFriend = async () => {
+        try {
+            const idToken = await currentUser.getIdToken();
+            await axios.post(`http://localhost:3000/api/users/add-friend/${userId}`, {
+            }, {
+                headers: {
+                    Authorization: `Bearer ${idToken}`,
+                    'Content-Type': 'application/json'
+                }
+            }
+            );
+            setFriendsCount(prev => prev + 1);
+            navigate(`/profile/${userId}`)
+        } catch (e) {
+            setError(e);
+        }
     };
 
     if (loading) return <LoadingContainer><LoadingSpinner /></LoadingContainer>;
@@ -243,8 +278,8 @@ const ProfilePage = () => {
                 <>
                     <ProfileHeader>
                         <ProfileInfo>
-                            <ProfileImage 
-                                src={userData.avatar_url} 
+                            <ProfileImage
+                                src={userData.avatar_url}
                                 alt={userData.username}
                             />
                             <ProfileText>
@@ -261,6 +296,11 @@ const ProfilePage = () => {
                                     <EditButton onClick={handleEditProfile}>
                                         Edit profile
                                     </EditButton>
+                                )}
+                                {!profileOwner && !friended && (
+                                    <AddButton onClick={handleAddFriend}>
+                                        Add
+                                    </AddButton>
                                 )}
                                 {userData.bio && <Bio>{userData.bio}</Bio>}
                             </ProfileText>

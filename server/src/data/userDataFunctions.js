@@ -11,7 +11,7 @@ export const deleteUser = async (uid) => {
     // need to get the liked songs id then decrement the likeCounter
     const likedSongsRef = db.collection('users').doc(uid).collection('likedSongs');
     const likedSongsSnapshot = await likedSongsRef.get();
-    
+
     for (const song of likedSongsSnapshot.docs) {
         const songId = song.id;
         await songsDataFunctions.decrementSongLikes(songId.toString());
@@ -21,7 +21,7 @@ export const deleteUser = async (uid) => {
     // Delete the user document
     await db.collection('users').doc(uid).delete();
 
-    return; 
+    return;
 }
 
 
@@ -36,7 +36,7 @@ export const usernameTaken = async (username) => {
 export const updateUser = async (uid, userObj) => {
     // #TODO check the inputs and the abilit 
     let hasInput = false;
-    console.log(userObj)
+    console.log(userObj);
     const updatedObj = {}
 
     if (userObj.bio) {
@@ -54,7 +54,7 @@ export const updateUser = async (uid, userObj) => {
         hasInput = true;
         const isTaken = await usernameTaken(newUserName);
         if (isTaken) throw "username is taken";
-        updateUser['username'] =  newUserName;
+        updateUser['username'] = newUserName;
 
     }
     if (userObj.explicitData !== null) {
@@ -65,35 +65,83 @@ export const updateUser = async (uid, userObj) => {
     if (!hasInput) throw "Must provide atleast 1 fields to update";
 
     // updates the doc
-    const uidRef = db.collection('users').doc(uid); 
+    const uidRef = db.collection('users').doc(uid);
     await uidRef.update(userObj)
     return;
 
 };
 
+export const addFriend = async (currentUserId, friendId) => {
+    const uidRef = db.collection('users').doc(currentUserId);
+    const fidRef = db.collection('users').doc(friendId);
+    const user = await uidRef.get()
+    const friend = await fidRef.get();
+
+    if (!user.exists || !friend.exists) throw 'User not found';
+
+    const userData = user.data();
+    const friendData = friend.data();
+
+    if (userData.friends.includes(friendId)) return { success: true, message: 'Friend Already Added!' };
+
+    await uidRef.update({ friends: [...(userData.friends), {id: friendId, avatar_url: friendData.avatar_url, username: friendData.username}] });
+    return { success: true, message: 'Friend Added!' };
+};
+
 
 export const getUser = async (uid) => {
     // #TODO check the uid 
-    const uidRef = db.collection("users").doc(uid)
+    const users = db.collection("users");
+    const uidRef = users.doc(uid)
     const foundUser = await uidRef.get()
     if (!foundUser.exists) throw "User Not Found"
 
-    return foundUser.data() 
+    const userData = foundUser.data();
+    const userFriends = userData.friends;
+    const userLikes = await uidRef.collection("likedSongs").get();
+    const likedSongs = userLikes.docs.map(doc => doc.id);
+
+    const allUsers = await users.get();
+    const recommendedFriends = [];
+
+    for (const doc of allUsers.docs) {
+        const docId = doc.id;
+        console.log(doc)
+        console.log('-----------------------------------------')
+        if (!(docId === uid || userFriends.some(friend => friend.id === docId))) {
+
+            const otherUserLikes = await db.collection("users").doc(docId).collection("likedSongs").get();
+            const otherLikedSongs = otherUserLikes.docs.map(doc => doc.id);
+
+            const sharedSongs = otherLikedSongs.filter(id => likedSongs.includes(id));
+
+            if (recommendedFriends.length < 10) {
+                recommendedFriends.push({
+                    id: docId,
+                    ...doc.data(),
+                    score: sharedSongs.length
+                });
+            }
+        }
+    }
+    recommendedFriends.sort((a, b) => b.score - a.score);
+
+    return { ...userData, recommendedFriends: recommendedFriends };
 }
 
 
 export const userExists = async (uid) => {
-  try {
-    const usersRef = db.collection("users");
-    const userDoc = await usersRef.doc(uid).get();
-    if (userDoc.exists) {
-      return true;
+    try {
+        const usersRef = db.collection("users");
+        const userDoc = await usersRef.doc(uid).get();
+        if (userDoc.exists) {
+            return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('Error checking if user exists:', error);
+        throw error;
     }
-    return false;
-  } catch (error) {
-    console.error('Error checking if user exists:', error);
-    throw error;
-  }
 };
 
 // #TODO input validation
@@ -106,7 +154,7 @@ export const createUser = async (uid, displayName, photoUrl) => {
             bio: '',
             avatar_url: photoUrl,
             createdAt: new Date(),
-            genres : {
+            genres: {
                 "Pop": true,
                 "Rap/Hip Hop": true,
                 "Reggaeton": true,
@@ -135,7 +183,7 @@ export const createUser = async (uid, displayName, photoUrl) => {
                 "Kids": true,
                 "Latin Music": true
             },
-            friends : []
+            friends: []
         }
         // Use set with document ID instead of add
         await db.collection("users").doc(uid).set(newUser);
@@ -145,3 +193,4 @@ export const createUser = async (uid, displayName, photoUrl) => {
         throw error;
     }
 };
+

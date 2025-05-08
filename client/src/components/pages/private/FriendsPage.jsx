@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import axios from "axios";
 import LoadingSpinner from "../../common/LoadingSpinner";
@@ -69,9 +69,11 @@ const FriendsPage = () => {
     const [friends, setFriends] = useState([]);
     const [recommendedFriends, setRecommendedFriends] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [profileOwner, setProfileOwner] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const { currentUser } = useAuth();
+    const { userId } = useParams();
 
     useEffect(() => {
         const getFriendsList = async () => {
@@ -80,9 +82,17 @@ const FriendsPage = () => {
                     navigate('/');
                     return;
                 }
-
+                if (!userId) {
+                    navigate(`/profile/${currentUser.uid}`)
+                    return;
+                }
                 const idToken = await currentUser.getIdToken();
-                const { data } = await axios.get('http://localhost:3000/api/users/profile', {
+                let url = `http://localhost:3000/api/users/profile/${userId}`;
+                if (currentUser.uid === userId) {
+                    setProfileOwner(true)
+                    url = `http://localhost:3000/api/users/profile/`;
+                }
+                const { data } = await axios.get(url, {
                     headers: {
                         'Authorization': `Bearer ${idToken}`,
                         'Content-Type': 'application/json'
@@ -90,6 +100,7 @@ const FriendsPage = () => {
                 });
 
                 setFriends(data.friends);
+                console.log(data, data.friends)
                 setRecommendedFriends(data.recommendedFriends);
                 setLoading(false);
             } catch (err) {
@@ -114,20 +125,23 @@ const FriendsPage = () => {
             <FriendsList>
                 {friends.map(friend => (
                     <FriendContainer key={friend.id} onClick={() => handleFriendClick(friend.id)}>
-                        <img src={friend.avatar_url} alt={friend.username} />
-                        <h3>{friend.username}</h3>
+                        <h3><img src={friend.avatar_url} alt={friend.username} />{friend.username}</h3>
                     </FriendContainer>
                 ))}
             </FriendsList>
-            <h3>Recommended Friends</h3>
-            {/* <FriendsList>
-                {recommendedFriends.map(user => (
-                    <FriendContainer key={user.id} onClick={() => handleFriendClick(user.id)}>
-                        <img src={user.avatar_url} alt={user.username} />
-                        <h3>{user.username}</h3>
-                    </FriendContainer>
-                ))}
-            </FriendsList> */}
+
+
+            {profileOwner && (
+                <FriendsList>
+                    <h3>Recommended Friends</h3>
+                    {recommendedFriends.map(user => (
+                        <FriendContainer key={user.id} onClick={() => handleFriendClick(user.id)}>
+                            <img src={user.avatar_url} alt={user.username} />
+                            <h3>{user.username}</h3>
+                        </FriendContainer>
+                    ))}
+                </FriendsList>
+            )}
         </FriendsContainer>
     );
 };
