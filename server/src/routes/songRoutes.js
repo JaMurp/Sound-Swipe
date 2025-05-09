@@ -1,5 +1,7 @@
 import {Router} from 'express';
 import * as songsDataFunctions from '../data/songsDataFunctions.js';
+import * as userDataFunctions from '../data/userDataFunctions.js';
+
 
 const router = Router();
 
@@ -7,8 +9,20 @@ const router = Router();
 router.post('/', async (req, res) => {
     // #TODO check the inputs
     const {genres} = req.body; 
+
+
+    let explicitFlag = false;
     try {
-        const getSongs = await songsDataFunctions.getSongsByGenre(genres, req.user.explicitFlag, req.user.uid);
+        const {explicitData} = await userDataFunctions.getUser(req.user.uid);
+        explicitFlag = explicitData;
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({error: e});
+    }
+
+    try {
+        console.log(genres, explicitFlag, req.user.uid);
+        const getSongs = await songsDataFunctions.getSongsByGenre(genres, explicitFlag, req.user.uid);
         return res.status(200).json(getSongs);
     } catch (e) {
 
@@ -24,6 +38,19 @@ router.post('/like', async (req, res) => {
     try {
         await songsDataFunctions.addLikedSong(songId, req.user.uid);
         return res.status(200).json({success: true, message: 'Song liked successfully'});
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({error: e});
+    }
+});
+
+router.post('/seen', async (req, res) => {
+    // #TODO check the inputs
+    const {songId, liked} = req.body;
+
+    try {
+        await songsDataFunctions.addSeenSong(songId, req.user.uid, liked);
+        return res.status(200).json({success: true, message: 'Song seen successfully'});
     } catch (e) {
         console.log(e);
         return res.status(500).json({error: e});
