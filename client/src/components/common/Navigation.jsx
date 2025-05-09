@@ -62,7 +62,7 @@ export const PrivateNavigation = () => {
             <Nav.Link href="/leaderboard">Leaderboard</Nav.Link>
           </Nav>
           <Nav>
-            <Nav.Link href="/friends">Friends</Nav.Link>
+            <Nav.Link href={`/friends/${currentUser.uid}`}>Friends</Nav.Link>
           </Nav>
           <Nav>
             <Nav.Link href="/notifications">Notifications</Nav.Link>

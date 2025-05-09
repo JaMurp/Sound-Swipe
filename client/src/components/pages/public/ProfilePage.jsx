@@ -167,6 +167,24 @@ const EditButton = styled.button`
     }
 `;
 
+const FriendButton = styled.button`
+    background: transparent;
+    border: 1px solid #727272;
+    border-radius: 4px;
+    color: white;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 12px;
+    transition: all 0.2s ease;
+
+    &:hover {
+        border-color: white;
+        transform: scale(1.02);
+    }
+`;
+
 const FriendCounter = styled.span`
     color: #fff;
     font-weight: bold;
@@ -180,11 +198,17 @@ const ProfilePage = () => {
     const [userData, setUserData] = useState(null);
     const [friendsCount, setFriendsCount] = useState(0);
     const [profileOwner, setProfileOwner] = useState(false);
+    const [friended, setFriended] = useState(false);
+    const [requested, setRequested] = useState(false);
+    const [refresh, setRefresh] = useState(false);
+    const [friendDefault, setFriendDefault] = useState(false);
+    const [receivedRequest, setRecievedRequest] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const { userId } = useParams();
+
 
     useEffect(() => {
         const getProfileData = async () => {
@@ -197,41 +221,150 @@ const ProfilePage = () => {
                     navigate(`/profile/${currentUser.uid}`)
                     return;
                 }
-                console.log(userId)
                 // #TODO make sure currentUser cannot change or delete user(username)
                 //  if currentUser is not the owner of the profile 
                 const idToken = await currentUser.getIdToken();
-                let url = `http://localhost:3000/api/users/profile/${userId}`;
-                if (currentUser.uid === userId){
-                    setProfileOwner(true)
-                    url = `http://localhost:3000/api/users/profile/`;
-                }
-                const { data } = await axios.get(url, {
+                const currentUserResponse = await axios.get(`http://localhost:3000/api/users/profile/`, {
                     headers: {
                         'Authorization': `Bearer ${idToken}`,
                         'Content-Type': 'application/json'
                     }
                 });
+                let data;
+                if (currentUser.uid === userId) {
+                    setProfileOwner(true);
+                    data = currentUserResponse.data;
+                }
+                else {
+                    const otherUserResponse = await axios.get(`http://localhost:3000/api/users/profile/${userId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${idToken}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
 
-                console.log(data);
+                    data = otherUserResponse.data;
+
+                    if (data.friends.some(friend => friend.id === currentUser.uid)) setFriended(true);
+                    else if (data.incomingRequests.some(requester => requester.id === currentUser.uid)) setRequested(true);
+                    else if (currentUserResponse.data.incomingRequests.some(requester => requester.id === userId)) setRecievedRequest(true);
+                    else setFriendDefault(true);
+                }
+
                 setUserData(data);
                 setFriendsCount(data.friends.length);
                 setLoading(false);
-            } catch (err) {
-                setError(err.message);
+            } catch (e) {
+                setError(e.message);
                 setLoading(false);
             }
         };
 
         getProfileData();
-    }, [currentUser, navigate, userId]);
+    }, [currentUser, navigate, userId, refresh]);
 
     const handleEditProfile = () => {
         navigate('/settings');
     };
 
     const handleFriendsClick = () => {
-        navigate('/friends');
+        navigate(`/friends/${userId}`);
+    };
+
+    const handleRequestFriend = async () => {
+        try {
+            const idToken = await currentUser.getIdToken();
+            const response = await axios.post(`http://localhost:3000/api/users/friend-request/${userId}`, {
+            }, {
+                headers: {
+                    Authorization: `Bearer ${idToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.data.success) {
+                setRequested(true);
+                setFriendDefault(false);
+            } else {
+                setRequested(false);
+                setError(response.data.message);
+            }
+        } catch (e) {
+            setError(e);
+            setRequested(false);
+        }
+    };
+
+    const handleAcceptFriend = async () => {
+        try {
+            const idToken = await currentUser.getIdToken();
+            const response = await axios.post(`http://localhost:3000/api/users/accept-request/${userId}`, {
+            }, {
+                headers: {
+                    Authorization: `Bearer ${idToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.data.success) {
+                setFriended(true);
+                setRecievedRequest(false);
+                setRefresh(!refresh);
+            } else {
+                setFriended(false);
+                setError(response.data.message);
+            }
+        } catch (e) {
+            setFriended(false);
+            setError(e);
+        }
+    };
+
+    const handleRejectFriend = async () => {
+        try {
+            const idToken = await currentUser.getIdToken();
+            const response = await axios.post(`http://localhost:3000/api/users/reject-request/${userId}`, {
+            }, {
+                headers: {
+                    Authorization: `Bearer ${idToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.data.success) {
+                setFriendDefault(true);
+                setRecievedRequest(false);
+            } else {
+                setFriendDefault(false);
+                setError(response.data.message);
+            }
+        } catch (e) {
+            setFriendDefault(false);
+            setError(e);
+        }
+    };
+
+    const handleRemoveFriend = async () => {
+        try {
+            setFriended(false)
+            const idToken = await currentUser.getIdToken();
+            const response = await axios.post(`http://localhost:3000/api/users/remove-friend/${userId}`, {
+            }, {
+                headers: {
+                    Authorization: `Bearer ${idToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (response.data.success) {
+                setFriended(false);
+                setFriendDefault(true);
+                setRefresh(!refresh);
+            } else {
+                setFriended(true);
+                setError(response.data.message);
+            }
+            setRefresh(!refresh);
+        } catch (e) {
+            setFriended(true);
+            setError(e);
+        }
     };
 
     if (loading) return <LoadingContainer><LoadingSpinner /></LoadingContainer>;
@@ -243,8 +376,8 @@ const ProfilePage = () => {
                 <>
                     <ProfileHeader>
                         <ProfileInfo>
-                            <ProfileImage 
-                                src={userData.avatar_url} 
+                            <ProfileImage
+                                src={userData.avatar_url}
                                 alt={userData.username}
                             />
                             <ProfileText>
@@ -261,6 +394,31 @@ const ProfilePage = () => {
                                     <EditButton onClick={handleEditProfile}>
                                         Edit profile
                                     </EditButton>
+                                )}
+                                {friendDefault && !requested && (
+                                    <FriendButton onClick={handleRequestFriend}>
+                                        Request
+                                    </FriendButton>
+                                )}
+                                {friended && (
+                                    <FriendButton onClick={handleRemoveFriend}>
+                                        Remove
+                                    </FriendButton>
+                                )}
+                                {requested && (
+                                    <span>
+                                        Requested!
+                                    </span>
+                                )}
+                                {receivedRequest && (
+                                    <span>
+                                        <FriendButton onClick={handleAcceptFriend}>
+                                            Accept
+                                        </FriendButton>
+                                        <FriendButton onClick={handleRejectFriend}>
+                                            Reject
+                                        </FriendButton>
+                                    </span>
                                 )}
                                 {userData.bio && <Bio>{userData.bio}</Bio>}
                             </ProfileText>

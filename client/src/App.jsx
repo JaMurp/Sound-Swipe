@@ -29,7 +29,7 @@ function App() {
           <Route path='/profile' element={<ProfilePage />} />
           <Route path='/profile/:userId' element={<ProfilePage />} />
           <Route path='/settings' element={<SettingsPage />} />
-          <Route path='/friends' element={<FriendsPage />} />
+          <Route path='/friends/:userId' element={<FriendsPage />} />
           <Route path='/leaderboard' element={<Leaderboard />} />
         </Route>
 
