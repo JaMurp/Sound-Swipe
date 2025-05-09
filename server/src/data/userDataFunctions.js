@@ -87,7 +87,8 @@ export const requestFriend = async (currentUserId, friendId) => {
     const userData = user.data();
     const friendData = friend.data();
 
-    if (userData.friends.some(currentFriend => currentFriend.id === friendId)) return { success: true, message: 'Friend Already Added' };
+    if (userData.friends.some(currentFriend => currentFriend.id === friendId)) return { success: false, message: 'Friend Already Added' };
+    if (friendData.incomingRequests.some(request => request.id === currentUserId)) return { success: false, message: 'Request Already Sent' };
 
     await fidRef.update({ incomingRequests: [...(friendData.incomingRequests), { id: currentUserId, avatar_url: userData.avatar_url, username: userData.username }] });
     return { success: true, message: 'Request Sent!' };

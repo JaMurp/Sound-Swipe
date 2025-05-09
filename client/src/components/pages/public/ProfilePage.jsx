@@ -200,6 +200,7 @@ const ProfilePage = () => {
     const [profileOwner, setProfileOwner] = useState(false);
     const [friended, setFriended] = useState(false);
     const [requested, setRequested] = useState(false);
+    const [refresh, setRefresh] = useState(false);
     const [friendDefault, setFriendDefault] = useState(false);
     const [receivedRequest, setRecievedRequest] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -207,6 +208,7 @@ const ProfilePage = () => {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const { userId } = useParams();
+
 
     useEffect(() => {
         const getProfileData = async () => {
@@ -240,16 +242,12 @@ const ProfilePage = () => {
                             'Content-Type': 'application/json'
                         }
                     });
-                    console.log(otherUserResponse)
-                    console.log('----------------------------------------------------------------------------------------------------')
 
                     data = otherUserResponse.data;
-                    console.log(data)
-
 
                     if (data.friends.some(friend => friend.id === currentUser.uid)) setFriended(true);
-                    else if (data.friends.some(requester => requester.id === currentUser.uid)) setRequested(true);
-                    else if (currentUserResponse.data.friends.some(requester => requester.id === userId)) setRecievedRequest(true);
+                    else if (data.incomingRequests.some(requester => requester.id === currentUser.uid)) setRequested(true);
+                    else if (currentUserResponse.data.incomingRequests.some(requester => requester.id === userId)) setRecievedRequest(true);
                     else setFriendDefault(true);
                 }
 
@@ -263,7 +261,7 @@ const ProfilePage = () => {
         };
 
         getProfileData();
-    }, [currentUser, navigate, userId]);
+    }, [currentUser, navigate, userId, refresh]);
 
     const handleEditProfile = () => {
         navigate('/settings');
@@ -276,32 +274,46 @@ const ProfilePage = () => {
     const handleRequestFriend = async () => {
         try {
             const idToken = await currentUser.getIdToken();
-            await axios.post(`http://localhost:3000/api/users/friend-request/${userId}`, {
+            const response = await axios.post(`http://localhost:3000/api/users/friend-request/${userId}`, {
             }, {
                 headers: {
                     Authorization: `Bearer ${idToken}`,
                     'Content-Type': 'application/json'
                 }
+            });
+            if (response.data.success) {
+                setRequested(true);
+                setFriendDefault(false);
+            } else {
+                setRequested(false);
+                setError(response.data.message);
             }
-            );
         } catch (e) {
             setError(e);
+            setRequested(false);
         }
     };
 
     const handleAcceptFriend = async () => {
         try {
             const idToken = await currentUser.getIdToken();
-            await axios.post(`http://localhost:3000/api/users/accept-request/${userId}`, {
+            const response = await axios.post(`http://localhost:3000/api/users/accept-request/${userId}`, {
             }, {
                 headers: {
                     Authorization: `Bearer ${idToken}`,
                     'Content-Type': 'application/json'
                 }
+            });
+            if (response.data.success) {
+                setFriended(true);
+                setRecievedRequest(false);
+                setRefresh(!refresh);
+            } else {
+                setFriended(false);
+                setError(response.data.message);
             }
-            );
-            navigate(`/profile/${userId}`)
         } catch (e) {
+            setFriended(false);
             setError(e);
         }
     };
@@ -309,32 +321,48 @@ const ProfilePage = () => {
     const handleRejectFriend = async () => {
         try {
             const idToken = await currentUser.getIdToken();
-            await axios.post(`http://localhost:3000/api/users/reject-request/${userId}`, {
+            const response = await axios.post(`http://localhost:3000/api/users/reject-request/${userId}`, {
             }, {
                 headers: {
                     Authorization: `Bearer ${idToken}`,
                     'Content-Type': 'application/json'
                 }
+            });
+            if (response.data.success) {
+                setFriendDefault(true);
+                setRecievedRequest(false);
+            } else {
+                setFriendDefault(false);
+                setError(response.data.message);
             }
-            );
         } catch (e) {
+            setFriendDefault(false);
             setError(e);
         }
     };
 
     const handleRemoveFriend = async () => {
         try {
+            setFriended(false)
             const idToken = await currentUser.getIdToken();
-            await axios.post(`http://localhost:3000/api/users/remove-friend/${userId}`, {
+            const response = await axios.post(`http://localhost:3000/api/users/remove-friend/${userId}`, {
             }, {
                 headers: {
                     Authorization: `Bearer ${idToken}`,
                     'Content-Type': 'application/json'
                 }
+            });
+            if (response.data.success) {
+                setFriended(false);
+                setFriendDefault(true);
+                setRefresh(!refresh);
+            } else {
+                setFriended(true);
+                setError(response.data.message);
             }
-            );
-            navigate(`/profile/${userId}`)
+            setRefresh(!refresh);
         } catch (e) {
+            setFriended(true);
             setError(e);
         }
     };
@@ -367,7 +395,7 @@ const ProfilePage = () => {
                                         Edit profile
                                     </EditButton>
                                 )}
-                                {friendDefault && (
+                                {friendDefault && !requested && (
                                     <FriendButton onClick={handleRequestFriend}>
                                         Request
                                     </FriendButton>
