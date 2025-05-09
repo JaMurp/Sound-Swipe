@@ -3,13 +3,42 @@ import * as songsDataFunctions from './songsDataFunctions.js'
 
 
 export const deleteUser = async (uid) => {
+    const uidRef = db.collection('users').doc(uid);
+    const user = await uidRef.get();
+
+    if (!user.exists) throw "User not found";
+
+    const userData = user.data();
+    const userFriends = userData.friends;
+
+    for (const friend of userFriends) {
+        const fidRef = db.collection('users').doc(friend.id);
+        const friendDoc = await fidRef.get();
+
+        if (friendDoc.exists) {
+            const friendData = friendDoc.data();
+            const updatedFriendsList = (friendData.friends).filter(f => f.id !== uid);
+            await fidRef.update({ friends: updatedFriendsList });
+        }
+    }
+
+    const allUsers = await db.collection('users').get();
+    for (const doc of allUsers.docs) {
+        const docData = doc.data();
+        const incomingRequests = docData.incomingRequests;
+        const filteredRequests = incomingRequests.filter(request => request.id !== uid);
+        if (filteredRequests.length !== incomingRequests.length) {
+            await doc.ref.update({ incomingRequests: filteredRequests });
+        }
+    }
+
     // #TODO check uid and maybe add a fault tolerant system if a colleciton gets deleted but not a user
 
     // need to delete the user auth profile
     await auth.deleteUser(uid);
 
     // need to get the liked songs id then decrement the likeCounter
-    const likedSongsRef = db.collection('users').doc(uid).collection('likedSongs');
+    const likedSongsRef = uidRef.collection('likedSongs');
     const likedSongsSnapshot = await likedSongsRef.get();
 
     for (const song of likedSongsSnapshot.docs) {
@@ -19,7 +48,7 @@ export const deleteUser = async (uid) => {
     }
 
     // Delete the user document
-    await db.collection('users').doc(uid).delete();
+    await uidRef.delete();
 
     return;
 }
@@ -108,10 +137,10 @@ export const acceptRequest = async (currentUserId, friendId) => {
     if (userData.friends.some(currentFriend => currentFriend.id === friendId)) return { success: true, message: 'Friend Already Added' };
 
     await uidRef.update({
-        friends: [...(userData.friends), {id: friendId, avatar_url: friendData.avatar_url, username: friendData.username}],
+        friends: [...(userData.friends), { id: friendId, avatar_url: friendData.avatar_url, username: friendData.username }],
         incomingRequests: (userData.incomingRequests).filter(request => request.id !== friendId)
     });
-    await fidRef.update({friends: [...(friendData.friends), { id: currentUserId, avatar_url: userData.avatar_url, username: userData.username }]});
+    await fidRef.update({ friends: [...(friendData.friends), { id: currentUserId, avatar_url: userData.avatar_url, username: userData.username }] });
     return { success: true, message: 'Friend Added!' };
 };
 
@@ -237,6 +266,7 @@ export const createUser = async (uid, displayName, photoUrl) => {
                 "Kids": true,
                 "Latin Music": true
             },
+
             friends: [],
             incomingRequests: []
         }
