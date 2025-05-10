@@ -25,22 +25,24 @@ export const addSong = async (songObj) => {
     throw new Error("Invalid song object structure");
   }
 
-  const newSong = {
-    id: songObj.songId,
-    songTitle: songObj.songTitle,
-    songPreview: songObj.songPreview,
-    artist: {
-      artistId: songObj.artist.artistId,
-      artistName: songObj.artist.artistName,
-      artistImage: songObj.artist.artistImage,
-    },
-    genre: {
-      genreId: songObj.genre.genreId,
-      genre: songObj.genre.genre,
-    },
-    randomSeed: songObj.randomSeed || Math.random(),
-    likeCounter: 0,
-  };
+    const newSong = {
+        id: songObj.songId,
+        songTitle: songObj.songTitle,
+        songPreview: songObj.songPreview,
+        artist: {
+            artistId: songObj.artist.artistId,
+            artistName: songObj.artist.artistName,
+            artistImage: songObj.artist.artistImage
+        },
+        genre: {
+            genreId: songObj.genre.genreId,
+            genre: songObj.genre.genre
+        },
+        randomSeed: songObj.randomSeed || Math.random(),
+        likeCounter: 0,
+        explicitFlag: songObj.explicitLyrics || false,
+
+    };
 
   await db.collection("songs").doc(newSong.id.toString()).set(newSong);
   return newSong;
@@ -55,24 +57,25 @@ const sizeOfCollection = async (collection) => {
 //https://stackoverflow.com/questions/46798981/firestore-how-to-get-random-documents-in-a-collection
 // #TODO add the ability to filter by explicit tag and also for more then 1 genre
 export const getSongsByGenreRandom = async (genre, explicitFlag) => {
-  const seed = Math.random();
+    console.log(genre, explicitFlag);
+  const seed = Math.random(); 
   const arr = [];
 
-  let ref = db
-    .collection("songs")
-    .where("genre.genre", "==", genre)
-    .where("randomSeed", ">=", seed)
-    .orderBy("randomSeed")
+  let ref = db.collection('songs')
+    .where('genre.genre', '==', genre)
+    .where('explicitFlag', '==', explicitFlag)
+    .where('randomSeed', '>=', seed)
+    .orderBy('randomSeed')
     .limit(5);
 
   let snapshot = await ref.get();
 
   if (snapshot.empty) {
-    ref = db
-      .collection("songs")
-      .where("genre.genre", "==", genre)
-      .where("randomSeed", "<", seed)
-      .orderBy("randomSeed", "desc")
+    ref = db.collection('songs')
+      .where('genre.genre', '==', genre)
+      .where('explicitFlag', '==', explicitFlag)
+      .where('randomSeed', '<', seed)
+      .orderBy('randomSeed', 'desc')
       .limit(5);
 
     snapshot = await ref.get();
@@ -118,16 +121,19 @@ export const getSongById = async (songId) => {
   if (findSongSnapshot.empty) throw "song with that id not found";
   return findSongSnapshot.data();
 };
-// # TOD check input
+// # TODO check input (depricated)
 export const likedSongExist = async (songId, userId) => {
-  const likedSongRef = db
-    .collection("users")
-    .doc(userId)
-    .collection("likedSongs")
-    .doc(songId.toString());
-  const likedSongDoc = await likedSongRef.get();
-  return likedSongDoc.exists;
+    const likedSongRef = db.collection('users').doc(userId).collection('likedSongs').doc(songId.toString());
+    const likedSongDoc = await likedSongRef.get();
+    return likedSongDoc.exists;
 };
+// # TODO check input 
+export const seenSongExist = async (songId, userId) => {
+    const seenSongRef = db.collection('users').doc(userId).collection('seenSongs').doc(songId.toString());
+    const seenSongDoc = await seenSongRef.get();
+    return seenSongDoc.exists;
+};
+
 //https://stackoverflow.com/questions/50762923/how-to-increment-existing-number-field-in-cloud-firestore
 export const incrementSongLikes = async (songId) => {
   const requestRef = db.collection("songs").doc(songId);
@@ -169,7 +175,33 @@ export const addLikedSong = async (songId, userId) => {
   const success = await incrementSongLikes(songId);
   if (!success) throw "Failed to increment the like counter";
 
-  return { success: true, message: "Song added to liked songs" };
+    return {success: true, message: 'Song added to liked songs'}
+
+};
+
+// #TODO check input
+export const addSeenSong = async (songId, userId, liked) => {
+    // check to make sure it is a valid song
+    songId = String(songId);
+
+    const getSong = await getSongById(songId);
+    if (!getSong) throw "Song not found"
+
+    // check to make sure the song is not in the collection
+    const inCollectionFlag = await seenSongExist(songId, userId);  
+    if (inCollectionFlag) throw "Song already seen"
+
+    // need to add the song to the seen sub collection
+    const newSeenSong = {
+        songId: songId,
+        songTitle: getSong.songTitle,
+        genre: getSong.genre,
+        youLiked: liked,
+
+    }
+    await db.collection('users').doc(userId).collection('seenSongs').doc(songId).set(newSeenSong);
+    return {success: true, message: 'Song added to seen songs'}
+
 };
 
 const shuffleArray = (array) => {
@@ -178,21 +210,41 @@ const shuffleArray = (array) => {
 
 // #TODO check the inputs
 export const getSongsByGenre = async (genres, explicitFlag, userId) => {
-  const selectedGenres = shuffleArray(genres).slice(0, 5);
-  let songs = [];
-  for (const genre of selectedGenres) {
-    const songsByGenre = await getSongsByGenreRandom(genre, explicitFlag);
-    for (const song of songsByGenre) {
-      const inCollectionFlag = await likedSongExist(song.id, userId);
-      if (song.explicitFlag === explicitFlag && !inCollectionFlag) {
-        songs.push(song);
-      }
-    }
+    const selectedGenres = shuffleArray(genres).slice(0, 5);
+    let songs = [];
+    for (const genre of selectedGenres) {
+        const songsByGenre = await getSongsByGenreRandom(genre, explicitFlag);
+        for (const song of songsByGenre) {
+            const inCollectionFlag = await seenSongExist(song.id, userId);
+            if (song.explicitFlag === explicitFlag && !inCollectionFlag) {
+                songs.push(song);
+            }
+        }
 
     songs.push(...songsByGenre);
   }
   // shuffle the songs
   songs = shuffleArray(songs);
 
-  return songs;
-};
+
+    // remove duplicates
+    const uniqueSongs = new Set();
+    const filteredSongs = [];
+    for (const song of songs) {
+        if (!uniqueSongs.has(song.id)) {
+            uniqueSongs.add(song.id);
+            filteredSongs.push(song);
+        }
+    }
+
+
+    return filteredSongs;
+}
+
+
+
+
+
+
+
+
