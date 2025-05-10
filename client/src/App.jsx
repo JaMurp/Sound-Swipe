@@ -10,6 +10,7 @@ import ProfilePage from './components/pages/public/ProfilePage.jsx';
 import SettingsPage from './components/pages/public/SettingsPage.jsx';
 import FriendsPage from './components/pages/private/FriendsPage.jsx';
 import Leaderboard from './components/pages/private/Leaderboard.jsx';
+import FeedPage from './components/pages/public/FeedPage.jsx';
 
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
           <Route path='/settings' element={<SettingsPage />} />
           <Route path='/friends/:userId' element={<FriendsPage />} />
           <Route path='/leaderboard' element={<Leaderboard />} />
+          <Route path='/feed' element={<FeedPage />} />
         </Route>
 
         <Route path='*' element={<Navigate to='/' />} />
