@@ -57,9 +57,10 @@ router.post('/seen', async (req, res) => {
     }
 });
 
-router.get('/trending', async (req, res) => {
+router.post('/trending', async (req, res) => {
+    const {filters} = req.body;
     try {
-        const trendingSongs = await songsDataFunctions.getTopLikedSongs();
+        const trendingSongs = await songsDataFunctions.getTopLikedSongs(filters);
         return res.status(200).json(trendingSongs);
     } catch (e) {
         console.log(e);
