@@ -18,7 +18,8 @@ overall:
 
 user:
     delete friends when user deletes profile
-
+    notifications:
+        lastNotified not working correctly for daily login-recommendations
 
 
 

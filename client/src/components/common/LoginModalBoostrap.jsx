@@ -7,14 +7,13 @@ import { doSocialSignIn } from '../../firebase/FirebaseFunctions'
 const LoginModalBootstrap = ({ isOpen, onClose }) => {
   const [agreedToTerms, setAgreedToTerms] = useState(true)
   const [error, setError] = useState(null)
-
   const navigate = useNavigate()
 
   const handleGoogleSignIn = async () => {
     try {
       await doSocialSignIn()
       navigate('/dashboard')
-    } catch(e) {
+    } catch (e) {
       setError(e.message)
     }
   }
@@ -33,14 +32,14 @@ const LoginModalBootstrap = ({ isOpen, onClose }) => {
         <div className="login-options">
           {agreedToTerms ? (
             <>
-              <Button 
-                variant="outline-dark" 
+              <Button
+                variant="outline-dark"
                 className="w-100 mb-2 d-flex align-items-center justify-content-center"
                 onClick={handleGoogleSignIn}
               >
-                <img 
-                  src="https://www.google.com/favicon.ico" 
-                  alt="Google" 
+                <img
+                  src="https://www.google.com/favicon.ico"
+                  alt="Google"
                   style={{ marginRight: '10px', width: '20px', height: '20px' }}
                 />
                 Sign in with Google
@@ -64,8 +63,8 @@ const LoginModalBootstrap = ({ isOpen, onClose }) => {
             />
             <label className="form-check-label" htmlFor="termsCheckbox">
               I've read and agree to the{' '}
-              <a 
-                href="/terms" 
+              <a
+                href="/terms"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-decoration-none"

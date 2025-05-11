@@ -119,7 +119,17 @@ export const requestFriend = async (currentUserId, friendId) => {
     if (userData.friends.some(currentFriend => currentFriend.id === friendId)) return { success: false, message: 'Friend Already Added' };
     if (friendData.incomingRequests.some(request => request.id === currentUserId)) return { success: false, message: 'Request Already Sent' };
 
-    await fidRef.update({ incomingRequests: [...(friendData.incomingRequests), { id: currentUserId, avatar_url: userData.avatar_url, username: userData.username }] });
+    const notif = {
+        type: "friend_request",
+        fromId: currentUserId,
+        username: userData.username,
+        avatar_url: userData.avatar_url,
+        timestamp: new Date()
+    };
+    await fidRef.collection("notifications").add(notif);
+    await fidRef.update({
+        incomingRequests: [...(friendData.incomingRequests), { id: currentUserId, avatar_url: userData.avatar_url, username: userData.username }],
+    });
     return { success: true, message: 'Request Sent!' };
 };
 
@@ -137,10 +147,12 @@ export const acceptRequest = async (currentUserId, friendId) => {
     if (userData.friends.some(currentFriend => currentFriend.id === friendId)) return { success: true, message: 'Friend Already Added' };
 
     await uidRef.update({
+        notifications: userData.notifications.filter(notification => (notification.type !== "friend_request") && (notification.fromId !== friendId)),
         friends: [...(userData.friends), { id: friendId, avatar_url: friendData.avatar_url, username: friendData.username }],
         incomingRequests: (userData.incomingRequests).filter(request => request.id !== friendId)
     });
     await fidRef.update({ friends: [...(friendData.friends), { id: currentUserId, avatar_url: userData.avatar_url, username: userData.username }] });
+
     return { success: true, message: 'Friend Added!' };
 };
 
@@ -212,6 +224,60 @@ export const getUser = async (uid) => {
     return { ...userData, recommendedFriends: recommendedFriends };
 }
 
+export const getNotifications = async (uid, startAfterId = null) => {
+    try {
+        const uidRef = db.collection("users").doc(uid);
+        let notifications = uidRef.collection("notifications").orderBy("timestamp", "desc").limit(20);
+
+        if (startAfterId) {
+            const loadNextDoc = await uidRef.collection("notifications").doc(startAfterId).get();
+            if (loadNextDoc.exists) {
+                notifications = notifications.startAfter(loadNextDoc);
+            }
+        }
+
+        const allNotifs = await notifications.get();
+        const notifDocs = allNotifs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const lastVisible = allNotifs.docs[allNotifs.docs.length - 1];
+        return { notifications: notifDocs, lastVisible: lastVisible ? lastVisible.id : null };
+
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+};
+
+export const notifyRecommendations = async (uid) => {
+    try {
+        const uidRef = db.collection('users').doc(uid);
+        const user = await uidRef.get()
+
+        if (!user.exists) throw 'User not found';
+
+        const notificationsRef = uidRef.collection("notifications");
+        const today = new Date().toISOString().split('T')[0];
+        const prevNotif = await notificationsRef.where("type", "==", "login_recommendations").where("lastNotified", "==", today).limit(1).get();
+        if (!prevNotif.empty) {
+            return { success: true, message: "Already Notified" };
+        }
+
+        const userData = await getUser(uid)
+        const recs = userData.recommendedFriends;
+
+        const notif = {
+            type: "login_recommendations",
+            recommendations: recs,
+            lastNotified: today,
+            timestamp: new Date()
+        };
+
+        await notificationsRef.add(notif);
+        return { success: true, message: 'Notified Recommendations!' };
+
+    } catch (e) {
+        throw e;
+    }
+};
 
 export const userExists = async (uid) => {
     try {
@@ -266,7 +332,6 @@ export const createUser = async (uid, displayName, photoUrl) => {
                 "Kids": true,
                 "Latin Music": true
             },
-
             friends: [],
             incomingRequests: []
         }

@@ -5,53 +5,6 @@ import axios from "axios";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import styled from 'styled-components';
 
-const FriendsContainer = styled.div`
-    width: 100%;
-    height: calc(100vh - 60px); /* Subtract navbar height */
-    color: white;
-    background: #121212;
-    overflow: hidden;
-    position: relative;
-`;
-
-const LoadingContainer = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    color: white;
-`;
-
-const ErrorContainer = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    color: red;
-`;
-
-const FriendsList = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-`;
-
-// const ProfileLabel = styled.span`
-//     font-size: 14px;
-//     font-weight: 500;
-//     color: #fff;
-//     text-transform: uppercase;
-//     margin-bottom: 8px;
-// `;
-
-// const ProfileName = styled.h1`
-//     font-size: 48px;
-//     font-weight: 700;
-//     margin: 0;
-//     color: #fff;
-//     margin-bottom: 8px;
-// `;
-
 const FriendContainer = styled.div`
     padding: 0 32px;
     max-width: 1955px;
@@ -116,33 +69,33 @@ const FriendsPage = () => {
         navigate(`/profile/${friendId}`);
     };
 
-    if (loading) return <LoadingContainer><LoadingSpinner /></LoadingContainer>;
-    if (error) return <ErrorContainer>Error: {error}</ErrorContainer>;
+    if (loading) return <div><LoadingSpinner /></div>;
+    if (error) return <div>{error}</div>;
 
     return (
-        <FriendsContainer>
+        <div>
             <h2>Friends:</h2>
-            <FriendsList>
+            <div>
                 {friends.map(friend => (
                     <FriendContainer key={friend.id} onClick={() => handleFriendClick(friend.id)}>
                         <h3><img src={friend.avatar_url} alt={friend.username} />{friend.username}</h3>
                     </FriendContainer>
                 ))}
-            </FriendsList>
+            </div>
 
 
             {profileOwner && (
-                <FriendsList>
-                    <h3>Recommended Friends</h3>
+                <div>
+                    <span>Based on the songs you've liked, we think you'd like to meet... </span>
                     {recommendedFriends.map(user => (
                         <FriendContainer key={user.id} onClick={() => handleFriendClick(user.id)}>
                             <img src={user.avatar_url} alt={user.username} />
                             <h3>{user.username}</h3>
                         </FriendContainer>
                     ))}
-                </FriendsList>
+                </div>
             )}
-        </FriendsContainer>
+        </div>
     );
 };
 
