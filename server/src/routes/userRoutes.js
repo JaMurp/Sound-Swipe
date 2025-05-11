@@ -220,6 +220,7 @@ router.post('/login-recommendations', async (req, res) => {
     const getProfile = await userDataFunctions.getUser(currentUserId);
     if (!getProfile) return res.status(404).json({ error: `Could not fetch profile ${req.user.username}` });
     const status = await userDataFunctions.notifyRecommendations(currentUserId);
+    console.log(status);
     return res.status(200).json(status);
   } catch (e) {
     console.log(e);
