@@ -16,8 +16,31 @@ const DashboardPage = () => {
 
 
 
-    useEffect(() => {
 
+    
+
+    useEffect(() => {
+        const sendDailyRecs = async () => {
+            setLoading(true);
+            try {
+                if (!currentUser) {
+                    setError("User not found");
+                    return;
+                }
+    
+                const idToken = await currentUser.getIdToken();
+                await axios.post(`http://localhost:3000/api/users/login-recommendations`, {}, {
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`
+                    }
+                });
+            } catch (error) {
+                setLoading(false);
+                setError(error);
+            }
+        }
+        setLoading(false);
+        sendDailyRecs();
         const fetchData = async () => {
             setLoading(true);
             setError(null);
@@ -29,7 +52,7 @@ const DashboardPage = () => {
                 }
 
                 const idToken = await currentUser.getIdToken();
-                const {data} = await axios.get(`http://localhost:3000/api/users/swipe-songs`, {
+                const { data } = await axios.get(`http://localhost:3000/api/users/swipe-songs`, {
                     headers: {
                         'Authorization': `Bearer ${idToken}`
                     }
