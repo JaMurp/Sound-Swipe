@@ -70,6 +70,10 @@ export const PrivateNavigation = () => {
           </Nav>
 
           <Nav>
+            <Nav.Link href="/library">Library</Nav.Link>
+          </Nav>
+
+          <Nav>
             <NavDropdown title="Profile" align="end">
               <NavDropdown.Item onClick={() => navigate(`/profile/${currentUser.uid}`)}>Profile</NavDropdown.Item>
               <NavDropdown.Item href="/settings">Settings</NavDropdown.Item>

@@ -279,3 +279,11 @@ export const createUser = async (uid, displayName, photoUrl) => {
     }
 };
 
+
+
+export const getLikedSongs = async (uid) => {
+    const uidRef = db.collection('users').doc('seenSongs').collection(uid);
+    const user = await uidRef.where('liked', '==', true).get();
+    console.log(user);
+    return null
+}

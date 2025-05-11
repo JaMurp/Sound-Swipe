@@ -27,6 +27,21 @@ router.get('/profile/:id', async (req, res) => {
   }
 });
 
+
+router.get('/liked-songs/:id', async (req, res) => {
+  // #TODO check the uid
+  console.log("hi")
+  try {
+    const likedSongs = await userDataFunctions.getLikedSongs(req.params.id)
+    console.log(likedSongs)
+    if (!likedSongs) return res.status(500).json({error :'Internal Server Error'})
+    return res.status(200).json(likedSongs)
+  } catch (e) {
+    console.log(e)
+    return res.status(500).json({ error: 'Interal Server Error' })
+  }
+})
+
 router.patch('/profile', async (req, res) => {
   // #TODO check body and make sure the atleast 1 param provided also check the params if they are provided
   try {
