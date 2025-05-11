@@ -1,6 +1,6 @@
 import React from 'react';
 import {Route, Routes} from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext.jsx';
+import { AuthProvider } from './context/AuthContext.jsx';
 import * as Middleware from './components/Middleware/Middleware.jsx'
 import DashboardPage from './components/pages/private/DashboardPage.jsx';
 import HomePage from './components/pages/public/HomePage.jsx';
@@ -10,7 +10,7 @@ import ProfilePage from './components/pages/public/ProfilePage.jsx';
 import SettingsPage from './components/pages/public/SettingsPage.jsx';
 import FriendsPage from './components/pages/private/FriendsPage.jsx';
 import Leaderboard from './components/pages/private/Leaderboard.jsx';
-import FeedPage from './components/pages/public/FeedPage.jsx';
+import Notifications from './components/pages/private/Notifications.jsx';import FeedPage from './components/pages/public/FeedPage.jsx';
 
 
 function App() {
@@ -32,6 +32,7 @@ function App() {
           <Route path='/settings' element={<SettingsPage />} />
           <Route path='/friends/:userId' element={<FriendsPage />} />
           <Route path='/leaderboard' element={<Leaderboard />} />
+          <Route path='/notifications' element={<Notifications />} />
           <Route path='/feed' element={<FeedPage />} />
         </Route>
 
