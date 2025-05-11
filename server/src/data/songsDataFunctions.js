@@ -1,24 +1,29 @@
 import { db } from "../db/firebase.js";
 import { FieldValue } from "firebase-admin/firestore";
 
-
 export const songExist = async (id) => {
-    // #TODO need to input validate
-    const songsRef = db.collection("songs");
-    const idToString = String(id);
-    const songsDoc = await songsRef.doc(idToString).get();
+  // #TODO need to input validate
+  const songsRef = db.collection("songs");
+  const idToString = String(id);
+  const songsDoc = await songsRef.doc(idToString).get();
 
-    if (songsDoc.exists) {
-        return true;
-    }
-    return false;
+  if (songsDoc.exists) {
+    return true;
+  }
+  return false;
 };
 
 export const addSong = async (songObj) => {
-    // Validate the songObj structure
-    if (!songObj || !songObj.songTitle || !songObj.songPreview || !songObj.artist || !songObj.genre) {
-        throw new Error('Invalid song object structure');
-    }
+  // Validate the songObj structure
+  if (
+    !songObj ||
+    !songObj.songTitle ||
+    !songObj.songPreview ||
+    !songObj.artist ||
+    !songObj.genre
+  ) {
+    throw new Error("Invalid song object structure");
+  }
 
     const newSong = {
         id: songObj.songId,
@@ -39,15 +44,14 @@ export const addSong = async (songObj) => {
 
     };
 
-    await db.collection("songs").doc(newSong.id.toString()).set(newSong);
-    return newSong;
+  await db.collection("songs").doc(newSong.id.toString()).set(newSong);
+  return newSong;
 };
-
 
 // dont need to validate this. This is for personal use;
 const sizeOfCollection = async (collection) => {
-    const snapshot = await db.collection(collection).get();
-    return snapshot.size;
+  const snapshot = await db.collection(collection).get();
+  return snapshot.size;
 };
 
 //https://stackoverflow.com/questions/46798981/firestore-how-to-get-random-documents-in-a-collection
@@ -85,29 +89,37 @@ export const getSongsByGenreRandom = async (genre, explicitFlag) => {
 };
 
 // https://www.netguru.com/blog/querying-and-sorting-firestore-data
-export const getTopLikedSongs = async () => {
-    const songsRef = db.collection('songs');
-    const execQuery = await songsRef.orderBy('likeCounter', 'desc').limit(10).get();
+//https://firebase.google.com/docs/firestore/query-data/queries
+export const getTopLikedSongs = async (filters) => {
+  const songsRef = db.collection("songs");
+  let execQuery = null;
+  if (filters.genres.length === 0) {
+    execQuery = await songsRef.orderBy("likeCounter", "desc").limit(10).get();
+  } else {
+    execQuery = await songsRef
+      .where("genre.genre", "in", filters.genres)
+      .orderBy("likeCounter", "desc")
+      .limit(10)
+      .get();
+  }
+  if (execQuery.empty) {
+    throw new Error("There are no songs in the db");
+  }
 
-    if (execQuery.empty) {
-        throw new Error('There are no songs in the db');
-    }
+  const results = [];
+  for (const doc of execQuery.docs) {
+    results.push({ id: doc.id, ...doc.data() });
+  }
 
-    const results = [];
-    for (const doc of execQuery.docs) {
-        results.push({ id: doc.id, ...doc.data() });
-    }
-
-    return results;
+  return results;
 };
 
 // # TODO chech input
 export const getSongById = async (songId) => {
-    const songsRef = db.collection('songs')
-    const findSongSnapshot = await songsRef.doc(songId).get();
-    if (findSongSnapshot.empty) throw "song with that id not found";
-    return findSongSnapshot.data();
-
+  const songsRef = db.collection("songs");
+  const findSongSnapshot = await songsRef.doc(songId).get();
+  if (findSongSnapshot.empty) throw "song with that id not found";
+  return findSongSnapshot.data();
 };
 // # TODO check input (depricated)
 export const likedSongExist = async (songId, userId) => {
@@ -124,41 +136,44 @@ export const seenSongExist = async (songId, userId) => {
 
 //https://stackoverflow.com/questions/50762923/how-to-increment-existing-number-field-in-cloud-firestore
 export const incrementSongLikes = async (songId) => {
-    const requestRef = db.collection('songs').doc(songId)
-    await requestRef.update({
-        likeCounter: FieldValue.increment(1)
-
-    });
-    return {success: true, message: 'Incremented the liked song'}
+  const requestRef = db.collection("songs").doc(songId);
+  await requestRef.update({
+    likeCounter: FieldValue.increment(1),
+  });
+  return { success: true, message: "Incremented the liked song" };
 };
 export const decrementSongLikes = async (songId) => {
-    const requestRef = db.collection('songs').doc(songId)
-    await requestRef.update({
-        likeCounter: FieldValue.increment(-1)
-    });
-    return {success: true, message: 'Decremented the liked song'}
+  const requestRef = db.collection("songs").doc(songId);
+  await requestRef.update({
+    likeCounter: FieldValue.increment(-1),
+  });
+  return { success: true, message: "Decremented the liked song" };
 };
 // #TODO check input
 export const addLikedSong = async (songId, userId) => {
-    // check to make sure it is a valid song
-    songId = String(songId);
+  // check to make sure it is a valid song
+  songId = String(songId);
 
-    const getSong = await getSongById(songId);
-    if (!getSong) throw "Song not found"
-    // check to make sure the song is not in the collection
-    const inCollectionFlag = await likedSongExist(songId, userId);  
-    if (inCollectionFlag) throw "Song already liked"
-    // need to add the song to the liked sub collection
-    const newLikedSong = {
-        songId: songId,
-        songTitle: getSong.songTitle,
-        genre: getSong.genre,
-
-    }
-    await db.collection('users').doc(userId).collection('likedSongs').doc(songId).set(newLikedSong);
-    // increment the like counter for the song
-    const success = await incrementSongLikes(songId);
-    if (!success) throw "Failed to increment the like counter"
+  const getSong = await getSongById(songId);
+  if (!getSong) throw "Song not found";
+  // check to make sure the song is not in the collection
+  const inCollectionFlag = await likedSongExist(songId, userId);
+  if (inCollectionFlag) throw "Song already liked";
+  // need to add the song to the liked sub collection
+  const newLikedSong = {
+    songId: songId,
+    songTitle: getSong.songTitle,
+    genre: getSong.genre,
+  };
+  await db
+    .collection("users")
+    .doc(userId)
+    .collection("likedSongs")
+    .doc(songId)
+    .set(newLikedSong);
+  // increment the like counter for the song
+  const success = await incrementSongLikes(songId);
+  if (!success) throw "Failed to increment the like counter";
 
     return {success: true, message: 'Song added to liked songs'}
 
@@ -189,10 +204,9 @@ export const addSeenSong = async (songId, userId, liked) => {
 
 };
 
-
 const shuffleArray = (array) => {
-    return array.sort(() => Math.random() - 0.5);
-}
+  return array.sort(() => Math.random() - 0.5);
+};
 
 // #TODO check the inputs
 export const getSongsByGenre = async (genres, explicitFlag, userId) => {
@@ -207,10 +221,10 @@ export const getSongsByGenre = async (genres, explicitFlag, userId) => {
             }
         }
 
-        songs.push(...songsByGenre);
-    }
-    // shuffle the songs
-    songs = shuffleArray(songs);
+    songs.push(...songsByGenre);
+  }
+  // shuffle the songs
+  songs = shuffleArray(songs);
 
 
     // remove duplicates

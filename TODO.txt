@@ -1,10 +1,16 @@
 client:
     - Need to input cleanse all the form data
     - Need the ability to updload pofile picture
+    - Need to update modal for leaderboard
+    - Need to format leaderboard list better
+    - Need to add more filters
 server:
     - need to do all error handling in routes(checking the data sent)
     - need to handle the profile pic upload
     - need to error handle in the db functions(all)
+    - need to implement more filters, make filter specifications from server rather than hard-coded
+database:
+    - need to add more filterable parameters in db for songs
 
 overall:
     - thers a bug when you sign in you have to do it twice( when you make a new account)
