@@ -7,7 +7,7 @@ import Switch from '@mui/material/Switch';
 import axios from "axios";
 
 const DashboardPage = () => {
-    
+
     const genres = [
         "Pop",
         "Rap/Hip Hop",
@@ -37,7 +37,7 @@ const DashboardPage = () => {
         "Kids",
         "Latin Music"
     ]
-    
+
 
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -88,12 +88,28 @@ const DashboardPage = () => {
 
 
 
-     const buildSelectedGenres = () => {
+    const buildSelectedGenres = () => {
         return Object.keys(selectedGenre).filter((genre) => selectedGenre[genre]);
     }
 
 
-
+    useEffect(() => {
+        const fetchDailyNotifs = async () => {
+            setLoading(true);
+            try {
+                const idToken = await currentUser.getIdToken();
+                await axios.post(`http://localhost:3000/api/users/login-recommendations/`, {}, {
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } catch (e) {
+                setError(e);
+            }
+        }
+        fetchDailyNotifs();
+    }, [currentUser])
 
 
     const handleGenreChange = async () => {
@@ -110,7 +126,7 @@ const DashboardPage = () => {
             }
 
             const idToken = await currentUser.getIdToken();
-            const {data} = await axios.patch('http://localhost:3000/api/users/profile', {
+            const { data } = await axios.patch('http://localhost:3000/api/users/profile', {
                 genres: sendGenreArray
             }, {
                 headers: {
@@ -137,37 +153,37 @@ const DashboardPage = () => {
             setLoading(true);
             try {
                 const idToken = await currentUser.getIdToken();
-                const {data} = await axios.get('http://localhost:3000/api/users/profile', {
+                const { data } = await axios.get('http://localhost:3000/api/users/profile', {
                     headers: {
-                    'Authorization': `Bearer ${idToken}`
+                        'Authorization': `Bearer ${idToken}`
+                    }
+                });
+                if (!data) {
+                    throw new Error('No data received');
                 }
-            });
-            if (!data) {
-                throw new Error('No data received');
-            }
 
-            const tempGenresObject = {};
+                const tempGenresObject = {};
 
-            for (let i = 0; i < data.genres.length; i++) {
-                tempGenresObject[data.genres[i].genre] = data.genres[i].enabled;
-            }
+                for (let i = 0; i < data.genres.length; i++) {
+                    tempGenresObject[data.genres[i].genre] = data.genres[i].enabled;
+                }
 
-            setSelectedGenre(tempGenresObject);
-            setTempSelectedGenre(tempGenresObject);
-            setLoading(false);
+                setSelectedGenre(tempGenresObject);
+                setTempSelectedGenre(tempGenresObject);
+                setLoading(false);
 
             } catch (error) {
                 setError(error);
             }
         }
         fetchSelectedGenresFromProfile();
-    },[])
+    }, [])
 
 
 
     useEffect(() => {
         const fetchSongs = async () => {
-            if (!selectedGenre) return; 
+            if (!selectedGenre) return;
 
             setLoading(true);
             setIndex(0)
@@ -213,7 +229,7 @@ const DashboardPage = () => {
         }
 
         fetchSongs();
-    }, [refresh, selectedGenre]) 
+    }, [refresh, selectedGenre])
 
 
 
@@ -230,7 +246,7 @@ const DashboardPage = () => {
         }
         try {
             const idToken = await currentUser.getIdToken();
-            const {data} = await axios.post('http://localhost:3000/api/songs/seen', {
+            const { data } = await axios.post('http://localhost:3000/api/songs/seen', {
                 songId: swipeSongs[index].id,
                 liked: false
             }, {
@@ -255,7 +271,7 @@ const DashboardPage = () => {
         }
         try {
             const idToken = await currentUser.getIdToken();
-            const {data} = await axios.post('http://localhost:3000/api/songs/seen', {
+            const { data } = await axios.post('http://localhost:3000/api/songs/seen', {
                 songId: swipeSongs[index].id,
                 liked: true
             }, {
@@ -279,34 +295,34 @@ const DashboardPage = () => {
             <div>
                 {error && <div>{error}</div>}
                 <div>
-                     <Dropdown autoClose="outside" onToggle={(isOpen) => {
-                    if (!isOpen && genreChange) {
-                        handleGenreChange();
-                        setGenreChange(false);
-                    } else if (!isOpen && !genreChange) {
-                        setTempSelectedGenre(selectedGenre);
-                    }
-                }}>
-                    {error && <div>{error}</div>}
+                    <Dropdown autoClose="outside" onToggle={(isOpen) => {
+                        if (!isOpen && genreChange) {
+                            handleGenreChange();
+                            setGenreChange(false);
+                        } else if (!isOpen && !genreChange) {
+                            setTempSelectedGenre(selectedGenre);
+                        }
+                    }}>
+                        {error && <div>{error}</div>}
 
-                    <Dropdown.Toggle variant="success" id="dropdown-basic">
-                        Select Genre
-                    </Dropdown.Toggle>
+                        <Dropdown.Toggle variant="success" id="dropdown-basic">
+                            Select Genre
+                        </Dropdown.Toggle>
 
 
-                    <Dropdown.Menu>
-                        { genres && genres.length > index && genres.map((genre) => (
-                            <Dropdown.Item key={genre} onClick={() => {
-                                setTempSelectedGenre({ ...tempSelectedGenre, [genre]: !tempSelectedGenre[genre] });
-                                setGenreChange(true);
-                            }}>
-                                <Switch checked={tempSelectedGenre[genre]} />
-                                {genre}
-                            </Dropdown.Item>
-                        ))}
-                    </Dropdown.Menu>
+                        <Dropdown.Menu>
+                            {genres && genres.length > index && genres.map((genre) => (
+                                <Dropdown.Item key={genre} onClick={() => {
+                                    setTempSelectedGenre({ ...tempSelectedGenre, [genre]: !tempSelectedGenre[genre] });
+                                    setGenreChange(true);
+                                }}>
+                                    <Switch checked={tempSelectedGenre[genre]} />
+                                    {genre}
+                                </Dropdown.Item>
+                            ))}
+                        </Dropdown.Menu>
 
-                </Dropdown>
+                    </Dropdown>
                 </div>
 
                 <div>
@@ -338,7 +354,7 @@ const DashboardPage = () => {
 
 
                     <Dropdown.Menu>
-                        { genres && genres.length > index && genres.map((genre) => (
+                        {genres && genres.length > index && genres.map((genre) => (
                             <Dropdown.Item key={genre} onClick={() => {
                                 setTempSelectedGenre({ ...tempSelectedGenre, [genre]: !tempSelectedGenre[genre] });
                                 setGenreChange(true);
@@ -358,13 +374,13 @@ const DashboardPage = () => {
 
                     <div>
                         <h3>{swipeSongs[index].songTitle}</h3>
-                        <img 
-                            src={swipeSongs[index].artist.artistImage} 
+                        <img
+                            src={swipeSongs[index].artist.artistImage}
                             alt={`${swipeSongs[index].artist.artistName} image`}
                             style={{ width: '200px', height: '200px', objectFit: 'cover' }}
                         />
-                        <audio 
-                            controls 
+                        <audio
+                            controls
                             src={swipeSongs[index].songPreview}
                             style={{ width: '100%', marginTop: '10px' }}
                         >
