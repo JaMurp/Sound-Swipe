@@ -42,9 +42,9 @@ const createNewSession = async (uid) => {
             const song = await apiFunctions.getSong(song_id);
             const songWithExpiry = {
                 ...song,
-                expires_at: Date.now() + (60 * 25 * 1000)
+                expires_at: Date.now() + (60 * 15 * 1000)
             };
-            await redis.set(`song:${song_id}`, JSON.stringify(songWithExpiry), {EX: 60 * 25});
+            await redis.set(`song:${song_id}`, JSON.stringify(songWithExpiry), {EX: 60 * 15});
             songs.push(songWithExpiry);
         } else {
             const parsedSongCache = JSON.parse(songCache);
@@ -52,9 +52,9 @@ const createNewSession = async (uid) => {
                 const song = await apiFunctions.getSong(song_id);
                 const songWithExpiry = {
                     ...song,
-                    expires_at: Date.now() + (60 * 25 * 1000)
+                    expires_at: Date.now() + (60 * 15 * 1000)
                 };
-                await redis.set(`song:${song_id}`, JSON.stringify(songWithExpiry), {EX: 60 * 25});
+                await redis.set(`song:${song_id}`, JSON.stringify(songWithExpiry), {EX: 60 * 15});
                 songs.push(songWithExpiry);
             } else {
                 songs.push(parsedSongCache);
@@ -65,9 +65,9 @@ const createNewSession = async (uid) => {
     const newSession = {
         index: 0,
         songs: songs,
-        expires_at: Date.now() + 60 * 25 * 1000
+        expires_at: Date.now() + 60 * 15 * 1000
     }
-    await redis.set(`swipe:session:${uid}`, JSON.stringify(newSession), {EX: 60 * 25});
+    await redis.set(`swipe:session:${uid}`, JSON.stringify(newSession), {EX: 60 * 15});
 
     return newSession;
 }
@@ -111,9 +111,9 @@ export const getSwipeSongs = async (uid) => {
 
                     const songWithExpiry = {
                         ...song,
-                        expires_at: Date.now() + (60 * 25 * 1000)
+                        expires_at: Date.now() + (60 * 15 * 1000)
                     };
-                    await redis.set(`song:${song_id}`, JSON.stringify(songWithExpiry), {EX: 60 * 25});
+                    await redis.set(`song:${song_id}`, JSON.stringify(songWithExpiry), {EX: 60 * 15});
                     songs.push(songWithExpiry);
                 }
             } else {
@@ -125,9 +125,9 @@ export const getSwipeSongs = async (uid) => {
 
                 const songWithExpiry = {
                     ...song,
-                    expires_at: Date.now() + (60 * 25 * 1000)
+                    expires_at: Date.now() + (60 * 15 * 1000)
                 };
-                await redis.set(`song:${song_id}`, JSON.stringify(songWithExpiry), {EX: 60 * 25});
+                await redis.set(`song:${song_id}`, JSON.stringify(songWithExpiry), {EX: 60 * 15});
                 songs.push(songWithExpiry);
             }
         }
@@ -135,9 +135,9 @@ export const getSwipeSongs = async (uid) => {
         const newSession = {
             index: index,
             songs: songs,
-            expires_at: Date.now() + (60 * 25 * 1000)
+            expires_at: Date.now() + (60 * 15 * 1000)
         };
-        await redis.set(`swipe:session:${uid}`, JSON.stringify(newSession), {EX: 60 * 25});
+        await redis.set(`swipe:session:${uid}`, JSON.stringify(newSession), {EX: 60 * 15});
         // 4. return the session
         return newSession;
 

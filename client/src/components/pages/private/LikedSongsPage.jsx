@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import axios from 'axios';
 import LoadingSpinner from '../../common/LoadingSpinner';
+import { useNavigate } from 'react-router-dom';
 
 
 const LikedSongsPage = () => {
 
     const { currentUser } = useAuth();
-
+    const navigate = useNavigate();
     const [likedSongs, setLikedSongs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -21,14 +22,14 @@ const LikedSongsPage = () => {
                 console.log(currentUser)
 
                 const idToken = await currentUser.getIdToken();
-                const { data } = await axios.get(`http://localhost:3000/api/users/liked-songs/${currentUser.uid}`, {
+                const { data } = await axios.get(`http://localhost:3000/api/users/liked-songs/me`, {
                     headers: {
                         'Authorization': `Bearer ${idToken}`
                     }
                 });
 
                 if (data.error) {
-                    throw new Error(data.error);
+                    throw 'Error fetching liked songs'
                 }
 
                 setLikedSongs(data);
@@ -50,23 +51,31 @@ const LikedSongsPage = () => {
         return <div>Error: {error.message}</div>;
     }
     if (likedSongs.length === 0) {
-        return <div>No liked songs found</div>;
+        return (
+            <div>
+                <h1>Liked Songs</h1>
+                <p>No liked songs found</p>
+                <button onClick={() => navigate('/dashboard')}>Go to Dashboard</button>
+            </div>
+        );
     }
 
     const handleUnlike = async (songId) => {
         try {
-            const token = user.token;
-            const { data } = await axios.delete(`/api/liked-songs/${user.id}/${songId}`, {
+            const idToken = await currentUser.getIdToken();
+            console.log(songId, "unlike");
+            const { data } = await axios.patch(`http://localhost:3000/api/songs/unlike/`, {
+                songId: songId
+            }, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${idToken}`
                 }
             });
-
-            if (data.error) {
-                throw new Error(data.error);
+            if (!data.success) {
+                throw "failed to unlike the song" + songId;
             }
 
-            setRefresh(!refresh);
+            setLikedSongs(likedSongs.filter((song) => song.id !== songId));
         } catch (error) {
             setError(error);
         }
@@ -77,8 +86,13 @@ const LikedSongsPage = () => {
             <h1>Liked Songs</h1>
             {likedSongs.map((song) => (
                 <div key={song.id}>
-                    <h2>{song.title}</h2>
-                    <p>{song.artist}</p>
+                    <img src={song.artistImage} alt={song.artistName} />
+                    <div>
+                        <h2>{song.songTitle}</h2>
+                        <p>{song.artistName}</p>
+                    </div>
+
+                    
                     <button onClick={() => handleUnlike(song.id)}>Unlike</button>
                 </div>
             ))}

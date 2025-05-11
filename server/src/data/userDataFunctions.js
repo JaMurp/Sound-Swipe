@@ -48,13 +48,17 @@ export const deleteUser = async (uid) => {
     await auth.deleteUser(uid);
 
     // need to get the liked songs id then decrement the likeCounter
-    const likedSongsRef = uidRef.collection('likedSongs');
+    const likedSongsRef = uidRef.collection('seenSongs');
     const likedSongsSnapshot = await likedSongsRef.get();
 
     for (const song of likedSongsSnapshot.docs) {
         const songId = song.id;
         await songsDataFunctions.decrementSongLikes(songId.toString());
         await song.ref.delete();
+    }
+
+    for (const notif of userData.notifications) {
+        await uidRef.collection('notifications').doc(notif.id).delete();
     }
 
     // Delete the user document
@@ -361,8 +365,16 @@ export const createUser = async (uid, displayName, photoUrl) => {
 
 
 export const getLikedSongs = async (uid) => {
-    const uidRef = db.collection('users').doc('seenSongs').collection(uid);
-    const user = await uidRef.where('liked', '==', true).get();
-    console.log(user);
-    return null
-}
+    const userSeenCollectionRef = db.collection('users').doc(uid).collection('seenSongs');
+    const likedSongsSnapshot = await userSeenCollectionRef.where('youLiked', '==', true).get();
+    if (likedSongsSnapshot.empty) {
+        return [];
+    }
+    const likedSongs = likedSongsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+    }));
+
+    return likedSongs;
+};
+

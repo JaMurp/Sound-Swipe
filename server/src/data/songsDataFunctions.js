@@ -1,5 +1,15 @@
 import { db } from "../db/firebase.js";
 import { FieldValue } from "firebase-admin/firestore";
+import axios from "axios";
+import client from "../config/redis.js";
+
+const redis = client;
+if (!redis.isReady) {
+    await redis.connect();
+}
+
+
+
 
 export const songExist = async (id) => {
   // #TODO need to input validate
@@ -195,6 +205,8 @@ export const addSeenSong = async (songId, userId, liked) => {
     const newSeenSong = {
         songId: songId,
         songTitle: getSong.songTitle,
+        artistName: getSong.artist.artistName,
+        artistImage: getSong.artist.artistImage,
         genre: getSong.genre,
         youLiked: liked,
 
@@ -278,8 +290,26 @@ export const getRandomSongs = async (userId, explicitFlag) => {
 };
 
 
+export const removeLikedSong = async (userId, songId) => {
+  const seenCollectionRef = db.collection('users').doc(userId).collection('seenSongs');
+  await seenCollectionRef.doc(songId).update({
+    youLiked: false
+  });
+
+  return {success: true, message: 'Song removed from liked songs'}
+}
 
 
 
+export const getSong = async (songId) => {
+  const songCache = await redis.get(`song:${songId}`);
 
+  if (songCache) {
+    return JSON.parse(songCache);
+  }
+
+  const song = await getSongById(songId);
+  await redis.set(`song:${songId}`, JSON.stringify(song), {EX: 60 * 15});
+  return song;
+}
 

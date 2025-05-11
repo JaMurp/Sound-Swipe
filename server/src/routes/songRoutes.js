@@ -32,20 +32,33 @@ router.post('/', async (req, res) => {
     }
 });
 
+
+router.patch('/unlike', async (req, res) => {
+    // #TODO check the inputs
+    console.log(req.user.uid, req.body.songId, "unlike");
+    const {songId} = req.body;
+    try {
+        const status = await songsDataFunctions.removeLikedSong(req.user.uid, songId);
+        return res.status(200).json(status);
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({error: e});
+    }
+});
+
+
 router.post('/like', async (req, res) => {
     // #TODO check the inputs
     const {songId} = req.body;
-    //increment the index of the song in the swipe session
     try {
-        await swipingFunctions.incrementIndex(req.user.uid);
+        const success = await songsDataFunctions.incrementSongLikes(songId.toString());
+        if (success.success) {
+            return res.status(200).json({success: true, message: 'Song liked successfully'});
+        } else {
+            return res.status(500).json({error: success.message});
+        }
     } catch (e) {
-        console.log(e, "error incrementing index");
-        return res.status(500).json({error: e});
-    }
-    try {
-        await songsDataFunctions.addLikedSong(songId, req.user.uid);
-        return res.status(200).json({success: true, message: 'Song liked successfully'});
-    } catch (e) {
+        console.log(e);
         return res.status(500).json({error: e});
     }
 });
@@ -91,5 +104,16 @@ router.post('/song/alreadyLiked', async (req, res) => {
         return res.status(500).json({error: e});
     }
 });
+
+router.get('/:songId', async (req, res) => {
+    const {songId} = req.params;
+    try {
+        const song = await songsDataFunctions.getSong(songId);
+        return res.status(200).json(song);
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({error: e});
+    }
+})
 
 export default router;

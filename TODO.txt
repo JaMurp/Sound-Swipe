@@ -22,6 +22,7 @@ user:
         lastNotified not working correctly for daily login-recommendations
 
 
+deleting user need to delete all the sub collections
 
 
 

@@ -84,6 +84,20 @@ const DashboardPage = () => {
         }
         try {
             const idToken = await currentUser.getIdToken();
+
+
+            const response = await axios.post('http://localhost:3000/api/songs/like', {
+                songId: swipeSongs[index].song_id,
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${idToken}`
+                }
+            });
+
+            if (!response.data.success) {
+                throw new Error(response.data.error);
+            }
+
             const { data } = await axios.post('http://localhost:3000/api/songs/seen', {
                 songId: swipeSongs[index].song_id,
                 liked: true

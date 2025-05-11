@@ -36,19 +36,19 @@ router.get('/profile/:id', async (req, res) => {
 });
 
 
-router.get('/liked-songs/:id', async (req, res) => {
-  // #TODO check the uid
-  console.log("hi")
-  try {
-    const likedSongs = await userDataFunctions.getLikedSongs(req.params.id)
-    console.log(likedSongs)
-    if (!likedSongs) return res.status(500).json({error :'Internal Server Error'})
-    return res.status(200).json(likedSongs)
-  } catch (e) {
-    console.log(e)
-    return res.status(500).json({ error: 'Interal Server Error' })
-  }
-})
+// router.get('/liked-songs/:id', async (req, res) => {
+//   // #TODO check the uid
+//   console.log("hi")
+//   try {
+//     const likedSongs = await userDataFunctions.getLikedSongs(req.params.id)
+//     console.log(likedSongs)
+//     if (!likedSongs) return res.status(500).json({error :'Internal Server Error'})
+//     return res.status(200).json(likedSongs)
+//   } catch (e) {
+//     console.log(e)
+//     return res.status(500).json({ error: 'Interal Server Error' })
+//   }
+// })
 
 router.get('/notifications', async (req, res) => {
   try {
@@ -224,6 +224,23 @@ router.post('/login-recommendations', async (req, res) => {
   } catch (e) {
     console.log(e);
     return res.status(500).json({ error: `Interal Server Error` })
+  }
+});
+
+
+
+router.get('/liked-songs/:id', async (req, res) => {
+  if (req.params.id === 'me') {
+    try {
+      const getLikesSongs = await userDataFunctions.getLikedSongs(req.user.uid);
+      if (!getLikesSongs) return res.status(404).json({ error: 'No liked songs found' });
+      return res.status(200).json(getLikesSongs);
+  } catch (e) {
+      console.log(e);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+  } else {
+    return res.status(404).json({ error: 'User not Setup yet' });
   }
 });
 
