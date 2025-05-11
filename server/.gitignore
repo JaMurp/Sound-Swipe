@@ -3,3 +3,4 @@ serviceAccountKey.json
 package-lock.json
 .env
 Done.txt
+redis-data/

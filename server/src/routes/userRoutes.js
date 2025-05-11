@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import * as swipingFunctions from '../data/swipingFunctions.js'
 import userDataFunctions from '../data/index.js'
 
 const router = Router();
@@ -225,5 +226,20 @@ router.post('/login-recommendations', async (req, res) => {
     return res.status(500).json({ error: `Interal Server Error` })
   }
 });
+
+
+router.get('/swipe-songs', async (req, res) => {
+  // #TODO check the inputs
+  try {
+
+    const getSongs = await swipingFunctions.getSwipeSongs(req.user.uid);
+    return res.status(200).json(getSongs);
+
+  } catch (e) {
+    console.log(e);
+    return res.status(500).json({ error: `Interal Server Error` })
+  }
+});
+
 
 export default router;

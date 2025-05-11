@@ -1,8 +1,18 @@
 import { db, auth } from "../db/firebase.js"
 import * as songsDataFunctions from './songsDataFunctions.js'
+import client from '../config/redis.js'
+
+const redis = client;
+if (!redis.isReady) {
+    await redis.connect();
+}
+
 
 
 export const deleteUser = async (uid) => {
+    // delete the swipe session
+    await redis.del(`swipe:session:${uid}`);
+
     const uidRef = db.collection('users').doc(uid);
     const user = await uidRef.get();
 
@@ -65,7 +75,6 @@ export const usernameTaken = async (username) => {
 export const updateUser = async (uid, userObj) => {
     // #TODO check the inputs and the abilit 
     let hasInput = false;
-    console.log(userObj);
     const updatedObj = {}
 
     if (userObj.bio) {
@@ -93,6 +102,11 @@ export const updateUser = async (uid, userObj) => {
     }
     if (userObj.explicitData !== null) {
         hasInput = true;
+        // delete the swiping session if it exists
+        const swipingSession = await redis.get(`swipe:session:${uid}`);
+        if (swipingSession) {
+            await redis.del(`swipe:session:${uid}`);
+        }
         updateUser['explicitData'] = userObj.explicitData;
     }
 

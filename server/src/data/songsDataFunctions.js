@@ -244,6 +244,41 @@ export const getSongsByGenre = async (genres, explicitFlag, userId) => {
 
 
 
+export const getRandomSongs = async (userId, explicitFlag) => {
+  const seed = Math.random();
+  const arr = [];
+
+  let ref = db.collection('songs')
+    .where('explicitFlag', '==', explicitFlag)
+    .where('randomSeed', '>=', seed)
+    .orderBy('randomSeed')
+    .limit(15);
+
+  let snapshot = await ref.get();
+
+  if (snapshot.empty) {
+    ref = db.collection('songs')
+      .where('explicitFlag', '==', explicitFlag)
+      .where('randomSeed', '<', seed)
+      .orderBy('randomSeed', 'desc')
+      .limit(15);
+
+    snapshot = await ref.get();
+  }
+
+  for (const doc of snapshot.docs) {
+    const song = { id: doc.id, ...doc.data() };
+    const inCollectionFlag = await seenSongExist(song.id, userId);
+    if (!inCollectionFlag) {
+      arr.push(song.id);
+    }
+  }
+
+  return arr;
+};
+
+
+
 
 
 
