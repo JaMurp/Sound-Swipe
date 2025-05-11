@@ -62,6 +62,7 @@ const LikedSongsPage = () => {
 
     const handleUnlike = async (songId) => {
         try {
+            // 1. remove the song from the liked songs 
             const idToken = await currentUser.getIdToken();
             console.log(songId, "unlike");
             const { data } = await axios.patch(`http://localhost:3000/api/songs/unlike/`, {
@@ -73,6 +74,18 @@ const LikedSongsPage = () => {
             });
             if (!data.success) {
                 throw "failed to unlike the song" + songId;
+            }
+
+            // 2. decrment the song count for the leaderboard
+            const { data: leaderboardData } = await axios.post(`http://localhost:3000/api/leaderboards/decrement-song-likes`, {
+                songId: songId
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${idToken}`
+                }
+            });
+            if (!leaderboardData.success) {
+                throw "failed to decrement the song count for the leaderboard" + songId;
             }
 
             setLikedSongs(likedSongs.filter((song) => song.id !== songId));
