@@ -138,8 +138,8 @@ export const requestFriend = async (currentUserId, friendId) => {
     const userData = user.data();
     const friendData = friend.data();
 
-    if(userData.friends.length >= 100) return { success: false, message: 'Your friends list is full!' };
-    if(friendData.friends.length >= 100) return { success: false, message: 'Users friends list is full, please try again later.' };
+    if (userData.friends.length >= 100) return { success: false, message: 'Your friends list is full!' };
+    if (friendData.friends.length >= 100) return { success: false, message: 'Users friends list is full, please try again later.' };
 
     if (userData.friends.some(currentFriend => currentFriend.id === friendId)) return { success: false, message: 'Friend Already Added' };
     if (friendData.incomingRequests.some(request => request.id === currentUserId)) return { success: false, message: 'Request Already Sent' };
@@ -169,13 +169,20 @@ export const acceptRequest = async (currentUserId, friendId) => {
     const userData = user.data();
     const friendData = friend.data();
 
-    if(userData.friends.length >= 100) return { success: false, message: 'Your friends list is full!' };
-    if(friendData.friends.length >= 100) return { success: false, message: 'Users friends list is full, please try again later.' };
+    if (userData.friends.length >= 100) return { success: false, message: 'Your friends list is full!' };
+    if (friendData.friends.length >= 100) return { success: false, message: 'Users friends list is full, please try again later.' };
 
     if (userData.friends.some(currentFriend => currentFriend.id === friendId)) return { success: false, message: 'Friend Already Added' };
 
+    const notifsRef = uidRef.collection("notifications");
+    const matchingNotifs = await notifsRef.where("type", "==", "friend_request").where("fromId", "==", friendId).get();
+
+    if (!matchingNotifs.empty) {
+        const notifToDelete = matchingNotifs.docs[0];
+        await notifsRef.doc(notifToDelete.id).delete();
+    }
+
     await uidRef.update({
-        notifications: userData.notifications.filter(notification => (notification.type !== "friend_request") && (notification.fromId !== friendId)),
         friends: [...(userData.friends), { id: friendId, avatar_url: friendData.avatar_url, username: friendData.username }],
         incomingRequests: (userData.incomingRequests).filter(request => request.id !== friendId)
     });
@@ -281,17 +288,21 @@ export const notifyRecommendations = async (uid) => {
         const user = await uidRef.get()
 
         if (!user.exists) throw 'User not found';
+        const userData = await getUser(uid)
 
         const notificationsRef = uidRef.collection("notifications");
         const today = new Date().toISOString().split('T')[0];
 
-        console.log(today+'...');
-        const prevNotif = await notificationsRef.where("type", "==", "login_recommendations").where("lastNotified", "==", today).limit(1).get();
-        if (!prevNotif.empty) {
+        console.log(notificationsRef);
+        console.log(today + '...');
+        const prevNotif = await notificationsRef.where("type", "==", "login_recommendations").get();
+        if (!prevNotif.empty && (userData.lastNotified === today)) {
             return { success: true, message: "Already Notified" };
         }
-
-        const userData = await getUser(uid)
+        if (!prevNotif.empty) {
+            const notifToDelete = prevNotif.docs[0];
+            await notificationsRef.doc(notifToDelete.id).delete();
+        }
         const recs = userData.recommendedFriends;
 
         const notif = {
@@ -300,6 +311,7 @@ export const notifyRecommendations = async (uid) => {
             timestamp: new Date()
         };
 
+        await uidRef.update({ lastNotified: today })
         await notificationsRef.add(notif);
         return { success: true, message: 'Notified Recommendations!' };
 
