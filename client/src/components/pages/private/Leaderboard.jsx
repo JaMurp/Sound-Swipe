@@ -7,71 +7,31 @@ import { useAuth } from '../../../context/AuthContext';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
-import Modal from '@mui/material/Modal';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Stack from '@mui/material/Stack';
-import Fade from '@mui/material/Fade';
-import Backdrop from '@mui/material/Backdrop';
+import SongModal from './SongModal';
 
-//for modal
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 700,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-};
-
-// should be replaced with the genres from the database
 const genres = [
-    "Pop",
-    "Rap/Hip Hop",
-    "Reggaeton",
-    "Rock",
-    "Dance",
-    "R&B",
-    "Alternative",
-    "Christian",
-    "Electro",
-    "Folk",
-    "Reggae",
-    "Jazz",
-    "Country",
-    "Salsa",
-    "Traditional Mexicano",
-    "Classical",
-    "Films/Games",
-    "Metal",
-    "Soul & Funk",
-    "African Music",
-    "Asian Music",
-    "Blues",
-    "Brazilian Music",
-    "Cumbia",
-    "Indian Music",
-    "Kids",
-    "Latin Music"
-]
+    "Pop", "Rap/Hip Hop", "Reggaeton", "Rock", "Dance", "R&B", "Alternative",
+    "Christian", "Electro", "Folk", "Reggae", "Jazz", "Country", "Salsa",
+    "Traditional Mexicano", "Classical", "Films/Games", "Metal", "Soul & Funk",
+    "African Music", "Asian Music", "Blues", "Brazilian Music", "Cumbia",
+    "Indian Music", "Kids", "Latin Music"
+];
 
 const Leaderboard = () => {
-
     const [error, setError] = useState(null);
-    //this will be used when we import the genres or any filter parameters from the database, for now set to false 
     const [pageLoading, setPageLoading] = useState(false);
-    //this is for list refreshes when we add filter
     const [listLoading, setListLoading] = useState(true);
     const [trendingSongs, setTrendingSongs] = useState(null);
     const [genreList, setGenreList] = useState([]);
-    //used for modal
     const [song, setSong] = useState(null);
+    const [userProfile, setUserProfile] = useState(null);
 
     const { currentUser } = useAuth();
+
     useEffect(() => {
         setListLoading(true);
         const getTrendingSongs = async () => {
@@ -84,9 +44,7 @@ const Leaderboard = () => {
                     headers: {
                         'Authorization': `Bearer ${currentUser.accessToken}`
                     }
-
                 });
-
 
                 for (const song of data) {
                     try {
@@ -103,6 +61,9 @@ const Leaderboard = () => {
                     }
                 }
 
+                console.log(data)
+
+
                 setTrendingSongs(data);
                 setListLoading(false);
             } catch (error) {
@@ -112,6 +73,37 @@ const Leaderboard = () => {
         }
         getTrendingSongs();
     }, [genreList]);
+
+    useEffect(() => {
+        if (!currentUser) return;
+        const fetchUserProfile = async () => {
+            setPageLoading(true);
+            setError(null);
+            try {
+                const idToken = await currentUser.getIdToken();
+                const { data: userProfile } = await axios.get('http://localhost:3000/api/users/profile', {
+                    params: {
+                        id: currentUser.uid
+                    },
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`
+                    }
+                });
+                if (!userProfile) {
+                    setError('User profile not found');
+                    setPageLoading(false);
+                    return;
+                }
+                console.log(userProfile)
+                setUserProfile(userProfile);
+            } catch (error) {
+                setError(error);
+            }
+            setPageLoading(false);
+        }
+        fetchUserProfile();
+    }, []);
+
 
 
     const addToLikes = async (songId) => {
@@ -147,7 +139,6 @@ const Leaderboard = () => {
             <div>
                 <h1>Trending Leaderboard</h1>
             </div>
-            {/* component for song filtering menu found in common folder */}
             <LeaderBoardFilter genres={genres} setGenreList={setGenreList} />
             <br />
 
@@ -172,51 +163,23 @@ const Leaderboard = () => {
                                             sx={{ color: 'text.secondary' }}
                                         >
                                             {song.artist.artistName}
+                                            <br />
+                                            Number of likes: {song.likeCounter}
                                         </Typography>
                                     </CardContent>
                                 </Box>
                             </Card>
                         </Stack>
-
                     ))}
-                    {/* #TODO: modal component needs work */}
-                    <Modal
-                        open={song !== null}
+                    <SongModal 
+                        song={song}
+                        isOpen={song !== null}
                         onClose={handleCloseModal}
-                        aria-labelledby="song-modal-title"
-                        aria-describedby="song-modal-description"
-                        closeAfterTransition
-                        slots={{ backdrop: Backdrop }}
-                        slotProps={{
-                            backdrop: {
-                                timeout: 500,
-                            },
-                        }}
-                    >
-                        <Fade in={song !== null}>
-                            <Box sx={style}>
-                                {song && (
-                                    <>
-                                        <Typography id="modal-modal-title" variant="h6" component="h2">
-                                            {song.songTitle}
-                                        </Typography>
-                                        <img src={song.artist.artistImage} alt={song.artist.artistName} />
-                                        <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-
-                                            {song.artist.artistName}
-
-                                        </Typography>
-                                        <audio src={song.songPreview} controls />
-                                        {song.alreadyLiked ? <button>Already liked</button> : <button onClick={() => addToLikes(song.id)}>Add to your likes</button>}
-                                    </>
-                                )}
-
-                            </Box>
-                        </Fade>
-                    </Modal>
+                        onLike={addToLikes}
+                        userProfile={userProfile}
+                    />
                 </div>}
         </div>
-
     );
 };
 

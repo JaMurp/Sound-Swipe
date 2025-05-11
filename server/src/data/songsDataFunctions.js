@@ -298,8 +298,22 @@ export const removeLikedSong = async (userId, songId) => {
 
   return {success: true, message: 'Song removed from liked songs'}
 }
+export const addLikedSeenSong = async (userId, songId) => {
+  const seenCollectionRef = db.collection('users').doc(userId).collection('seenSongs');
+  await seenCollectionRef.doc(songId).update({
+    youLiked: true
+  });
+  return {success: true, message: 'Song added to liked songs'}
+}
 
+const getSongByIdFromApi = async (songId) => {
+  const {data: response} = await axios.get(`https://api.deezer.com/track/${songId}`);
+  if (!response || !response.preview) {
+    throw new Error("Song not found");
+  }
 
+  return response.preview;
+}
 
 export const getSong = async (songId) => {
   const songCache = await redis.get(`song:${songId}`);
@@ -308,8 +322,18 @@ export const getSong = async (songId) => {
     return JSON.parse(songCache);
   }
 
-  const song = await getSongById(songId);
-  await redis.set(`song:${songId}`, JSON.stringify(song), {EX: 60 * 15});
-  return song;
+  const songDb = await getSongById(songId);
+  const songApi = await getSongByIdFromApi(songId);
+  
+  const songObj = {
+    song_id: parseInt(songId),
+    song_name: songDb.songTitle,
+    artist_name: songDb.artist.artistName,
+    artist_pfp: songDb.artist.artistImage,
+    preview_url: songApi
+  };
+
+  await redis.set(`song:${songId}`, JSON.stringify(songObj), {EX: 60 * 15});
+  return songObj;
 }
 
