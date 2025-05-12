@@ -16,8 +16,8 @@ if (!redis.isReady) {
     await redis.connect();
 }
 
-console.log('Scheduling jobs');
-scheduleJobs();
+//console.log('Scheduling jobs');
+//scheduleJobs();
 
 app.get('/api/public/static-swiping-songs', async (req, res) => {
   try {
