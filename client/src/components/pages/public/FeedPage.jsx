@@ -15,9 +15,55 @@ export default function FeedPage() {
   const [text, setText] = useState("");
   const [image, setImage] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [friendLikes, setFriendLikes] = useState([]);
   const [editingPostId, setEditingPostId] = useState(null);
   const [editedText, setEditedText] = useState("");
   const [editedImage, setEditedImage] = useState(null);
+
+  // useEffect(() => {
+  //   const fetchFriendsLikes = async () => {
+  //     const q = query(collection(db, "likedSongsFeed"), orderBy("likedAt", "desc"));
+  //     const snapshot = await getDocs(q);
+
+  //     const likes = await Promise.all(snapshot.docs.map(async docSnap => {
+  //       const data = docSnap.data();
+  //       const userDoc = await getDoc(doc(db, "users", data.userId));
+  //       const username = userDoc.exists() ? userDoc.data().username : "Unknown User";
+  //       return { ...data, id: docSnap.id, username };
+  //     }));
+
+  //     setFriendLikes(likes);
+  //   };
+  //   fetchFriendsLikes();
+  // }, []);
+
+  // const groupLikesByUserSession = async (likes, thresholdMinutes = 45) => {
+  //   const grouped = [];
+
+  //   likes.forEach(like => {
+  //     const lastGroup = grouped[grouped.length - 1];
+  //     const likeTime = new Date(like.likedAt.toDate());
+
+  //     if (
+  //       lastGroup &&
+  //       lastGroup.userId === like.userId &&
+  //       (likeTime - lastGroup.lastLikeTime) / 60000 < thresholdMinutes
+  //     ) {
+  //       lastGroup.songs.push(like);
+  //       lastGroup.lastLikeTime = likeTime;
+  //     } else {
+  //       grouped.push({
+  //         userId: like.userId,
+  //         username: like.username,
+  //         songs: [like],
+  //         lastLikeTime: likeTime,
+  //       });
+  //     }
+  //   });
+
+  //   return grouped;
+  // };
+  // const groupedLikes = groupLikesByUserSession(friendLikes);
 
   const fetchPosts = async () => {
     const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
@@ -145,6 +191,23 @@ export default function FeedPage() {
           <button type="submit">Post</button>
         </form>
       )}
+
+      {/* not working */}
+      {/* <div className="friend-likes">
+        {groupedLikes.length > 0 && groupedLikes.map((session, index) => (
+          <div key={index} className="friend-likes">
+            <p><strong>{session.username}</strong> liked {session.songs.length} song{session.songs.length > 1 ? 's' : ''}</p>
+            <ul>
+              {session.songs.map(song => (
+                <li key={song.id}>
+                  <p>{song.songTitle} – {song.artistName}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div> */}
+
 
       <div className="posts-list">
         {posts.map((post) => (
