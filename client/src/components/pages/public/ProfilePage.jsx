@@ -283,33 +283,33 @@ const ProfilePage = () => {
     const [uploading, setUploading] = useState(false);
 
     const handleProfilePhotoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file || !currentUser) return;
+        const file = e.target.files[0];
+        if (!file || !currentUser) return;
 
-    setUploading(true);
+        setUploading(true);
 
-    const formData = new FormData();
-    formData.append("photo", file);
+        const formData = new FormData();
+        formData.append("photo", file);
 
-    const idToken = await currentUser.getIdToken();
+        const idToken = await currentUser.getIdToken();
 
-    const response = await fetch("http://localhost:3000/api/profile-photo/upload-profile-photo", {
-        method: "POST",
-        headers: {
-        Authorization: `Bearer ${idToken}`,
-        },
-        body: formData,
-    });
+        const response = await fetch("http://localhost:3000/api/profile-photo/upload-profile-photo", {
+            method: "POST",
+            headers: {
+            Authorization: `Bearer ${idToken}`,
+            },
+            body: formData,
+        });
 
-    const data = await response.json();
-    if (data.imageUrl) {
-        setUserData((prev) => ({
-        ...prev,
-        avatar_url: data.imageUrl,
-        }));
-    }
+        const data = await response.json();
+        if (data.imageUrl) {
+            setUserData((prev) => ({
+            ...prev,
+            avatar_url: data.imageUrl,
+            }));
+        }
 
-    setUploading(false);
+        setUploading(false);
     };
 
 

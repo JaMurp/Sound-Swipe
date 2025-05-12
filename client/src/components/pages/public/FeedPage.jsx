@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import app from "../../../firebase/FirebaseConfig";
-import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, getDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, setDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, getDoc } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { getAuth } from "firebase/auth";
+import { v4 as uuidv4 } from 'uuid';
 import "./FeedPage.css";
 
 const db = getFirestore(app);
@@ -89,22 +90,32 @@ export default function FeedPage() {
     e.preventDefault();
     const currentUser = auth.currentUser;
     if (!currentUser || (!text.trim() && !image)) return;
+    let postUid = uuidv4();
 
     let imageUrl = "";
-    let imagePath = "";
-
     if (image) {
-      const imageRef = ref(storage, `images/${Date.now()}-${image.name}`);
-      await uploadBytes(imageRef, image);
-      imageUrl = await getDownloadURL(imageRef);
-      imagePath = imageRef.fullPath;
+      const formData = new FormData();
+      formData.append("photo", image);
+      formData.append("postUid", postUid);
+      const idToken = await currentUser.getIdToken();
+      const response = await fetch("http://localhost:3000/api/profile-photo/upload-feed-photo", {
+            method: "POST",
+            headers: {
+            Authorization: `Bearer ${idToken}`,
+            },
+            body: formData,
+        });
+        const data = await response.json();
+        if (data.imageUrl) {
+            imageUrl = data.imageUrl;
+        }
     }
-
-    await addDoc(collection(db, "posts"), {
+    await setDoc(doc(db, "posts", postUid), {
       text,
       imageUrl,
-      imagePath,
+      imagePath: `feed_photos/${currentUser.uid}/${postUid}.jpg`,
       timestamp: new Date(),
+      postUid,  
       uid: currentUser.uid
     });
 
@@ -115,38 +126,45 @@ export default function FeedPage() {
   };
 
   const handleDelete = async (post) => {
+    if (!auth.currentUser) {
+  alert("You must be logged in to delete posts.");
+  return;
+}
     if (post.imagePath) {
       const imageRef = ref(storage, post.imagePath);
-      await deleteObject(imageRef).catch(() => { });
+      await deleteObject(imageRef);
     }
-    await deleteDoc(doc(db, "posts", post.id));
+    await deleteDoc(doc(db, "posts", post.postUid));
     fetchPosts();
   };
 
   const handleEdit = (post) => {
-    setEditingPostId(post.id);
+    setEditingPostId(post.postUid);
     setEditedText(post.text);
     setEditedImage(null);
   };
 
   const handleSaveEdit = async (post) => {
-    const postRef = doc(db, "posts", post.id);
-    let updatedData = { text: editedText };
+    const postRef = doc(db, "posts", post.postUid);
+    let updatedData = { text: editedText, imageUrl: "" };
 
     if (editedImage) {
-      if (post.imagePath) {
-        const oldImageRef = ref(storage, post.imagePath);
-        await deleteObject(oldImageRef).catch(() => { });
-      }
-
-      const newImageRef = ref(storage, `images/${Date.now()}-${editedImage.name}`);
-      await uploadBytes(newImageRef, editedImage);
-      const newImageUrl = await getDownloadURL(newImageRef);
-
-      updatedData.imageUrl = newImageUrl;
-      updatedData.imagePath = newImageRef.fullPath;
+      const formData = new FormData();
+      formData.append("photo", editedImage);
+      formData.append("postUid", post.postUid);
+      const idToken = await currentUser.getIdToken();
+      const response = await fetch("http://localhost:3000/api/profile-photo/change-feed-photo", {
+            method: "POST",
+            headers: {
+            Authorization: `Bearer ${idToken}`,
+            },
+            body: formData,
+        });
+        const data = await response.json();
+        if (data.imageUrl) {
+            updatedData.imageUrl = data.imageUrl;
+        }
     }
-
     await updateDoc(postRef, updatedData);
     setEditingPostId(null);
     setEditedText("");
@@ -193,9 +211,9 @@ export default function FeedPage() {
 
       <div className="posts-list">
         {posts.map((post) => (
-          <div className="post-item" key={post.id}>
+          <div className="post-item" key={post.postUid}>
             <p className="post-author">Posted by: {post.username}</p>
-            {editingPostId === post.id ? (
+            {editingPostId === post.postUid ? (
               <>
                 <textarea
                   value={editedText}
