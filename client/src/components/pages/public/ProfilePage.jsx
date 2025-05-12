@@ -213,6 +213,18 @@ const ProfilePage = () => {
     useEffect(() => {
         const getProfileData = async () => {
             try {
+
+                // added this to prevent the page from showing old data
+                setLoading(true);
+                setError(null);
+                setUserData(null);
+                setFriendsCount(0);
+                setProfileOwner(false);
+                setFriended(false);
+                setRequested(false);
+                setRecievedRequest(false);
+                setFriendDefault(false);
+
                 if (!currentUser) {
                     navigate('/');
                     return;
