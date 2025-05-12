@@ -53,7 +53,6 @@ const FriendsPage = () => {
                 });
 
                 setFriends(data.friends);
-                console.log(data, data.friends)
                 setRecommendedFriends(data.recommendedFriends);
                 setLoading(false);
             } catch (err) {
@@ -74,7 +73,7 @@ const FriendsPage = () => {
 
     return (
         <div>
-            <h2>Friends:</h2>
+            <h2>Friends: {friends.length}</h2>
             <div>
                 {friends.map(friend => (
                     <FriendContainer key={friend.id} onClick={() => handleFriendClick(friend.id)}>

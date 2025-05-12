@@ -86,6 +86,20 @@ router.delete('/profile', async (req, res) => {
 
 });
 
+router.delete('/notifications/:id', async (req, res) => {
+  try {
+    console.log(req.user.uid)
+    console.log(req.params.id)
+    await userDataFunctions.deleteNotif(req.user.uid, req.params.id)
+    return res.status(200).json({ success: true, message: 'deleted notification successfully' })
+  } catch (e) {
+    console.log(e)
+    return res.status(500).json({ error: e })
+
+  }
+
+});
+
 router.post('/sync-user', async (req, res) => {
   // #TODO chdeck the inputs 
   try {
