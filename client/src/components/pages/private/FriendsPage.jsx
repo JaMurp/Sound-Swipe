@@ -43,6 +43,7 @@ const FriendsPage = () => {
                 let url = `http://localhost:3000/api/users/profile/${userId}`;
                 if (currentUser.uid === userId) {
                     setProfileOwner(true)
+                    console.log("ALWAYS HAPPENS")
                     url = `http://localhost:3000/api/users/profile/`;
                 }
                 const { data } = await axios.get(url, {
@@ -77,7 +78,12 @@ const FriendsPage = () => {
             <div>
                 {friends.map(friend => (
                     <FriendContainer key={friend.id} onClick={() => handleFriendClick(friend.id)}>
-                        <h3><img src={friend.avatar_url} alt={friend.username} width={75}/>{friend.username}</h3>
+                        <h3>
+                        {friend.avatar_url && (
+                            <img src={friend.avatar_url} alt={friend.username} width={75} />
+                        )}
+                        {friend.username}
+                        </h3>
                     </FriendContainer>
                 ))}
             </div>
@@ -88,7 +94,8 @@ const FriendsPage = () => {
                     <span>Based on the songs you've liked, we think you'd like to meet... </span>
                     {recommendedFriends.map(user => (
                         <FriendContainer key={user.id} onClick={() => handleFriendClick(user.id)}>
-                            <img src={user.avatar_url} alt={user.username} width={50}/>
+                            {user.avatar_url &&(
+                            <img src={user.avatar_url} alt={user.username} width={50}/>)}
                             <h3>{user.username}</h3>
                         </FriendContainer>
                     ))}
