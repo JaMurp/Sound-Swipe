@@ -8,9 +8,15 @@ import * as publicDataFunctions from './data/publicDataFunctions.js';
 
 // create a server
 const app = express();
+
+// CORS for frontend on port 5173
+app.use(cors({ origin: "http://localhost:5173" }));
+
+// Parse incoming JSON requests
 app.use(express.json());
 
-app.use(cors({ origin: 'http://localhost:5173', }));
+// Static folder for public access to profile photos
+//app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 if (!redis.isReady) {
     await redis.connect();
@@ -36,12 +42,19 @@ app.get('/api/public/static-swiping-songs', async (req, res) => {
 
 //middleware to check the validation of the jwt token 
 app.use(verifyFirebaseToken);
-// mounts the routes
+
+// Routes
+//app.use("/api/users", profilePhotoRoutes);
 configRoutes(app);
 
-// server is running on port 3000
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ error: "Route Not Found!" });
+});
+
+// Start server
 app.listen(3000, () => {
-    console.log("Server is running on port 3000");
+  console.log("Server is running on port 3000");
 });
 
 export default app;

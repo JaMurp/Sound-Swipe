@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
+import { useRef } from "react";
 import axios from "axios";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import styled from 'styled-components';
@@ -212,6 +213,8 @@ const ProfilePage = () => {
 
     useEffect(() => {
         const getProfileData = async () => {
+            console.log("Fetching profile data..."); // Add this
+
             try {
 
                 // added this to prevent the page from showing old data
@@ -264,6 +267,7 @@ const ProfilePage = () => {
                 }
 
                 setUserData(data);
+                console.log("User data from profile API:", data);
                 setFriendsCount(data.friends.length);
                 setLoading(false);
             } catch (e) {
@@ -274,6 +278,40 @@ const ProfilePage = () => {
 
         getProfileData();
     }, [currentUser, navigate, userId, refresh]);
+
+    const fileInputRef = useRef(null);
+    const [uploading, setUploading] = useState(false);
+
+    const handleProfilePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !currentUser) return;
+
+    setUploading(true);
+
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    const idToken = await currentUser.getIdToken();
+
+    const response = await fetch("http://localhost:3000/api/profile-photo/upload-profile-photo", {
+        method: "POST",
+        headers: {
+        Authorization: `Bearer ${idToken}`,
+        },
+        body: formData,
+    });
+
+    const data = await response.json();
+    if (data.imageUrl) {
+        setUserData((prev) => ({
+        ...prev,
+        avatar_url: data.imageUrl,
+        }));
+    }
+
+    setUploading(false);
+    };
+
 
     const handleEditProfile = () => {
         navigate('/settings');
@@ -392,6 +430,26 @@ const ProfilePage = () => {
                                 src={userData.avatar_url}
                                 alt={userData.username}
                             />
+                            {profileOwner && (
+                                <>
+                                    <EditButton onClick={() => fileInputRef.current.click()}>
+                                    Upload Profile Photo
+                                    </EditButton>
+                                    <input
+                                    type="file"
+                                    accept="image/*"
+                                    ref={fileInputRef}
+                                    onChange={handleProfilePhotoUpload}
+                                    style={{ display: "none" }}
+                                    />
+                                    {uploading && (
+                                    <span style={{ color: "#b3b3b3", marginTop: "8px" }}>
+                                        Uploading...
+                                    </span>
+                                    )}
+                                </>
+                            )}
+
                             <ProfileText>
                                 <ProfileLabel>Profile</ProfileLabel>
                                 <ProfileName>{userData.username}</ProfileName>
