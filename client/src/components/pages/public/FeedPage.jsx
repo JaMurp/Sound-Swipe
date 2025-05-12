@@ -1,27 +1,13 @@
 import { useEffect, useState } from "react";
 import app from "../../../firebase/FirebaseConfig";
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, orderBy, getDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
+import { getAuth } from "firebase/auth";
+import "./FeedPage.css";
 
 const db = getFirestore(app);
 const storage = getStorage(app);
-import {
-  collection,
-  addDoc,
-  getDocs,
-  updateDoc,
-  deleteDoc,
-  doc,
-  query,
-  orderBy
-} from "firebase/firestore";
-import {
-  ref,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject
-} from "firebase/storage";
-import "./FeedPage.css";
+const auth = getAuth();
 
 export default function FeedPage() {
   const [showForm, setShowForm] = useState(false);
@@ -35,9 +21,16 @@ export default function FeedPage() {
   const fetchPosts = async () => {
     const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
     const snapshot = await getDocs(q);
-    const postsData = snapshot.docs.map(doc => ({
-      ...doc.data(),
-      id: doc.id
+    const postsData = await Promise.all(snapshot.docs.map(async docSnap => {
+      const post = docSnap.data();
+      let username = "Unknown User";
+      if (post.uid) {
+        const userDoc = await getDoc(doc(db, "users", post.uid));
+        if (userDoc.exists()) {
+          username = userDoc.data().username || username;
+        }
+      }
+      return { ...post, id: docSnap.id, username };
     }));
     setPosts(postsData);
   };
@@ -48,7 +41,8 @@ export default function FeedPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!text.trim() && !image) return; // prevent empty posts
+    const currentUser = auth.currentUser;
+    if (!currentUser || (!text.trim() && !image)) return;
 
     let imageUrl = "";
     let imagePath = "";
@@ -64,7 +58,8 @@ export default function FeedPage() {
       text,
       imageUrl,
       imagePath,
-      timestamp: new Date()
+      timestamp: new Date(),
+      uid: currentUser.uid
     });
 
     setText("");
@@ -113,6 +108,8 @@ export default function FeedPage() {
     fetchPosts();
   };
 
+  const currentUser = auth.currentUser;
+
   return (
     <div className="feed-container">
       <button className="create-post-btn" onClick={() => setShowForm(!showForm)}>
@@ -134,6 +131,7 @@ export default function FeedPage() {
       <div className="posts-list">
         {posts.map((post) => (
           <div className="post-item" key={post.id}>
+            <p className="post-author">Posted by: {post.username}</p>
             {editingPostId === post.id ? (
               <>
                 <textarea
@@ -152,10 +150,12 @@ export default function FeedPage() {
               <>
                 {post.text && <p>{post.text}</p>}
                 {post.imageUrl && <img src={post.imageUrl} alt="post" className="post-image" />}
-                <div className="post-actions">
-                  <button onClick={() => handleEdit(post)}>Edit</button>
-                  <button onClick={() => handleDelete(post)}>Delete</button>
-                </div>
+                {currentUser?.uid === post.uid && (
+                  <div className="post-actions">
+                    <button onClick={() => handleEdit(post)}>Edit</button>
+                    <button onClick={() => handleDelete(post)}>Delete</button>
+                  </div>
+                )}
               </>
             )}
           </div>
