@@ -1,3 +1,24 @@
 body {
-    padding-top: 54px;
+    padding-top: 8vh;
+}
+
+.disklike-button {
+    color: rgb(233, 82, 82);
+}
+
+.like-button {
+    color: white;
+
+}
+
+.centertext {
+    text-align: center;
+}
+
+.centeritems {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgb(118, 116, 133);
+    height: 92vh;
 }
