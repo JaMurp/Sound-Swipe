@@ -4,11 +4,9 @@ import client from '../config/redis.js'
 import e from "express";
 
 const redis = client;
-if (!redis.isReady) {
-    await redis.connect();
-}
-
-
+// if (!redis.isReady) {
+//     await redis.connect();
+// }
 
 export const deleteUser = async (uid) => {
     // delete the swipe session
