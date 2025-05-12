@@ -30,6 +30,10 @@ const SongModal = ({ song, isOpen, onClose, onLike, userProfile }) => {
     const [audioUrl, setAudioUrl] = useState(null);
     const navigate = useNavigate();
     const { currentUser } = useAuth();
+    
+
+    const [buttonDisabled, setButtonDisabled] = useState(false);
+
 
     useEffect(() => {
         const fetchUserSongHistory = async () => {
@@ -123,6 +127,10 @@ const SongModal = ({ song, isOpen, onClose, onLike, userProfile }) => {
 
 
     const handleNotSeenSongLike = async () => {
+        if (buttonDisabled) return;
+
+        setButtonDisabled(true);
+
         try {
             // 1. First api call is to add the song to the user's seen songs
             const idToken = await currentUser.getIdToken();
@@ -150,11 +158,17 @@ const SongModal = ({ song, isOpen, onClose, onLike, userProfile }) => {
             }
             setHasSeen(true);
             setHaveLiked(true);
+            setButtonDisabled(false);
         } catch (error) {
             alert("Error adding seen song");
+            setButtonDisabled(false);
         }
     }
     const handleSeenSongLike = async () => {
+        if (buttonDisabled) return;
+
+        setButtonDisabled(true);
+
         try {
             // 1. First api call is to add the song to the user's seen songs
             const idToken = await currentUser.getIdToken();
@@ -181,11 +195,17 @@ const SongModal = ({ song, isOpen, onClose, onLike, userProfile }) => {
             }
             setHasSeen(true);
             setHaveLiked(true);
+            setButtonDisabled(false);
         } catch (error) {
             alert("Error adding seen song");
+            setButtonDisabled(false);
         }
     }
     const handleLikedSongUnlike = async () => {
+        if (buttonDisabled) return;
+
+        setButtonDisabled(true);
+
         try {
             // 1. First api call is to remove the song from the user's seen songs
             const idToken = await currentUser.getIdToken();
@@ -212,8 +232,10 @@ const SongModal = ({ song, isOpen, onClose, onLike, userProfile }) => {
             }
             setHasSeen(true);
             setHaveLiked(false);
+            setButtonDisabled(false);
         } catch (error) {
             alert("Error removing liked song");
+            setButtonDisabled(false);
         }
     }
 
