@@ -77,7 +77,7 @@ const FriendsPage = () => {
             <div>
                 {friends.map(friend => (
                     <FriendContainer key={friend.id} onClick={() => handleFriendClick(friend.id)}>
-                        <h3><img src={friend.avatar_url} alt={friend.username} />{friend.username}</h3>
+                        <h3><img src={friend.avatar_url} alt={friend.username} width={75}/>{friend.username}</h3>
                     </FriendContainer>
                 ))}
             </div>
@@ -88,7 +88,7 @@ const FriendsPage = () => {
                     <span>Based on the songs you've liked, we think you'd like to meet... </span>
                     {recommendedFriends.map(user => (
                         <FriendContainer key={user.id} onClick={() => handleFriendClick(user.id)}>
-                            <img src={user.avatar_url} alt={user.username} />
+                            <img src={user.avatar_url} alt={user.username} width={50}/>
                             <h3>{user.username}</h3>
                         </FriendContainer>
                     ))}
