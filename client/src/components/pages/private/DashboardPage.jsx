@@ -91,11 +91,12 @@ const DashboardPage = () => {
         }
         setDissableDislike(true);
 
-        if (index >= swipeSongs.length - 1) {
-            setRefresh(!refresh);
-            setDissableDislike(false);
-            return;
-        }
+        // if (index >= swipeSongs.length - 1) {
+        //     setRefresh(!refresh);
+        //     setDissableDislike(false);
+        //     return;
+        // }
+
         try {
             const idToken = await currentUser.getIdToken();
             const { data } = await axios.post('http://localhost:3000/api/songs/seen', {
@@ -110,6 +111,11 @@ const DashboardPage = () => {
                 setIndex(index + 1);
             } else {
                 setError(data.error);
+            }
+            if (index >= swipeSongs.length - 1) {
+                setRefresh(!refresh);
+                setDissableDislike(false);
+                return;
             }
             setDissableDislike(false);
         } catch (error) {
@@ -126,11 +132,11 @@ const DashboardPage = () => {
 
         setDissableLike(true);
 
-        if (index >= swipeSongs.length - 1) {
-            setRefresh(!refresh);
-            setDissableLike(false);
-            return;
-        }
+        // if (index >= swipeSongs.length - 1) {
+        //     setRefresh(!refresh);
+        //     setDissableLike(false);
+        //     return;
+        // }
         try {
             const idToken = await currentUser.getIdToken();
 
@@ -160,6 +166,14 @@ const DashboardPage = () => {
             } else {
                 setError(data.error);
             }
+            
+            if (index >= swipeSongs.length - 1) {
+                setRefresh(!refresh);
+                setDissableLike(false);
+                return;
+            }
+
+
             setDissableLike(false);
         } catch (error) {
             setError(error);
