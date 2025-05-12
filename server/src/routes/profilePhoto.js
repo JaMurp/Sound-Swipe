@@ -50,8 +50,8 @@ router.post(
 
       const command = [
         `${magickPath} "${tempInput}"`,
-        `-auto-orient -resize 512x512^ -gravity center -extent 512x512`,
-        `-gravity southeast -pointsize 18 -fill white -annotate +10+10 "Sound Swipe"`,
+        `-auto-orient -resize 256x256^ -gravity center -background purple -extent 512x512`,
+        `-gravity south -pointsize 50 -fill white -annotate +10+40 "Sound Swipe"`,
         `"${tempOutput}"`
       ].join(" ");
 
