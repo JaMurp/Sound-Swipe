@@ -5,6 +5,14 @@ import { useNavigate } from "react-router-dom";
 import Dropdown from "react-bootstrap/Dropdown";
 import Switch from '@mui/material/Switch';
 import axios from "axios";
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import IconButton from '@mui/material/IconButton';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import CloseIcon from '@mui/icons-material/Close';
+import Grid from '@mui/material/Grid';
+
 
 const DashboardPage = () => {
     const { currentUser } = useAuth();
@@ -20,9 +28,6 @@ const DashboardPage = () => {
 
 
 
-
-    
-
     useEffect(() => {
         const sendDailyRecs = async () => {
             setLoading(true);
@@ -31,7 +36,7 @@ const DashboardPage = () => {
                     setError("User not found");
                     return;
                 }
-    
+
                 const idToken = await currentUser.getIdToken();
                 await axios.post(`http://localhost:3000/api/users/login-recommendations`, {}, {
                     headers: {
@@ -159,6 +164,24 @@ const DashboardPage = () => {
         }
     };
 
+    //https://www.geeksforgeeks.org/how-to-use-addeventlistener-in-react/
+    useEffect(() => {
+        
+        const handleKeyDown = (event) => {
+            if (event.key === 'ArrowLeft') {
+                handleDislikeButton();
+            } else if (event.key === 'ArrowRight') {
+                handleLikeButton();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [index, handleDislikeButton, handleLikeButton]);
+
 
     if (loading) {
         return <LoadingSpinner />
@@ -170,37 +193,50 @@ const DashboardPage = () => {
 
     return (
         <>
-            <div>
-                <div>
-                    <h1>Swipe Songs</h1>
-                </div>
-                <div>
-                    {swipeSongs && swipeSongs.length > 0 && index !== null && index < swipeSongs.length && (
-                        <div>
-                            <h3>{swipeSongs[index].song_name}</h3>
-                            <img
-                                src={swipeSongs[index].artist_pfp}
-                                alt={`${swipeSongs[index].artist_name} image`}
-                                style={{ width: '200px', height: '200px', objectFit: 'cover' }}
-                            />
-                            <audio
-                                controls
-                                src={swipeSongs[index].preview_url}
-                                style={{ width: '100%', marginTop: '10px' }}
-                            >
-                                Your browser does not support the audio element.
-                            </audio>
-                        </div>
-                    )}
+            <div className="centeritems">
+                {swipeSongs && swipeSongs.length > 0 && index !== null && index < swipeSongs.length && (
+                    <Card sx={{ maxWidth: 350 }} className="dashsong">
+                        <CardMedia
+                            component="img"
+                            height="350"
+                            image={swipeSongs[index].artist_pfp}
+                            alt={`${swipeSongs[index].artist_name} image`}
+                        />
+                        <CardContent>
+                            <div>
+                                <h3>{swipeSongs[index].song_name}</h3>
 
-                    <button onClick={handleDislikeButton}>Dislike</button>
-                    <button onClick={handleLikeButton}>Like</button>
-                </div>
+                                <audio
+                                    controls
+                                    src={swipeSongs[index].preview_url}
+                                    style={{ width: '100%', marginTop: '10px' }}
+                                >
+                                    Your browser does not support the audio element.
+                                </audio>
+                                <Grid container spacing={2} >
+                                    <Grid size={6} className="centertext">
+
+                                        <IconButton onClick={handleDislikeButton} aria-label="dislike" size="large">
+                                            <CloseIcon fontSize="large" />
+                                        </IconButton>
+
+                                    </Grid>
+                                    <Grid size={6} className="centertext">
+
+                                        <IconButton onClick={handleLikeButton} aria-label="like" color="success.light" size="large">
+                                            <FavoriteIcon fontSize="large" />
+                                        </IconButton>
+
+                                    </Grid>
+                                </Grid>
+                            </div>
+                        </CardContent>
+
+                    </Card>
+                )}
             </div>
         </>
-    )
-
-
+    )   
 }
 
 
