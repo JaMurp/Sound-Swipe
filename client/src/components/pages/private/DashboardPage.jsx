@@ -15,6 +15,10 @@ const DashboardPage = () => {
     const [refresh, setRefresh] = useState(false);
 
 
+    const [dissableDislike, setDissableDislike] = useState(false);
+    const [dissableLike, setDissableLike] = useState(false);
+
+
 
 
     
@@ -76,8 +80,14 @@ const DashboardPage = () => {
     }, [refresh])
 
     const handleDislikeButton = async () => {
+        if (dissableDislike) {
+            return;
+        }
+        setDissableDislike(true);
+
         if (index >= swipeSongs.length - 1) {
             setRefresh(!refresh);
+            setDissableDislike(false);
             return;
         }
         try {
@@ -95,14 +105,23 @@ const DashboardPage = () => {
             } else {
                 setError(data.error);
             }
+            setDissableDislike(false);
         } catch (error) {
             setError(error);
         }
     };
 
     const handleLikeButton = async () => {
+
+        if (dissableLike) {
+            return;
+        }
+
+        setDissableLike(true);
+
         if (index >= swipeSongs.length - 1) {
             setRefresh(!refresh);
+            setDissableLike(false);
             return;
         }
         try {
@@ -134,6 +153,7 @@ const DashboardPage = () => {
             } else {
                 setError(data.error);
             }
+            setDissableLike(false);
         } catch (error) {
             setError(error);
         }
