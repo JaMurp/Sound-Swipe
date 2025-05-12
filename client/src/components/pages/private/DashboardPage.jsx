@@ -4,6 +4,7 @@ import { useAuth } from "../../../context/AuthContext.jsx";
 import { useNavigate } from "react-router-dom";
 import Dropdown from "react-bootstrap/Dropdown";
 import Switch from '@mui/material/Switch';
+import Button from '@mui/material/Button';
 import axios from "axios";
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -196,7 +197,7 @@ const DashboardPage = () => {
         return (
             <>
                 <div>No songs found</div>
-                <Button onClick={() => setRefresh(!refresh)}>Refresh</Button>
+                <Button variant="contained" onClick={() => setRefresh(!refresh)}>Refresh</Button>
             </>
         )
     }
