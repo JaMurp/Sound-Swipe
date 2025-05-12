@@ -13,10 +13,12 @@ const serviceAccount = JSON.parse(
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://sound-swipe-d6797.firebaseio.com'
+  databaseURL: 'https://sound-swipe-d6797.firebaseio.com',
+  storageBucket: 'sound-swipe-d6797.firebasestorage.app'
 });
 
 const db = admin.firestore();
 const auth = admin.auth();
+const bucket = admin.storage().bucket();
 
-export { db, auth };
+export { db, auth, bucket };

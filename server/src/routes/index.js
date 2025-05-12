@@ -1,6 +1,7 @@
 import userRoutes from './userRoutes.js';
 import songRoutes from './songRoutes.js';
 import leaderboardRoutes from './leaderboardRoutes.js'
+import profilePhotoRoutes from './profilePhoto.js';
 
 
 const constructor = (app) => {
@@ -10,6 +11,7 @@ const constructor = (app) => {
     app.use('/api/songs', songRoutes);
     // handles the leaderboard routes
     app.use('/api/leaderboards', leaderboardRoutes);
+    app.use('/api', profilePhotoRoutes);
     // handles all the other routes
     app.use((req, res) => {
         res.status(404).json({error: 'Route Not Found!'});
