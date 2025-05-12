@@ -323,10 +323,12 @@ export const notifyRecommendations = async (uid) => {
         const today = new Date().toISOString().split('T')[0];
 
         console.log(today + '...');
-        const prevNotif = await notificationsRef.where("type", "==", "login_recommendations").get();
-        if (!prevNotif.empty && (userData.lastNotified === today)) {
+        if (userData.lastNotified === today) {
             return { success: true, message: "Already Notified" };
         }
+
+        const prevNotif = await notificationsRef.where("type", "==", "login_recommendations").get();
+      
         if (!prevNotif.empty) {
             const notifToDelete = prevNotif.docs[0];
             await notificationsRef.doc(notifToDelete.id).delete();
