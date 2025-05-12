@@ -191,6 +191,16 @@ const DashboardPage = () => {
         return <div>{error}</div>
     }
 
+
+    if (swipeSongs.length === 0) {
+        return (
+            <>
+                <div>No songs found</div>
+                <Button onClick={() => setRefresh(!refresh)}>Refresh</Button>
+            </>
+        )
+    }
+
     return (
         <>
             <div className="centeritems">
@@ -205,6 +215,7 @@ const DashboardPage = () => {
                         <CardContent>
                             <div>
                                 <h3>{swipeSongs[index].song_name}</h3>
+                                <h4>{swipeSongs[index].artist_name}</h4>
 
                                 <audio
                                     controls
