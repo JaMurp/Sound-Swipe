@@ -12,6 +12,8 @@ import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Stack from '@mui/material/Stack';
 import SongModal from './SongModal';
+import Grid from '@mui/material/Grid';
+import ButtonBase from '@mui/material/ButtonBase';
 
 const genres = [
     "Pop", "Rap/Hip Hop", "Reggaeton", "Rock", "Dance", "R&B", "Alternative",
@@ -134,44 +136,72 @@ const Leaderboard = () => {
     if (pageLoading) return <div><LoadingSpinner /></div>;
 
     return (
-        <div>
+        <div className="">
             {error && <div>{error}</div>}
-            <div>
-                <h1>Trending Leaderboard</h1>
+            <div className='centertext mt-4'>
+                <h1>Top 10 Trending Leaderboard</h1>
             </div>
-            <LeaderBoardFilter genres={genres} setGenreList={setGenreList} />
+            <div className='center-leaderboard-filter mt-4 mb-3'>
+                <LeaderBoardFilter genres={genres} setGenreList={setGenreList} />
+            </div>
+            
             <br />
 
             {listLoading ? <LoadingSpinner /> :
-                <div>
+                <div className="center-leaderboard">
                     {trendingSongs && trendingSongs.map((song, index) => (
-                        <Stack key={song.id} spacing={2} direction="row">
-                            <h1>{`${index + 1}.`}</h1>
-                            <Card sx={{ display: 'flex' }}>
-                                <CardMedia
-                                    component="img"
-                                    sx={{ width: 130 }}
-                                    image={song.artist.artistImage}
-                                    alt={song.artist.artistName}
-                                />
-                                <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                                    <CardContent sx={{ flex: '1 0 auto' }}>
-                                        <Button onClick={() => handleOpenModal(song)}>{song.songTitle}</Button>
-                                        <Typography
-                                            variant="subtitle1"
-                                            component="div"
-                                            sx={{ color: 'text.secondary' }}
-                                        >
-                                            {song.artist.artistName}
-                                            <br />
-                                            Number of likes: {song.likeCounter}
-                                        </Typography>
+                        <Stack key={song.id} spacing={2} direction="row" sx={{ marginBottom: 2 }} className='center-leaderboard-item'>
+                            <div className='center-leaderboard-rank'>
+                                <h1>{`${index + 1}.`}</h1>
+                            </div>
+                            <ButtonBase sx={{ width: '100%' }} onClick={() => handleOpenModal(song)}>
+                                <Card sx={{ display: 'flex', minWidth: 800, maxWidth: 800}}>
+                                    <CardMedia
+                                        component="img"
+                                        sx={{ width: 130 }}
+                                        image={song.artist.artistImage}
+                                        alt={song.artist.artistName}
+                                    />
+                                    
+                                    <CardContent sx={{ flex: 'flex', alignContent: 'center', width: '100%' }} >
+
+                                        <Grid container spacing={2} alignItems="center" >
+                                            <Grid size={4}>
+                                                <Typography
+                                                    variant="h6"
+                                                    component="div"
+                                                    sx={{ color: 'text.primary' }}
+                                                >
+                                                    {song.songTitle}
+                                                </Typography>
+                                            </Grid>
+                                            <Grid size={4}>
+                                                <Typography
+                                                    variant="subtitle1"
+                                                    component="div"
+                                                    sx={{ color: 'text.secondary' }}
+                                                >
+                                                    {song.artist.artistName}
+                                                </Typography>
+                                            </Grid>
+                                            <Grid size={4}>
+                                                <Typography
+                                                    variant="subtitle1"
+                                                    component="div"
+                                                    sx={{ color: 'text.secondary' }}
+                                                >
+                                                    Number of likes: {song.likeCounter}
+                                                </Typography>
+                                            </Grid>
+
+                                        </Grid>
+
                                     </CardContent>
-                                </Box>
-                            </Card>
+                                </Card>
+                            </ButtonBase>
                         </Stack>
                     ))}
-                    <SongModal 
+                    <SongModal
                         song={song}
                         isOpen={song !== null}
                         onClose={handleCloseModal}
