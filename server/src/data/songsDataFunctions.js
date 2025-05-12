@@ -5,11 +5,8 @@ import client from "../config/redis.js";
 
 const redis = client;
 if (!redis.isReady) {
-    await redis.connect();
+  await redis.connect();
 }
-
-
-
 
 export const songExist = async (id) => {
   // #TODO need to input validate

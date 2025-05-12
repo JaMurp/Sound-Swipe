@@ -3,13 +3,10 @@ import * as apiFunctions from './apiFunctions.js'
 import * as songsFunctions from './songsDataFunctions.js'
 import * as usersFunctions from './userDataFunctions.js'
 
-
-// connect to redis
-const redis= client;
-if (!redis.isReady) {
-    await redis.connect();
-}
-
+const redis = client;
+// if (!redis.isReady) {
+//     await redis.connect();
+// }
 
 export const incrementIndex = async (uid) => {
     const session = await redis.get(`swipe:session:${uid}`);
@@ -72,8 +69,6 @@ const createNewSession = async (uid) => {
     return newSession;
 }
 
-
-
 export const getSwipeSongs = async (uid) => {
     const songs = [];
     // First check if the user has a session
@@ -84,8 +79,6 @@ export const getSwipeSongs = async (uid) => {
         // 1. gets the data from the session
         const sessionData = JSON.parse(session);
         const index = sessionData.index;
-
-
 
         console.log(index, sessionData.songs.length, "index and length");
         if (index >= sessionData.songs.length - 1) {
@@ -146,8 +139,6 @@ export const getSwipeSongs = async (uid) => {
     return await createNewSession(uid);
 
 }
-
-
 
 //test the function
 // try {

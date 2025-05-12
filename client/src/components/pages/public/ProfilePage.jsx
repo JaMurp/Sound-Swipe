@@ -293,7 +293,7 @@ const ProfilePage = () => {
 
     const idToken = await currentUser.getIdToken();
 
-    const response = await fetch("http://localhost:3000/api/users/upload-profile-photo", {
+    const response = await fetch("http://localhost:3000/api/profile-photo/upload-profile-photo", {
         method: "POST",
         headers: {
         Authorization: `Bearer ${idToken}`,

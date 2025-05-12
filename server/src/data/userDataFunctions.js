@@ -4,11 +4,9 @@ import client from '../config/redis.js'
 import e from "express";
 
 const redis = client;
-if (!redis.isReady) {
-    await redis.connect();
-}
-
-
+// if (!redis.isReady) {
+//     await redis.connect();
+// }
 
 export const deleteUser = async (uid) => {
     // delete the swipe session
@@ -259,6 +257,21 @@ export const getUser = async (uid) => {
     return { ...userData, recommendedFriends: recommendedFriends };
 }
 
+export const deleteNotif = async (uid, notifId) => {
+    try {
+        const uidRef = db.collection('users').doc(uid);
+        const notifDoc = await uidRef.collection('notifications').doc(notifId).get();
+        console.log(notifId)
+        if (!notifDoc.exists) {
+            throw `Notification ${notifId} does not exist for user ${uid}`;
+        }
+        await uidRef.collection('notifications').doc(notifId).delete();
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+}
+
 export const getNotifications = async (uid, startAfterId = null) => {
     try {
         const uidRef = db.collection("users").doc(uid);
@@ -273,9 +286,25 @@ export const getNotifications = async (uid, startAfterId = null) => {
 
         const allNotifs = await notifications.get();
         const notifDocs = allNotifs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const lastVisible = allNotifs.docs[allNotifs.docs.length - 1];
-        return { notifications: notifDocs, lastVisible: lastVisible ? lastVisible.id : null };
+        const lastVisible = notifDocs.length === 20 ? allNotifs.docs[allNotifs.docs.length - 1].id : null;
+        return { notifications: notifDocs, lastVisible };
 
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+};
+
+export const addNotif = async (notif, uid) => {
+    try {
+        const uidRef = db.collection('users').doc(uid);
+        const user = await uidRef.get()
+
+        if (!user.exists) throw 'User not found';
+
+        const notificationsRef = uidRef.collection("notifications");
+        await notificationsRef.add(notif);
+        return { success: true, message: 'Notified!' };
     } catch (e) {
         console.log(e);
         throw e;
@@ -293,12 +322,13 @@ export const notifyRecommendations = async (uid) => {
         const notificationsRef = uidRef.collection("notifications");
         const today = new Date().toISOString().split('T')[0];
 
-        console.log(notificationsRef);
         console.log(today + '...');
-        const prevNotif = await notificationsRef.where("type", "==", "login_recommendations").get();
-        if (!prevNotif.empty && (userData.lastNotified === today)) {
+        if (userData.lastNotified === today) {
             return { success: true, message: "Already Notified" };
         }
+
+        const prevNotif = await notificationsRef.where("type", "==", "login_recommendations").get();
+      
         if (!prevNotif.empty) {
             const notifToDelete = prevNotif.docs[0];
             await notificationsRef.doc(notifToDelete.id).delete();

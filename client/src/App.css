@@ -1,24 +1,52 @@
 body {
-    padding-top: 8vh;
+  padding-top: 8vh;
 }
 
 .disklike-button {
-    color: rgb(233, 82, 82);
+  color: rgb(233, 82, 82);
 }
 
 .like-button {
-    color: white;
-
+  color: white;
 }
 
 .centertext {
-    text-align: center;
+  text-align: center;
 }
 
 .centeritems {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: rgb(118, 116, 133);
-    height: 92vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(118, 116, 133);
+  height: 92vh;
+}
+
+.center-leaderboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.center-leaderboard-item {
+  display: flex;
+  align-items: center;
+}
+
+.center-leaderboard-rank {
+  width: 3rem;
+  text-align: end;
+  margin-right: 1rem;
+}
+
+.center-leaderboard-filter {
+  display: flex;
+  justify-content: center;
+}
+
+div.leaderboard-skeleton {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }

@@ -114,6 +114,7 @@ const DashboardPage = () => {
             setDissableDislike(false);
         } catch (error) {
             setError(error);
+            setDissableDislike(false);
         }
     };
 
@@ -162,6 +163,7 @@ const DashboardPage = () => {
             setDissableLike(false);
         } catch (error) {
             setError(error);
+            setDissableLike(false);
         }
     };
 

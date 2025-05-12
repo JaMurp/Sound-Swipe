@@ -55,7 +55,6 @@ router.post(
         `"${tempOutput}"`
       ].join(" ");
 
-      // ✅ Moved AFTER the declaration
       console.log("Running ImageMagick command:", command);
 
       await new Promise((resolve, reject) => {
@@ -67,31 +66,39 @@ router.post(
       });
 
       const bucket = admin.storage().bucket();
-      const destination = `profile_photos/${uid}.jpg`;
-      const metadata = {
-        metadata: {
-          firebaseStorageDownloadTokens: uuidv4()
-        },
-        contentType: req.file.mimetype,
-        public: true
-      };
+  const destination = `profile_photos/${uid}.jpg`;
 
-      await bucket.upload(tempOutput, {
-        destination,
-        metadata
-      });
+  // Generate a download token
+  const downloadToken = uuidv4();
 
-      fs.unlinkSync(tempOutput); // Clean up processed image
+  const metadata = {
+    metadata: {
+      firebaseStorageDownloadTokens: downloadToken, // Required for token-based access
+    },
+    contentType: req.file.mimetype,
+  };
 
-      const imageUrl = `https://storage.googleapis.com/${bucket.name}/${destination}`;
-      await admin.firestore().collection("users").doc(uid).set(
-        {
-          avatar_url: imageUrl
-        },
-        { merge: true }
-      );
+  // Upload the image
+  await bucket.upload(tempOutput, {
+    destination,
+    metadata,
+  });
 
-      res.json({ success: true, imageUrl });
+  fs.unlinkSync(tempOutput); // Clean up processed image
+
+  // Construct correct Firebase download URL
+  const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(destination)}?alt=media&token=${downloadToken}`;
+
+  // Store the download URL in Firestore
+  await admin.firestore().collection("users").doc(uid).set(
+    {
+      avatar_url: imageUrl,
+    },
+    { merge: true }
+  );
+
+  res.json({ success: true, imageUrl });
+
     } catch (err) {
       console.error("Upload failed:", err);
       res.status(500).json({ error: "Image processing or upload failed" });

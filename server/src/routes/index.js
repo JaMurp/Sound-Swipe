@@ -11,7 +11,7 @@ const constructor = (app) => {
     app.use('/api/songs', songRoutes);
     // handles the leaderboard routes
     app.use('/api/leaderboards', leaderboardRoutes);
-    app.use('/api', profilePhotoRoutes);
+    app.use('/api/profile-photo', profilePhotoRoutes);
     // handles all the other routes
     app.use((req, res) => {
         res.status(404).json({error: 'Route Not Found!'});
