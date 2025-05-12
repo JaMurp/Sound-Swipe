@@ -40,6 +40,13 @@ body {
 }
 
 .center-leaderboard-filter {
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
+}
+
+div.leaderboard-skeleton {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
