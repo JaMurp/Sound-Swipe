@@ -10,6 +10,7 @@ const LikedSongsPage = () => {
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [likedSongs, setLikedSongs] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [refresh, setRefresh] = useState(false);
@@ -37,12 +38,11 @@ const LikedSongsPage = () => {
             } catch (error) {
                 setLoading(false);
                 setError(error);
-            } 
+            }
         };
 
         fetchLikedSongs();
     }, [refresh]);
-
 
     if (loading) {
         return <div><LoadingSpinner /></div>;
@@ -94,23 +94,31 @@ const LikedSongsPage = () => {
         }
     };
 
+    const search = likedSongs.filter(song =>
+        song.songTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        song.artistName.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+
     return (
         <>
             <h1>Liked Songs</h1>
-            {likedSongs.map((song) => (
-                <div key={song.id}>
-                    <img src={song.artistImage} alt={song.artistName} />
-                    <div>
-                        <h2>{song.songTitle}</h2>
-                        <p>{song.artistName}</p>
-                    </div>
+            <input type="text" placeholder="Search your liked songs..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            {search.length === 0 ? (<p>No songs match your search.</p>) : (
+                search.map((song) => (
+                    <div key={song.id}>
+                        <img src={song.artistImage} alt={song.artistName} />
+                        <div>
+                            <h2>{song.songTitle}</h2>
+                            <p>{song.artistName}</p>
+                        </div>
 
-                    
-                    <button onClick={() => handleUnlike(song.id)}>Unlike</button>
-                </div>
-            ))}
+
+                        <button onClick={() => handleUnlike(song.id)}>Unlike</button>
+                    </div>
+                ))
+            )}
         </>
     );
-};  
+};
 
 export default LikedSongsPage;
