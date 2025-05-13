@@ -156,6 +156,11 @@ const DashboardPage = () => {
                 }
             });
             
+            if (data.needToRefresh) {
+                setRefresh(!refresh);
+            }
+
+
             if (data.success) {
                 setIndex(index + 1);
             } else {
@@ -214,6 +219,36 @@ const DashboardPage = () => {
     }, [index, handleDislikeButton, handleLikeButton]);
 
 
+
+
+    const handleAudioRefresh = async () => {
+        try {
+            const idToken = await currentUser.getIdToken();
+            const { data } = await axios.get(`http://localhost:3000/api/songs/get-audio`, {
+                params: {
+                    songId: swipeSongs[index].song_id
+                },
+                headers: {
+                    'Authorization': `Bearer ${idToken}`
+                }
+            });
+            
+            if (data.previewUrl) {
+                setSwipeSongs(prevSongs => 
+                    prevSongs.map(song => 
+                        song.song_id === swipeSongs[index].song_id 
+                            ? { ...song, preview_url: data.previewUrl } 
+                            : song
+                    )
+                );
+            }
+        } catch (error) {
+            console.error("Error refreshing audio URL:", error);
+        }
+    };
+
+ 
+
     if (loading) {
         return (
             <div className="centeritems">
@@ -263,13 +298,54 @@ const DashboardPage = () => {
                                 <h3>{swipeSongs[index].song_name}</h3>
                                 <h4>{swipeSongs[index].artist_name}</h4>
 
-                                <audio
-                                    controls
-                                    src={swipeSongs[index].preview_url}
-                                    style={{ width: '100%', marginTop: '10px' }}
-                                >
-                                    Your browser does not support the audio element.
-                                </audio>
+                                {swipeSongs[index].preview_url ? (
+                                    <div>
+                                        <audio
+                                            controls
+                                            src={swipeSongs[index].preview_url}
+                                            style={{ width: '100%', marginTop: '10px' }}
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.nextElementSibling.style.display = 'flex';
+                                                handleAudioRefresh();
+                                            }}
+                                        >
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                        <div style={{ 
+                                            display: 'none',
+                                            width: '100%', 
+                                            marginTop: '10px', 
+                                            padding: '10px',
+                                            backgroundColor: '#f5f5f5',
+                                            borderRadius: '4px',
+                                            textAlign: 'center',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            gap: '10px'
+                                        }}>
+                                            <div>Audio preview is no longer available</div>
+                                            <Button 
+                                                variant="contained" 
+                                                size="small"
+                                                onClick={handleAudioRefresh}
+                                            >
+                                                Refresh Song
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={{ 
+                                        width: '100%', 
+                                        marginTop: '10px', 
+                                        padding: '10px',
+                                        backgroundColor: '#f5f5f5',
+                                        borderRadius: '4px',
+                                        textAlign: 'center'
+                                    }}>
+                                        No audio preview available for this song
+                                    </div>
+                                )}
                                 <Grid container spacing={0} display={"flex"} marginTop={2} >
                                     <Grid size={6} className="centertext">
 

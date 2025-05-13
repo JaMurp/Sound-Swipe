@@ -140,11 +140,18 @@ router.post('/seen', async (req, res) => {
     // #TODO check the inputs
     const { songId, liked } = req.body;
     //increment the index of the song in the swipe session
-    try {
-        await swipingFunctions.incrementIndex(req.user.uid);
-    } catch (e) {
-        console.log(e);
-        return res.status(500).json({error: e});
+    // but only if the session exists
+
+    let  needToRefresh = true;
+    const sessionExists = await swipingFunctions.checkIfSessionExists(req.user.uid);
+    if (sessionExists) {
+        try {
+            await swipingFunctions.incrementIndex(req.user.uid);
+            needToRefresh = false;
+        } catch (e) {
+            console.log(e);
+            return res.status(500).json({error: e});
+        }
     }
 
     // check to make sure the user exists
@@ -178,7 +185,7 @@ router.post('/seen', async (req, res) => {
             }
         }
 
-        return res.status(200).json({success: true, message: 'Song seen successfully'});
+        return res.status(200).json({success: true, message: 'Song seen successfully', needToRefresh: needToRefresh});
     } catch (e) {
         console.log(e, "error adding seen song");
         return res.status(500).json({ error: e });
