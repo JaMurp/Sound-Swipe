@@ -43,17 +43,15 @@ router.post(
       const uploadDir = path.join(__dirname, "..", "uploads");
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-      // Use ImageMagick (via `magick` CLI) to crop and annotate
-      const magickPath = `"C:/Program Files/ImageMagick-7.1.1-Q16-HDRI/magick.exe"`;
-
+      // Use ImageMagick (via Docker container) to crop and annotate
       const command = [
-  `${magickPath} "${tempInput}"`,
-  `-auto-orient -resize 460x460^ -gravity center -background black -extent 512x512`,
-  `-gravity south -font Arial-Bold -pointsize 50`,
-  `-fill black -annotate +12+62 "Sound Swipe"`,
-`-fill white -annotate +10+60 "Sound Swipe"`,
-  `"${tempOutput}"`
-].join(" ");
+        `docker exec imagemagick magick "/temp_uploads/${path.basename(tempInput)}"`,
+        `-auto-orient -resize 460x460^ -gravity center -background black -extent 512x512`,
+        `-gravity south -font DejaVu-Sans-Bold -pointsize 50`,
+        `-fill black -annotate +12+62 "Sound Swipe"`,
+        `-fill white -annotate +10+60 "Sound Swipe"`,
+        `"/images/${path.basename(tempOutput)}"`
+      ].join(" ");
 
 
       await new Promise((resolve, reject) => {
@@ -122,14 +120,12 @@ router.post("/upload-feed-photo",
       const uploadDir = path.join(__dirname, "..", "uploads");
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-      // Use ImageMagick (via `magick` CLI) to crop and annotate
-      const magickPath = `"C:/Program Files/ImageMagick-7.1.1-Q16-HDRI/magick.exe"`;
-
+      // Use ImageMagick (via Docker container) to crop and annotate
       const command = [
-  `${magickPath} "${tempInput}"`,
-  `-auto-orient -resize 128x128^ -gravity center -background black -extent 128x128`,
-  `"${tempOutput}"`
-].join(" ");
+        `docker exec imagemagick magick "/temp_uploads/${path.basename(tempInput)}"`,
+        `-auto-orient -resize 128x128^ -gravity center -background black -extent 128x128`,
+        `"/images/${path.basename(tempOutput)}"`
+      ].join(" ");
 
 
       await new Promise((resolve, reject) => {
@@ -190,14 +186,12 @@ router.post("/change-feed-photo",
       const uploadDir = path.join(__dirname, "..", "uploads");
       if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-      // Use ImageMagick (via `magick` CLI) to crop and annotate
-      const magickPath = `"C:/Program Files/ImageMagick-7.1.1-Q16-HDRI/magick.exe"`;
-
+      // Use ImageMagick (via Docker container) to crop and annotate
       const command = [
-  `${magickPath} "${tempInput}"`,
-  `-auto-orient -resize 128x128^ -gravity center -background black -extent 128x128`,
-  `"${tempOutput}"`
-].join(" ");
+        `docker exec imagemagick magick "/temp_uploads/${path.basename(tempInput)}"`,
+        `-auto-orient -resize 128x128^ -gravity center -background black -extent 128x128`,
+        `"/images/${path.basename(tempOutput)}"`
+      ].join(" ");
 
 
       await new Promise((resolve, reject) => {
