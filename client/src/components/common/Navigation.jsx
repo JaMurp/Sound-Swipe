@@ -58,13 +58,13 @@ export const PrivateNavigation = () => {
         <Navbar.Toggle />
         <Navbar.Collapse>
           <Nav className="me-auto">
-            <Nav.Link href="/dashboard">Dashboard</Nav.Link>
+            {/* <Nav.Link href="/dashboard">Dashboard</Nav.Link> */}
             <Nav.Link href="/leaderboard">Leaderboard</Nav.Link>
             <Nav.Link href="/feed">Feed</Nav.Link>
           </Nav>
-          <Nav>
+          {/* <Nav>
             <Nav.Link href={`/friends/${currentUser.uid}`}>Friends</Nav.Link>
-          </Nav>
+          </Nav> */}
           <Nav>
             <Nav.Link href="/notifications">Notifications</Nav.Link>
           </Nav>
@@ -76,6 +76,7 @@ export const PrivateNavigation = () => {
           <Nav>
             <NavDropdown title="Profile" align="end">
               <NavDropdown.Item onClick={() => navigate(`/profile/${currentUser.uid}`)}>Profile</NavDropdown.Item>
+              <NavDropdown.Item onClick={() => navigate(`/friends/${currentUser.uid}`)}>Friends</NavDropdown.Item>
               <NavDropdown.Item href="/settings">Settings</NavDropdown.Item>
               <NavDropdown.Divider />
               <NavDropdown.Item onClick={handleLogout}>Sign Out</NavDropdown.Item>
