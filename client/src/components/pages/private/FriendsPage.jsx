@@ -64,7 +64,7 @@ const FriendsPage = () => {
         navigate(`/profile/${friendId}`);
     };
 
-    if (loading) return <div><LoadingSpinner /></div>;
+    // if (loading) return <div><LoadingSpinner /></div>;
     if (error) return <div>{error}</div>;
 
     return (
@@ -72,66 +72,78 @@ const FriendsPage = () => {
             <div className="centertext mt-4">
                 <h1>Friends</h1>
             </div>
-
-
-            {friends.length === 0 ? (
-                <div className="centertext mt-5 mb-5" >
-                    <h3>You have no friends yet.</h3>
-                    <h6>Lol what a loser</h6>
-                </div>
-            ) : (
-
+            {loading ?
                 <div>
-                    <h3>Your Friends: {friends.length}</h3>
-                    {friends.map(friend => (
-                        <div
-                            key={friend.id}
-                            className="friend-container"
-                            onClick={() => handleFriendClick(friend.id)}
-                        >
-
-                            <img src={friend.avatar_url} alt={friend.username} width={75} />
-                            <h3>{friend.username}</h3>
-
-                        </div>
-                    ))}
-                </div>)}
-            <Divider aria-hidden="true" />
-
-            {profileOwner && (
-
-                <div className="mt-5">
-                    <div className="centertext mb-5">
-                        <h2>Recommended Friends</h2>
-                    </div>
-
-                    <Grid container spacing={2} sx={{ marginTop: 2 }}>
-                        {recommendedFriends.map(user => (
-                            <Grid size={{ md: 6, lg: 4 }} key={user.id}>
-                                <ButtonBase
-
-                                    onClick={() => handleFriendClick(user.id)}
-                                    sx={{ width: "100%", marginBottom: 2 }}
-                                >
-                                    <Card sx={{ width: "100%" }} className="leaderboard-skeleton">
-                                        <CardMedia>
-                                            <Avatar alt={user.username} src={user.avatar_url} sx={{ width: 250, height: 250 }} />
-                                        </CardMedia>
-                                        <CardContent sx={{ textAlign: 'center' }} className="mt-3 mb-3">
-                                            <Typography variant="h5" component="div" sx={{ color: 'text.primary' }}>
-                                                {user.username}
-                                            </Typography>
-                                        </CardContent>
-
-                                    </Card>
-                                </ButtonBase>
-                            </Grid>
-                        ))}
-                    </Grid>
+                    <LoadingSpinner />
                 </div>
-            )}
+                :
+                <div>
+
+
+                    {friends.length === 0 ? (
+                        <div className="centertext mt-5 mb-5" >
+                            <h3>You have no friends yet.</h3>
+                            <h6>Lol what a loser</h6>
+                        </div>
+                    ) : (
+
+                        <div>
+                            <h3>Your Friends: {friends.length}</h3>
+                            {friends.map(friend => (
+                                <div
+                                    key={friend.id}
+                                    className="friend-container"
+                                    onClick={() => handleFriendClick(friend.id)}
+                                >
+
+                                    <img src={friend.avatar_url} alt={friend.username} width={75} />
+                                    <h3>{friend.username}</h3>
+
+                                </div>
+                            ))}
+                        </div>)
+                    }
+                    < Divider aria-hidden="true" />
+
+                    {profileOwner && (
+
+                        <div className="mt-5">
+                            <div className="centertext mb-5">
+                                <h2>Recommended Friends</h2>
+                            </div>
+
+                            <Grid container spacing={2} sx={{ marginTop: 2 }}>
+                                {recommendedFriends.map(user => (
+                                    <Grid size={{ md: 6, lg: 4 }} key={user.id}>
+                                        <ButtonBase
+
+                                            onClick={() => handleFriendClick(user.id)}
+                                            sx={{ width: "100%", marginBottom: 2 }}
+                                        >
+                                            <Card sx={{ width: "100%" }} className="leaderboard-skeleton">
+                                                <CardMedia>
+                                                    <Avatar alt={user.username} src={user.avatar_url} sx={{ width: 250, height: 250 }} />
+                                                </CardMedia>
+                                                <CardContent sx={{ textAlign: 'center' }} className="mt-3 mb-3">
+                                                    <Typography variant="h5" component="div" sx={{ color: 'text.primary' }}>
+                                                        {user.username}
+                                                    </Typography>
+                                                </CardContent>
+
+                                            </Card>
+                                        </ButtonBase>
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        </div>
+                    )}
+
+                </div>
+            }
         </div>
+
     );
+
 };
 
 export default FriendsPage;

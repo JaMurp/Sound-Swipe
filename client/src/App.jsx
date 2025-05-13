@@ -13,7 +13,7 @@ import Leaderboard from './components/pages/private/Leaderboard.jsx';
 import FeedPage from './components/pages/public/FeedPage.jsx';
 import LikedSongsPage from './components/pages/private/LikedSongsPage.jsx';
 import Notifications from './components/pages/private/Notifications.jsx';
-
+import LiveFeed from './components/pages/private/LiveFeed.jsx';
 function App() {
 
   return (
@@ -36,6 +36,7 @@ function App() {
           <Route path='/notifications' element={<Notifications />} />
           <Route path='/feed' element={<FeedPage />} />
           <Route path='/likes' element={<LikedSongsPage />} />
+          <Route path='/live-feed' element={<LiveFeed />} />
         </Route>
 
         <Route path='*' element={<Navigate to='/' />} />

@@ -250,12 +250,48 @@ router.get('/liked-songs/:id', async (req, res) => {
       const getLikesSongs = await userDataFunctions.getLikedSongs(req.user.uid);
       if (!getLikesSongs) return res.status(404).json({ error: 'No liked songs found' });
       return res.status(200).json(getLikesSongs);
-  } catch (e) {
+    } catch (e) {
       console.log(e);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
   } else {
-    return res.status(404).json({ error: 'User not Setup yet' });
+    try {
+
+      const showLikesOnProfile = await userDataFunctions.checkShowLikesOnProfile(req.params.id);
+
+
+      if (!showLikesOnProfile) {
+        return res.status(200).json({ success: true, message: 'User has hidden their liked songs', private: true });
+      }
+
+      const requestingUser = await userDataFunctions.getUser(req.user.uid);
+      const targetUser = await userDataFunctions.getUser(req.params.id);
+
+
+
+      if (!targetUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      let isFriend = false;
+      for (const friend of requestingUser.friends) {
+        if (friend.id === req.params.id) {
+          isFriend = true;
+          break;
+        }
+      }
+
+      if (!isFriend) {
+        return res.status(403).json({ error: 'Not authorized to view liked songs' });
+      }
+
+      const getLikesSongs = await userDataFunctions.getLikedSongs(req.params.id);
+      if (!getLikesSongs) return res.status(404).json({ error: 'No liked songs found' });
+      return res.status(200).json(getLikesSongs);
+    } catch (e) {
+      console.log(e);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
 });
 

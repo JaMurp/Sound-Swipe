@@ -3,6 +3,9 @@ import * as songsDataFunctions from '../data/songsDataFunctions.js';
 import * as userDataFunctions from '../data/userDataFunctions.js';
 import * as swipingFunctions from '../data/swipingFunctions.js';
 import * as songValidation from '../helpers/songValidation.js';
+import { io } from '../server.js';
+
+
 
 const router = Router();
 
@@ -141,12 +144,27 @@ router.post('/seen', async (req, res) => {
         await swipingFunctions.incrementIndex(req.user.uid);
     } catch (e) {
         console.log(e);
-        return res.status(500).json({ error: e });
+        return res.status(500).json({error: e});
     }
     try {
         console.log(songId, req.user.uid, liked, "adding seen song");
-        await songsDataFunctions.addSeenSong(songId, req.user.uid, liked);
-        return res.status(200).json({ success: true, message: 'Song seen successfully' });
+        const {addedSong} = await songsDataFunctions.addSeenSong(songId, req.user.uid, liked);
+
+        if (!addedSong) {
+            return res.status(500).json({error: 'Song not added to seen songs'});
+        }
+        const song = addedSong;
+        if (liked) {
+            // emit the song to the socket 
+            if (user.showLikes === true) {
+                const io = req.app.get('io');
+                setImmediate(() => {
+                    io.emit('new_liked_song_public', {song: song, user: user.username});
+                });
+            }
+        }
+
+        return res.status(200).json({success: true, message: 'Song seen successfully'});
     } catch (e) {
         console.log(e, "error adding seen song");
         return res.status(500).json({ error: e });

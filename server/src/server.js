@@ -5,9 +5,26 @@ import { verifyFirebaseToken } from './middleware/authMiddleware.js';
 import scheduleJobs from './scheduler/home_page_jobs.js';
 import redis from './config/redis.js';
 import * as publicDataFunctions from './data/publicDataFunctions.js';
+import http from 'http';
+import { Server } from 'socket.io';
+
+export {io};
 
 // create a server
 const app = express();
+
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH",]
+  }
+});
+
+
+// mount io
+app.set('io', io);
 
 // CORS for frontend on port 5173
 app.use(cors({ origin: "http://localhost:5173" }));
@@ -52,8 +69,17 @@ app.use((req, res) => {
   res.status(404).json({ error: "Route Not Found!" });
 });
 
+
+
+io.on('connection', (socket) => {
+  console.log('user connected');
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+  });
+});
+
 // Start server
-app.listen(3000, () => {
+server.listen(3000, () => {
   console.log("Server is running on port 3000");
 });
 
