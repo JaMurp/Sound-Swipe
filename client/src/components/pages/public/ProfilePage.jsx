@@ -11,207 +11,14 @@ import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import AudioPlayer from '../../common/AudioPlayer';
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import Avatar from '@mui/material/Avatar';
+import Link from '@mui/material/Link';
+import { grey } from "@mui/material/colors";
+import Skeleton from '@mui/material/Skeleton';
 
-const ProfileContainer = styled.div`
-    width: 100%;
-    height: calc(100vh - 60px); /* Subtract navbar height */
-    color: white;
-    background: #121212;
-    overflow: hidden;
-    position: relative;
-`;
 
-const LoadingContainer = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    color: white;
-`;
-
-const ErrorContainer = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-    color: red;
-`;
-
-const ProfileHeader = styled.div`
-    width: 100%;
-    padding: 24px 32px;
-    background: linear-gradient(transparent 0, rgba(0,0,0,.5) 100%);
-    height: 40%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-`;
-
-const ProfileInfo = styled.div`
-    display: flex;
-    align-items: flex-end;
-    gap: 24px;
-`;
-
-const ProfileImage = styled.img`
-    width: 192px;
-    height: 192px;
-    border-radius: 50%;
-    object-fit: cover;
-    box-shadow: 0 4px 60px rgba(0, 0, 0, 0.5);
-`;
-
-const ProfileText = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-`;
-
-const ProfileLabel = styled.span`
-    font-size: 14px;
-    font-weight: 500;
-    color: #fff;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-`;
-
-const ProfileName = styled.h1`
-    font-size: 48px;
-    font-weight: 700;
-    margin: 0;
-    color: #fff;
-    margin-bottom: 8px;
-`;
-
-const ProfileStats = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    color: #b3b3b3;
-    font-size: 14px;
-`;
-
-const Bio = styled.p`
-    color: #b3b3b3;
-    font-size: 14px;
-    margin: 16px 0;
-`;
-
-const ContentContainer = styled.div`
-    padding: 0 32px;
-    max-width: 1955px;
-    margin: 0 auto;
-    height: 60%;
-    overflow-y: auto;
-    
-    /* Custom scrollbar styling */
-    &::-webkit-scrollbar {
-        width: 8px;
-    }
-    
-    &::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    
-    &::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 4px;
-    }
-    
-    &::-webkit-scrollbar-thumb:hover {
-        background: #555;
-    }
-`;
-
-const ContentSection = styled.div`
-    margin: 40px 0;
-`;
-
-const SectionHeader = styled.div`
-    display: flex;
-    align-items: center;
-    margin-bottom: 20px;
-    justify-content: space-between;
-`;
-
-const SectionTitle = styled.h2`
-    font-size: 24px;
-    font-weight: 700;
-    margin: 0;
-    color: #fff;
-`;
-
-const ShowAllButton = styled.button`
-    background: none;
-    border: none;
-    color: #b3b3b3;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 0;
-    &:hover {
-        color: white;
-    }
-`;
-
-const EditButton = styled.button`
-    background: transparent;
-    border: 1px solid #727272;
-    border-radius: 4px;
-    color: white;
-    padding: 5px 12px;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    margin-top: 12px;
-    transition: all 0.2s ease;
-
-    &:hover {
-        border-color: white;
-        transform: scale(1.02);
-    }
-`;
-
-const FriendButton = styled.button`
-    background: transparent;
-    border: 1px solid #727272;
-    border-radius: 4px;
-    color: white;
-    padding: 5px 12px;
-    font-size: 12px;
-    font-weight: 500;
-    cursor: pointer;
-    margin-top: 12px;
-    transition: all 0.2s ease;
-
-    &:hover {
-        border-color: white;
-        transform: scale(1.02);
-    }
-`;
-
-const FriendCounter = styled.span`
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
-    &:hover {
-        text-decoration: underline;
-    }
-`;
-
-const LikedSongsSection = styled.div`
-    margin-top: 24px;
-    padding: 0 32px;
-`;
-
-const LikedSongsGrid = styled.div`
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 16px;
-    margin-top: 16px;
-`;
 
 const ProfilePage = () => {
     const [userData, setUserData] = useState(null);
@@ -229,6 +36,7 @@ const ProfilePage = () => {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const { userId } = useParams();
+    const [loadingSongs, setLoadingSongs] = useState(true);
 
     useEffect(() => {
         const getProfileData = async () => {
@@ -299,9 +107,10 @@ const ProfilePage = () => {
     }, [currentUser, navigate, userId, refresh]);
 
     useEffect(() => {
+        setLoadingSongs(true);
         const fetchLikedSongs = async () => {
             if (!friended || !userId) return;
-            
+
             try {
                 const idToken = await currentUser.getIdToken();
                 const { data } = await axios.get(`http://localhost:3000/api/users/liked-songs/${userId}`, {
@@ -317,6 +126,9 @@ const ProfilePage = () => {
                 setLikedSongs(data);
             } catch (error) {
                 console.error('Error fetching liked songs:', error);
+            }
+            finally {
+                setLoadingSongs(false);
             }
         };
 
@@ -340,7 +152,7 @@ const ProfilePage = () => {
         const response = await fetch("http://localhost:3000/api/profile-photo/upload-profile-photo", {
             method: "POST",
             headers: {
-            Authorization: `Bearer ${idToken}`,
+                Authorization: `Bearer ${idToken}`,
             },
             body: formData,
         });
@@ -348,8 +160,8 @@ const ProfilePage = () => {
         const data = await response.json();
         if (data.imageUrl) {
             setUserData((prev) => ({
-            ...prev,
-            avatar_url: data.imageUrl,
+                ...prev,
+                avatar_url: data.imageUrl,
             }));
         }
 
@@ -483,128 +295,185 @@ const ProfilePage = () => {
         }
     };
 
-    if (loading) return <LoadingContainer><LoadingSpinner /></LoadingContainer>;
-    if (error) return <ErrorContainer>Error: {error}</ErrorContainer>;
+    if (loading) return <LoadingSpinner />;
+    if (error) return (<p>Error: {error}</p>);
 
     return (
-        <ProfileContainer>
-            {userData && (
-                <>
-                    <ProfileHeader>
-                        <ProfileInfo>
-                            <ProfileImage
-                                src={userData.avatar_url}
-                                alt={userData.username}
-                            />
-                            {profileOwner && (
-                                <>
-                                    <EditButton onClick={() => fileInputRef.current.click()}>
-                                    Upload Profile Photo
-                                    </EditButton>
-                                    <input
-                                    type="file"
-                                    accept="image/*"
-                                    ref={fileInputRef}
-                                    onChange={handleProfilePhotoUpload}
-                                    style={{ display: "none" }}
-                                    />
-                                    {uploading && (
-                                    <span style={{ color: "#b3b3b3", marginTop: "8px" }}>
-                                        Uploading...
-                                    </span>
-                                    )}
-                                </>
-                            )}
+        <div>
+            <div className="centertext mt-4 mb-4">
+                <h1>Profile</h1>
+            </div >
 
-                            <ProfileText>
-                                <ProfileLabel>Profile</ProfileLabel>
-                                <ProfileName>{userData.username}</ProfileName>
-                                <ProfileStats>
-                                    <span>Member since {new Date(userData.createdAt._seconds * 1000).getFullYear()}</span>
-                                    <FriendCounter onClick={handleFriendsClick}>
-                                        Friends:
-                                        {friendsCount}
-                                    </FriendCounter>
-                                </ProfileStats>
-                                {profileOwner && (
-                                    <EditButton onClick={handleEditProfile}>
-                                        Edit profile
-                                    </EditButton>
-                                )}
-                                {friendDefault && !requested && (
-                                    <FriendButton onClick={handleRequestFriend}>
-                                        Request
-                                    </FriendButton>
-                                )}
-                                {friended && (
-                                    <FriendButton onClick={handleRemoveFriend}>
-                                        Remove
-                                    </FriendButton>
-                                )}
-                                {requested && (
-                                    <span>
-                                        Requested!
-                                    </span>
-                                )}
-                                {receivedRequest && (
-                                    <span>
-                                        <FriendButton onClick={handleAcceptFriend}>
-                                            Accept
-                                        </FriendButton>
-                                        <FriendButton onClick={handleRejectFriend}>
-                                            Reject
-                                        </FriendButton>
-                                    </span>
-                                )}
-                                {userData.bio && <Bio>{userData.bio}</Bio>}
-                            </ProfileText>
-                        </ProfileInfo>
-                    </ProfileHeader>
-                    <ContentContainer>
-                        {friended && !profileOwner && (
-                            <LikedSongsSection>
-                                <SectionHeader>
-                                    <SectionTitle>Liked Songs</SectionTitle>
-                                </SectionHeader>
-                                {likedSongs && likedSongs.private ? (
-                                    <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-                                        This user has hidden their liked songs
-                                    </Typography>
-                                ) : (
-                                    <LikedSongsGrid>
-                                        {likedSongs && likedSongs.map((song) => (
-                                            <Card key={song.id} sx={{ maxWidth: 345 }}>
-                                                <CardMedia
-                                                    component="img"
-                                                    height="140"
-                                                    image={song.artistImage}
-                                                    alt={song.artistName}
+            {userData && (
+                <Stack direction="column" spacing={2} sx={{ alignContent: "center" }}>
+                    <div className="center-leaderboard-filter">
+                        <Card sx={{ display: "flex", width: "85%" }} >
+
+
+                            <Grid container spacing={2} sx={{ padding: 2, alignContent: "center", width: "100%" }}>
+                                <Grid size={{ sm: 12, md: 3 }} >
+                                    <Stack direction="column" spacing={2} alignItems="center">
+
+
+                                        <Avatar
+                                            alt={userData.username}
+                                            src={userData.avatar_url}
+                                            sx={{ width: 200, height: 200 }}
+                                        />
+
+
+                                        {profileOwner && (
+                                            <>
+                                                <Button variant="text" onClick={() => fileInputRef.current.click()}>
+                                                    Edit Photo
+                                                </Button>
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    ref={fileInputRef}
+                                                    onChange={handleProfilePhotoUpload}
+                                                    style={{ display: "none" }}
                                                 />
-                                                <CardContent>
-                                                    <Typography gutterBottom variant="h6" component="div">
-                                                        {song.songTitle}
-                                                    </Typography>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                        {song.artistName}
-                                                    </Typography>
-                                                    <AudioPlayer
-                                                        getUrl={() => getAudioUrl(song.id)}
-                                                        songId={song.id}
-                                                        currentlyPlayingId={currentlyPlayingId}
-                                                        setCurrentlyPlayingId={setCurrentlyPlayingId}
-                                                    />
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                    </LikedSongsGrid>
-                                )}
-                            </LikedSongsSection>
+                                                {uploading && <Typography>Uploading...</Typography>}
+                                            </>
+                                        )}
+                                    </Stack>
+                                </Grid>
+
+                                <Grid size={{ sm: 12, md: 9 }}>
+                                    <Stack direction="column" spacing={2} alignItems="left" padding={4}>
+                                        <Typography variant="h4">{userData.username}</Typography>
+                                        <Stack direction="row" spacing={3} alignItems="center">
+                                            <Typography variant="body1">
+                                                Member since {new Date(userData.createdAt._seconds * 1000).getFullYear()}
+                                            </Typography>
+                                            {/* <Button variant="outlined" onClick={handleFriendsClick}>
+                                        Friends: {friendsCount}
+                                    </Button> */}
+                                            <Link
+                                                component={"button"}
+                                                variant="body1"
+                                                onClick={handleFriendsClick}
+                                                underline="hover"
+                                                color="inherit"
+                                            >
+                                                Friends: {friendsCount}
+                                            </Link>
+                                        </Stack>
+
+
+                                        {profileOwner && (
+                                            <Button variant="contained" onClick={handleEditProfile}
+                                                sx={{ width: "fit-content", alignSelf: "flex-start" }}>
+                                                Edit Profile
+                                            </Button>
+                                        )}
+
+                                        {friendDefault && !requested && (
+                                            <Button variant="contained" onClick={handleRequestFriend}
+                                                sx={{ width: "fit-content", alignSelf: "flex-start" }}>
+                                                Request
+                                            </Button>
+                                        )}
+
+                                        {friended && (
+                                            <Button variant="contained" onClick={handleRemoveFriend}
+                                                sx={{ width: "fit-content", alignSelf: "flex-start" }}>
+                                                Remove
+                                            </Button>
+                                        )}
+
+                                        {requested && (
+                                            <Button variant="contained" disabled onClick={handleRequestFriend}
+                                                sx={{ width: "fit-content", alignSelf: "flex-start" }}>
+                                                Requested!
+                                            </Button>
+                                        )}
+
+                                        {receivedRequest && (
+                                            <Stack direction="row" spacing={2}>
+                                                <Button variant="contained" onClick={handleAcceptFriend}
+                                                    sx={{ width: "fit-content", alignSelf: "flex-start" }}>
+
+                                                    Accept
+                                                </Button>
+                                                <Button variant="outlined" onClick={handleRejectFriend}
+                                                    sx={{ width: "fit-content", alignSelf: "flex-start" }}>
+                                                    Reject
+                                                </Button>
+                                            </Stack>
+                                        )}
+
+                                        {userData.bio ? <Typography variant="body2">{userData.bio}</Typography>
+                                            : <Typography variant="body2" sx={{ color: grey[700] }}>No user bio </Typography>}
+                                    </Stack>
+                                </Grid>
+                            </Grid>
+                        </Card>
+
+                    </div>
+                    <div className="center-leaderboard-filter">
+                        {friended && !profileOwner && (
+                            <Card sx={{ display: "flex", width: "85%" }} >
+                                <Grid container spacing={2} sx={{ padding: 2, alignContent: "center", width: "100%" }}>
+                                    <Stack direction="column" spacing={2} width={"100%"}>
+                                        <Grid sx={{ xs: 12, sm: 6, width: "100%" }} >
+                                            <Typography variant="h5">Liked Songs</Typography>
+                                        </Grid>
+                                        {loadingSongs ? (
+                                            <Stack sx={{ display: 'flex', alignItems: 'center' }} spacing={1}>
+                                                <Skeleton variant="rounded" width={"100%"} height={130} sx={{ marginTop: 2 }} />
+                                                <Skeleton variant="rounded" width={"100%"} height={130} sx={{ marginTop: 2 }} />
+                                                <Skeleton variant="rounded" width={"100%"} height={130} sx={{ marginTop: 2 }} />
+                                            </Stack>
+                                        ) : (
+                                            <div>
+                                                {likedSongs && likedSongs.private ? (
+                                                    <Typography variant="body1" sx={{ color: grey[700] }}>This user has hidden their liked songs</Typography>
+                                                ) : (
+                                                    likedSongs.map((song) => (
+                                                        <Grid xs={12} sm={6} md={4} key={song.id} width={"100%"}>
+                                                            <Card sx={{ display: "flex", width: "100%", marginBottom: 2 }}>
+                                                                <CardMedia
+                                                                    component="img"
+                                                                    sx={{ width: 130 }}
+                                                                    image={song.artistImage}
+                                                                    alt={song.artistName}
+                                                                />
+                                                                <CardContent sx={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+                                                                    <Grid container spacing={2} sx={{ width: "100%" }}>
+                                                                        <Grid spacing={{ xs: 12, sm: 6 }} sx={{ flexGrow: 1 }}>
+                                                                            <Typography variant="h6">{song.songTitle}</Typography>
+                                                                            <Typography variant="body2">{song.artistName}</Typography>
+                                                                        </Grid>
+                                                                        <Grid spacing={{ xs: 12, sm: 6 }} sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
+                                                                            <AudioPlayer
+                                                                                getUrl={() => getAudioUrl(song.id)}
+                                                                                songId={song.id}
+                                                                                currentlyPlayingId={currentlyPlayingId}
+                                                                                setCurrentlyPlayingId={setCurrentlyPlayingId}
+                                                                            />
+                                                                        </Grid>
+                                                                    </Grid>
+                                                                </CardContent>
+                                                            </Card>
+                                                        </Grid>
+                                                    ))
+                                                )}
+                                            </div>
+                                        )}
+                                    </Stack>
+                                </Grid>
+                            </Card>
+
                         )}
-                    </ContentContainer>
-                </>
+                    </div>
+                </Stack>
             )}
-        </ProfileContainer>
+
+        </div>
     );
 };
+
 
 export default ProfilePage; 

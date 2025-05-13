@@ -5,10 +5,20 @@ services:
     image: redis:7-alpine
     container_name: redis
     ports:
-      - "6380:6379" 
+      - "6380:6379"
     volumes:
       - redis-data:/data
     restart: unless-stopped
 
+  imagemagick:
+    image: dpokidov/imagemagick
+    container_name: imagemagick
+    volumes:
+      - ./src/uploads:/images   
+      - ./temp_uploads:/temp_uploads   
+    working_dir: /images
+    entrypoint: ["tail", "-f", "/dev/null"]  
+
 volumes:
   redis-data:
+
