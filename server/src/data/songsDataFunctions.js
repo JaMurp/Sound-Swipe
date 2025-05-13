@@ -343,7 +343,7 @@ const getSongByIdFromApi = async (songId) => {
   }
 
   return response.preview;
-}
+};
 
 export const addFriendLikeToFeed = async (uid, song) => {
   try {
@@ -360,7 +360,6 @@ export const addFriendLikeToFeed = async (uid, song) => {
   } catch (e) {
     throw e;
   }
-}
 };
 
 export const getSong = async (songId) => {

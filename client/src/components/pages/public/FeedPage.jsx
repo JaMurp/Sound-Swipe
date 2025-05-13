@@ -22,25 +22,25 @@ export default function FeedPage() {
 
   const groupLikesByUserSession = async (likes, thresholdMinutes = 45) => {
     const grouped = [];
+    const userSessions = new Map();
+
 
     likes.forEach(like => {
-      const lastGroup = grouped[grouped.length - 1];
+      const userSession = userSessions.get(like.uid);
       const likeTime = new Date(like.likedAt.toDate());
 
-      if (
-        lastGroup &&
-        lastGroup.userId === like.userId &&
-        (likeTime - lastGroup.lastLikeTime) / 60000 < thresholdMinutes
-      ) {
-        lastGroup.songs.push(like);
-        lastGroup.lastLikeTime = likeTime;
+      if (userSession && (likeTime - userSession.lastLikeTime) / 60000 < thresholdMinutes) {
+        userSession.songs.push(like);
+        userSession.lastLikeTime = likeTime;
       } else {
-        grouped.push({
-          userId: like.userId,
+        const newGroup = {
+          uid: like.uid,
           username: like.username,
           songs: [like],
           lastLikeTime: likeTime,
-        });
+        }
+        grouped.push(newGroup);
+        userSessions.set(like.uid, newGroup);
       }
     });
 
@@ -52,12 +52,19 @@ export default function FeedPage() {
       const q = query(collection(db, "likedSongsFeed"), orderBy("likedAt", "desc"));
       const likedSongsFeedDoc = await getDocs(q);
 
-      const likes = await Promise.all(likedSongsFeedDoc.docs.map(async doc => {
-        const data = doc.data();
-        const userDoc = await getDoc(doc(db, "users", data.userId));
-        const username = userDoc.exists() ? userDoc.data().username : "Unknown User";
+      const likes = await Promise.all(likedSongsFeedDoc.docs.map(async docSnap => {
+        const data = docSnap.data();
+        let username = "Unknown User";
+        if (data.uid) {
+          const userDoc = await getDoc(doc(db, "users", data.uid));
+          if (userDoc.exists()) {
+            username = userDoc.data().username || username;
+          }
+        }
+
         return { ...data, id: docSnap.id, username };
       }));
+      likes.sort((a, b) => a.likedAt.toDate() - b.likedAt.toDate());
 
       const grouped = await groupLikesByUserSession(likes);
       setFriendLikes(grouped);
@@ -191,55 +198,58 @@ export default function FeedPage() {
           <button type="submit">Post</button>
         </form>
       )}
+      <div className="feed">
+        <div className="friends-likes">
+          {friendLikes.length > 0 && friendLikes.map((session, index) => (
+            <div key={index} className="post-item">
+              <p><strong>{session.username}</strong> liked {session.songs.length} song{session.songs.length > 1 ? 's' : ''}</p>
+              <ul>
+                {session.songs.slice(0, 5).map(song => (
+                  <li key={song.id}>
+                    <p>{song.song_name} - {song.artist_name}</p>
+                  </li>
+                ))}
+              </ul>
+              {session.songs.length > 5 && (<p> plus {session.songs.length - 5} more...</p>)}
+            </div>
+          ))}
+        </div>
 
-      <div className="friend-likes">
-        {friendLikes.length > 0 && friendLikes.map((session, index) => (
-          <div key={index} className="friend-likes">
-            <p><strong>{session.username}</strong> liked {session.songs.length} song{session.songs.length > 1 ? 's' : ''}</p>
-            <ul>
-              {session.songs.map(song => (
-                <li key={song.id}>
-                  <p>{song.songTitle} - {song.artistName}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
-      </div>
 
-
-      <div className="posts-list">
-        {posts.map((post) => (
-          <div className="post-item" key={post.postUid}>
-            <p className="post-author">Posted by: {post.username}</p>
-            {editingPostId === post.postUid ? (
-              <>
-                <textarea
-                  value={editedText}
-                  onChange={(e) => setEditedText(e.target.value)}
-                />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setEditedImage(e.target.files[0])}
-                />
-                <button onClick={() => handleSaveEdit(post)}>Save</button>
-                <button onClick={() => setEditingPostId(null)}>Cancel</button>
-              </>
-            ) : (
-              <>
-                {post.text && <p>{post.text}</p>}
-                {post.imageUrl && <img src={post.imageUrl} alt="post" className="post-image" />}
-                {currentUser?.uid === post.uid && (
-                  <div className="post-actions">
-                    <button onClick={() => handleEdit(post)}>Edit</button>
-                    <button onClick={() => handleDelete(post)}>Delete</button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        ))}
+        <div className="posts-list">
+          <h2>Recent Posts</h2>
+          {posts.map((post) => (
+            <div className="post-item" key={post.postUid}>
+              <p className="post-author">Posted by: {post.username}</p>
+              {editingPostId === post.postUid ? (
+                <>
+                  <textarea
+                    value={editedText}
+                    onChange={(e) => setEditedText(e.target.value)}
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setEditedImage(e.target.files[0])}
+                  />
+                  <button onClick={() => handleSaveEdit(post)}>Save</button>
+                  <button onClick={() => setEditingPostId(null)}>Cancel</button>
+                </>
+              ) : (
+                <>
+                  {post.text && <p>{post.text}</p>}
+                  {post.imageUrl && <img src={post.imageUrl} alt="post" className="post-image" />}
+                  {currentUser?.uid === post.uid && (
+                    <div className="post-actions">
+                      <button onClick={() => handleEdit(post)}>Edit</button>
+                      <button onClick={() => handleDelete(post)}>Delete</button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

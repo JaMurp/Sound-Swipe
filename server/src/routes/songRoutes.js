@@ -146,6 +146,20 @@ router.post('/seen', async (req, res) => {
         console.log(e);
         return res.status(500).json({error: e});
     }
+
+    // check to make sure the user exists
+    let user = null;
+    try {
+        user = await userDataFunctions.getUser(req.user.uid);
+        console.log(user);
+        if (!user) {
+            return res.status(404).json({error: 'User not found'});
+        }
+    } catch(e) {
+        return res.status(404).json({error: e});
+    }
+
+    
     try {
         console.log(songId, req.user.uid, liked, "adding seen song");
         const {addedSong} = await songsDataFunctions.addSeenSong(songId, req.user.uid, liked);
