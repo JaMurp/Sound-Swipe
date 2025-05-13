@@ -9,7 +9,7 @@ const LibraryPage = () => {
 
     return (
         <>
-            <Nav justify variant="pills" activeKey={activeTab} onSelect={(selectedKey) => setActiveTab(selectedKey)}>
+            {/* <Nav justify variant="pills" activeKey={activeTab} onSelect={(selectedKey) => setActiveTab(selectedKey)}>
                 <Nav.Item >
                     <Nav.Link eventKey="liked-songs">Liked Songs</Nav.Link>
                 </Nav.Item>
@@ -17,10 +17,10 @@ const LibraryPage = () => {
                 <Nav.Item >
                     <Nav.Link eventKey="playlists">Playlists</Nav.Link>
                 </Nav.Item>
-            </Nav>
+            </Nav> */}
 
             {activeTab === 'liked-songs' && <LikedSongsPage />}
-            {activeTab === 'playlists' && <PlaylistPage />}
+            {/* {activeTab === 'playlists' && <PlaylistPage />} */}
         </>
     );
 };

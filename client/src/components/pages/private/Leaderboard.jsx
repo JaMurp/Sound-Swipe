@@ -11,7 +11,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Stack from '@mui/material/Stack';
-import SongModal from './SongModal';
+import SongModal from '../../common/SongModal';
 import Grid from '@mui/material/Grid';
 import ButtonBase from '@mui/material/ButtonBase';
 import Skeleton from '@mui/material/Skeleton';
@@ -172,7 +172,7 @@ const Leaderboard = () => {
                             <div className='center-leaderboard-rank'>
                                 <h1>{`${index + 1}.`}</h1>
                             </div>
-                            <ButtonBase sx={{ width: '100%' }} onClick={() => handleOpenModal(song)}>
+                            <ButtonBase sx={{ width: '100%',  display: "flex"}} onClick={() => handleOpenModal(song)}>
                                 <Card sx={{ display: 'flex', minWidth: 800, maxWidth: 800 }}>
                                     <CardMedia
                                         component="img"

@@ -18,7 +18,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgb(118, 116, 133);
+  /* background-color: rgb(118, 116, 133); */
   height: 92vh;
 }
 
@@ -49,4 +49,12 @@ div.leaderboard-skeleton {
   flex-direction: column;
   justify-content: center;
   align-items: center;
+}
+
+div.middle {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
 }
