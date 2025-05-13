@@ -8,6 +8,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import ButtonBase from '@mui/material/ButtonBase';
+import { CardActionArea } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
@@ -149,68 +150,51 @@ const Notifications = () => {
                                 <Stack direction="row" spacing={1} alignItems={'center'} justifyContent="center" sx={{ margin: 1, }}>
 
 
-                                    <ButtonBase
+                                   <Card sx={{ width: 800, my: 1 }}>
+                                        <CardActionArea
                                         onClick={() => handleNotifClick(notif)}
-                                        className=""
-                                        sx={{ display: "flex", minWidth: 800, maxWidth: 800 }}
+                                        sx={{ padding: 2 }}
                                     >
-                                        <Card sx={{ display: 'flex', width: '100%', alignItems: 'center', padding: 1 }}>
+                                        {notif.type === 'friend_request' && (
+                                        <Stack direction="row" spacing={2} alignItems="center">
+                                            <Avatar
+                                            alt={notif.username}
+                                            src={notif.avatar_url}
+                                            sx={{ width: 40, height: 40 }}
+                                            />
+                                            <Typography variant="body1">
+                                            <strong>{notif.username}</strong> sent you a friend request
+                                            </Typography>
+                                        </Stack>
+                                        )}
 
-                                            {notif.type === 'friend_request' && (
-                                                <>
-                                                    <Avatar
-                                                        alt={notif.username}
-                                                        src={notif.avatar_url}
-                                                        sx={{ width: 40, height: 40 }}
-                                                    />
-                                                    <Typography variant="body1" sx={{ marginLeft: 2 }}>
-                                                        <strong>{notif.username}</strong> sent you a friend request
-                                                    </Typography>
+                                        {notif.type === 'static' && (
+                                        <Typography variant="body1">
+                                            {notif.message}
+                                        </Typography>
+                                        )}
+                                    </CardActionArea>
 
-                                                </>
-                                            )}
+                                    {notif.type === 'login_recommendations' && (
+                                        <CardContent>
+                                        <Typography variant="h6">
+                                            We've found some users we think you'd like to meet:
+                                        </Typography>
+                                        {notif.recommendations.map((user) => (
+                                            <Stack direction="row" spacing={1} key={user.id} sx={{ mt: 1 }}>
+                                            <Avatar
+                                                alt={user.username}
+                                                src={user.avatar_url}
+                                                sx={{ width: 30, height: 30 }}
+                                            />
+                                            <Typography variant="body2">{user.username}</Typography>
+                                            </Stack>
+                                        ))}
+                                        </CardContent>
+                                    )}
+                                    </Card>
 
-                                            {notif.type === 'login_recommendations' && (
-                                                <CardContent>
-                                                    <h5 className="mt-3 mb-2">
-                                                        We've found some users we think you'd like to meet:
-                                                    </h5>
 
-                                                    {notif.recommendations.map(user => (
-                                                        <Stack direction="row" spacing={1} key={user.id} sx={{ margin: 1 }}>
-
-                                                            <Avatar
-                                                                alt={user.username}
-                                                                src={user.avatar_url}
-                                                                sx={{ width: 30, height: 30 }}
-                                                            />
-
-                                                            <Typography variant="body1" sx={{ marginLeft: 2 }}>
-                                                                {user.username}
-                                                            </Typography>
-
-                                                        </Stack>
-                                                    ))}
-                                                </CardContent>
-                                            )}
-
-                                            {notif.type === 'static' && <p>{notif.message}</p>}
-
-                                            {/* {hoveredId === notif.id && (
-                                            <button
-                                                className=""
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDelete(notif);
-                                                }}
-                                            >
-                                                <img src="public/trash-347.png" width={16} height={16} alt="Delete" />
-                                            </button>
-                                        )} */}
-
-                                        </Card>
-
-                                    </ButtonBase>
 
                                     <Tooltip title="Delete" placement="top" slotProps={{
                                         popper: {
