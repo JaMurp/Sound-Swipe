@@ -8,108 +8,9 @@ import { useAuth } from "../../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { doSignOut } from "../../../firebase/FirebaseFunctions";
+import './SettingsPage.css';
 
 // Dark Theme Styles
-const darkStyles = {
-    sidebarStyle: {
-        width: "220px",
-        background: "#0d1117",
-        padding: "0",
-        borderRight: "1px solid #30363d",
-        boxSizing: "border-box",
-        flex: "0 0 auto"
-    },
-    navLinkStyle: {
-        padding: "16px 24px",
-        fontSize: "16px",
-        fontWeight: 400,
-        color: "#c9d1d9",
-        cursor: "pointer",
-        borderLeft: "4px solid transparent",
-    },
-    navLinkActiveStyle: {
-        fontWeight: 700,
-        color: "#58a6ff",
-        background: "#161b22",
-        borderLeft: "4px solid #58a6ff",
-    },
-    containerStyle: {
-        display: "flex",
-        background: "#0d1117",
-        height: "calc(100vh - 50px)",
-        overflow: "hidden",
-        fontFamily: "Inter, system-ui, -apple-system, sans-serif",
-    },
-    mainStyle: {
-        flex: 1,
-        background: "#161b22",
-        margin: "16px",
-        border: "1px solid #30363d",
-        borderRadius: "6px",
-        padding: "32px 48px",
-        overflowY: "auto",
-        height: "calc(100vh - 82px)"
-    },
-    labelStyle: {
-        fontWeight: 600,
-        fontSize: "24px",
-        marginBottom: "24px",
-        color: "#ffffff"
-    },
-    fieldLabelStyle: {
-        fontWeight: 600,
-        fontSize: "16px",
-        marginTop: "16px",
-        marginBottom: "4px",
-        color: "#ffffff"
-    },
-    fieldValueStyle: {
-        fontSize: "16px",
-        marginBottom: "12px",
-        color: "#c9d1d9"
-    },
-    inputStyle: {
-        width: "100%",
-        padding: "6px 10px",
-        fontSize: "14px",
-        border: "1px solid #30363d",
-        borderRadius: "4px",
-        background: "#21262d",
-        color: "#c9d1d9"
-    },
-    buttonStyle: {
-        padding: "8px 24px",
-        borderRadius: "4px",
-        cursor: "pointer",
-        fontWeight: 500,
-        fontSize: "16px",
-        marginRight: "12px",
-    },
-    profilePicStyle: {
-        width: "120px",
-        height: "120px",
-        borderRadius: "50%",
-        backgroundColor: "#21262d",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        border: "2px solid #30363d",
-        overflow: "hidden",
-    },
-    inputHelperText: {
-        fontSize: '12px',
-        color: '#8b949e',
-        marginTop: '2px',
-    },
-    errorStyle: {
-        color: 'white', 
-        padding: '12px 16px', 
-        backgroundColor: '#3d1c24',
-        borderRadius: '4px',
-        marginBottom: '24px',
-        border: '1px solid #f5c6cb33'
-    }
-};
 
 const DeleteAccountModal = ({ open, onClose }) => {
     const [error, setError] = useState(null)
@@ -140,7 +41,7 @@ const DeleteAccountModal = ({ open, onClose }) => {
 
     return (
         <Modal show={open} onHide={onClose} centered>
-            {error && <div>{error}</div>}
+            {error && <div className="settings-error">{error}</div>}
             <Modal.Header closeButton>
                 <Modal.Title>Delete Account</Modal.Title>
             </Modal.Header>
@@ -269,16 +170,15 @@ const AccountContent = () => {
 
     return (
         <>
-            <div style={darkStyles.labelStyle}>Account Settings</div>
+            <div className="settings-label">Account Settings</div>
             {error && (
-                <div style={darkStyles.errorStyle}>
+                <div className="settings-error">
                     {error}
                 </div>
             )}
 
-            <div style={{ display: 'flex', gap: '24px', marginBottom: '24px' }}>
-                {/* Profile Picture Section */}
-                <div style={darkStyles.profilePicStyle}>
+            <div className="settings-form-container">
+                <div className="settings-profile-pic">
                     {userData?.avatar_url ? (
                         <img
                             src={userData.avatar_url}
@@ -292,13 +192,11 @@ const AccountContent = () => {
                     )}
                 </div>
 
-                {/* Form Fields */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {/* Username Field */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={darkStyles.fieldLabelStyle}>Username*</div>
+                <div className="settings-form-fields">
+                    <div className="settings-form-field">
+                        <div className="settings-field-label">Username*</div>
                         <input
-                            style={darkStyles.inputStyle}
+                            className="settings-input"
                             type="text"
                             name="username"
                             value={formData?.username || ''}
@@ -306,20 +204,15 @@ const AccountContent = () => {
                             disabled={!isEditing}
                             maxLength={30}
                         />
-                        <div style={darkStyles.inputHelperText}>
+                        <div className="settings-input-helper">
                             This is your public display name
                         </div>
                     </div>
 
-                    {/* Bio Field */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={darkStyles.fieldLabelStyle}>Bio</div>
+                    <div className="settings-form-field">
+                        <div className="settings-field-label">Bio</div>
                         <textarea
-                            style={{
-                                ...darkStyles.inputStyle,
-                                minHeight: '100px',
-                                resize: 'vertical'
-                            }}
+                            className="settings-input settings-textarea"
                             name="bio"
                             value={formData?.bio || ''}
                             onChange={handleChange}
@@ -327,34 +220,17 @@ const AccountContent = () => {
                             placeholder="Tell us about yourself"
                             maxLength={160}
                         />
-                        <div style={darkStyles.inputHelperText}>
+                        <div className="settings-input-helper">
                             {(formData?.bio?.length || 0)}/160 characters
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Action Buttons */}
-            <div style={{
-                position: "sticky",
-                bottom: "0",
-                background: "#161b22",
-                padding: "12px 0",
-                borderTop: "1px solid #30363d",
-                marginTop: "24px",
-                display: "flex",
-                gap: "8px",
-                justifyContent: "flex-end"
-            }}>
+            <div className="settings-action-bar">
                 {!isEditing ? (
                     <button
-                        style={{
-                            ...darkStyles.buttonStyle,
-                            background: "#58a6ff",
-                            color: "white",
-                            border: "none",
-                            padding: "6px 16px",
-                        }}
+                        className="settings-button settings-button-primary"
                         onClick={() => setIsEditing(true)}
                     >
                         Edit Profile
@@ -362,25 +238,13 @@ const AccountContent = () => {
                 ) : (
                     <>
                         <button
-                            style={{
-                                ...darkStyles.buttonStyle,
-                                background: "#21262d",
-                                color: "#c9d1d9",
-                                border: "1px solid #30363d",
-                                padding: "6px 16px",
-                            }}
+                            className="settings-button settings-button-secondary"
                             onClick={handleCancel}
                         >
                             Cancel
                         </button>
                         <button
-                            style={{
-                                ...darkStyles.buttonStyle,
-                                background: "#58a6ff",
-                                color: "white",
-                                border: "none",
-                                padding: "6px 16px",
-                            }}
+                            className="settings-button settings-button-primary"
                             onClick={handleSave}
                             disabled={loading}
                         >
@@ -442,7 +306,7 @@ const SettingsContent = () => {
     }, [])
 
     if (loading) return <div><LoadingSpinner /></div>
-    if (error) return <div style={darkStyles.errorStyle}>{error}</div>
+    if (error) return <div className="settings-error">{error}</div>
 
 
     const toggleExplicitData = async () => {
@@ -526,9 +390,9 @@ const SettingsContent = () => {
 
     return (
         <>
-            <div style={darkStyles.labelStyle}>Settings</div>
+            <div className="settings-label">Settings</div>
             <h2>Toggle Censored Data</h2>
-            <div style={darkStyles.fieldValueStyle}>
+            <div className="settings-field-value">
                 {explicitData ? 'Explicit content enabled' : 'Explicit content disabled'}
             </div>
             <Switch 
@@ -536,7 +400,7 @@ const SettingsContent = () => {
                 onChange={toggleExplicitData}
             />
             <h2 style={{marginTop: '24px'}}>Toggle Show Likes on Public Feed</h2>
-            <div style={darkStyles.fieldValueStyle}>
+            <div className="settings-field-value">
                 {showLikes ? 'Likes are visible' : 'Likes are hidden'}
             </div>
             <Switch 
@@ -544,14 +408,14 @@ const SettingsContent = () => {
                 onChange={toggleShowLikes}
             />
             <h2 style={{marginTop: '24px'}}>Toggle Show Likes on Profile</h2>
-            <div style={darkStyles.fieldValueStyle}>
+            <div className="settings-field-value">
                 {showLikesOnProfile ? 'Profile likes are visible' : 'Profile likes are hidden'}
             </div>
             <Switch 
                 checked={showLikesOnProfile} 
                 onChange={toggleShowLikesOnProfile}
             />
-            {error && <div style={darkStyles.errorStyle}>{error}</div>}
+            {error && <div className="settings-error">{error}</div>}
         </>
     );
 };
@@ -562,20 +426,15 @@ const DeleteContent = () => {
 
     return (
         <>
-            <div style={darkStyles.labelStyle}>Delete Account</div>
-            <div style={darkStyles.fieldLabelStyle}>Warning</div>
-            <div style={darkStyles.fieldValueStyle}>
+            <div className="settings-label">Delete Account</div>
+            <div className="settings-field-label">Warning</div>
+            <div className="settings-field-value">
                 This action cannot be undone. All your data will be permanently deleted.
             </div>
             
             <button 
                 onClick={() => setShowDeleteModal(true)}
-                style={{
-                    ...darkStyles.buttonStyle,
-                    background: "#ff4444",
-                    color: "white",
-                    border: "none",
-                }}
+                className="settings-button settings-button-danger"
             >
                 Delete Account
             </button>
@@ -593,9 +452,8 @@ const SettingsPage = () => {
     const [activeKey, setActiveKey] = useState("account");
 
     return (
-        <div style={darkStyles.containerStyle}>
-            {/* Sidebar Navigation */}
-            <div style={darkStyles.sidebarStyle}>
+        <div className="settings-container">
+            <div className="settings-sidebar">
                 <Nav 
                     className="flex-column" 
                     activeKey={activeKey}
@@ -603,36 +461,26 @@ const SettingsPage = () => {
                 >
                     <Nav.Link 
                         eventKey="account" 
-                        style={{
-                            ...darkStyles.navLinkStyle,
-                            ...(activeKey === "account" ? darkStyles.navLinkActiveStyle : {})
-                        }}
+                        className={`settings-nav-link ${activeKey === "account" ? "active" : ""}`}
                     >
                         Account
                     </Nav.Link>
                     <Nav.Link 
                         eventKey="settings" 
-                        style={{
-                            ...darkStyles.navLinkStyle,
-                            ...(activeKey === "settings" ? darkStyles.navLinkActiveStyle : {})
-                        }}
+                        className={`settings-nav-link ${activeKey === "settings" ? "active" : ""}`}
                     >
                        Settings 
                     </Nav.Link>
                     <Nav.Link 
                         eventKey="delete" 
-                        style={{
-                            ...darkStyles.navLinkStyle,
-                            ...(activeKey === "delete" ? darkStyles.navLinkActiveStyle : {})
-                        }}
+                        className={`settings-nav-link ${activeKey === "delete" ? "active" : ""}`}
                     >
                         Delete Account
                     </Nav.Link>
                 </Nav>
             </div>
 
-            {/* Main Content Area */}
-            <div style={darkStyles.mainStyle}>
+            <div className="settings-main">
                 {activeKey === "account" ? <AccountContent /> :
                  activeKey === "settings" ? <SettingsContent/> :
                  <DeleteContent />}
