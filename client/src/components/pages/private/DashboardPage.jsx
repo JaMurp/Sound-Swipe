@@ -126,21 +126,14 @@ const DashboardPage = () => {
     };
 
     const handleLikeButton = async () => {
-
         if (disabledButtons) {
             return;
         }
 
         setDisabledButtons(true);
 
-        // if (index >= swipeSongs.length - 1) {
-        //     setRefresh(!refresh);
-        //     setDissableLike(false);
-        //     return;
-        // }
         try {
             const idToken = await currentUser.getIdToken();
-
 
             const response = await axios.post('http://localhost:3000/api/songs/like', {
                 songId: swipeSongs[index].song_id,
@@ -151,7 +144,7 @@ const DashboardPage = () => {
             });
 
             if (!response.data.success) {
-                throw new Error(response.data.error);
+                throw new Error(response.data.error || 'Failed to like song');
             }
 
             const { data } = await axios.post('http://localhost:3000/api/songs/seen', {
@@ -162,10 +155,16 @@ const DashboardPage = () => {
                     'Authorization': `Bearer ${idToken}`
                 }
             });
+            
+            if (data.needToRefresh) {
+                setRefresh(!refresh);
+            }
+
+
             if (data.success) {
                 setIndex(index + 1);
             } else {
-                setError(data.error);
+                setError(data.error || 'Failed to mark song as seen');
             }
 
             if (index >= swipeSongs.length - 1) {
@@ -176,7 +175,7 @@ const DashboardPage = () => {
 
             setDisabledButtons(false);
         } catch (error) {
-            setError(error);
+            setError(error.response?.data?.message || error.message || 'An error occurred while processing your request');
             setDisabledButtons(false);
         }
     };
@@ -220,6 +219,36 @@ const DashboardPage = () => {
     }, [index, handleDislikeButton, handleLikeButton]);
 
 
+
+
+    const handleAudioRefresh = async () => {
+        try {
+            const idToken = await currentUser.getIdToken();
+            const { data } = await axios.get(`http://localhost:3000/api/songs/get-audio`, {
+                params: {
+                    songId: swipeSongs[index].song_id
+                },
+                headers: {
+                    'Authorization': `Bearer ${idToken}`
+                }
+            });
+            
+            if (data.previewUrl) {
+                setSwipeSongs(prevSongs => 
+                    prevSongs.map(song => 
+                        song.song_id === swipeSongs[index].song_id 
+                            ? { ...song, preview_url: data.previewUrl } 
+                            : song
+                    )
+                );
+            }
+        } catch (error) {
+            console.error("Error refreshing audio URL:", error);
+        }
+    };
+
+ 
+
     if (loading) {
         return (
             <div className="centeritems">
@@ -231,7 +260,14 @@ const DashboardPage = () => {
     }
 
     if (error) {
-        return <div>{error}</div>
+        return (
+            <div className="centeritems">
+                <div style={{ color: 'red', padding: '20px' }}>
+                    {typeof error === 'string' ? error : 'An unexpected error occurred'}
+                </div>
+                <Button variant="contained" onClick={() => setRefresh(!refresh)}>Try Again</Button>
+            </div>
+        );
     }
 
 
@@ -262,13 +298,54 @@ const DashboardPage = () => {
                                 <h3>{swipeSongs[index].song_name}</h3>
                                 <h4>{swipeSongs[index].artist_name}</h4>
 
-                                <audio
-                                    controls
-                                    src={swipeSongs[index].preview_url}
-                                    style={{ width: '100%', marginTop: '10px' }}
-                                >
-                                    Your browser does not support the audio element.
-                                </audio>
+                                {swipeSongs[index].preview_url ? (
+                                    <div>
+                                        <audio
+                                            controls
+                                            src={swipeSongs[index].preview_url}
+                                            style={{ width: '100%', marginTop: '10px' }}
+                                            onError={(e) => {
+                                                e.target.style.display = 'none';
+                                                e.target.nextElementSibling.style.display = 'flex';
+                                                handleAudioRefresh();
+                                            }}
+                                        >
+                                            Your browser does not support the audio element.
+                                        </audio>
+                                        <div style={{ 
+                                            display: 'none',
+                                            width: '100%', 
+                                            marginTop: '10px', 
+                                            padding: '10px',
+                                            backgroundColor: '#f5f5f5',
+                                            borderRadius: '4px',
+                                            textAlign: 'center',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            gap: '10px'
+                                        }}>
+                                            <div>Audio preview is no longer available</div>
+                                            <Button 
+                                                variant="contained" 
+                                                size="small"
+                                                onClick={handleAudioRefresh}
+                                            >
+                                                Refresh Song
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={{ 
+                                        width: '100%', 
+                                        marginTop: '10px', 
+                                        padding: '10px',
+                                        backgroundColor: '#f5f5f5',
+                                        borderRadius: '4px',
+                                        textAlign: 'center'
+                                    }}>
+                                        No audio preview available for this song
+                                    </div>
+                                )}
                                 <Grid container spacing={0} display={"flex"} marginTop={2} >
                                     <Grid size={6} className="centertext">
 

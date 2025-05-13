@@ -57,7 +57,10 @@ router.post('/add-seen-song', async (req, res) => {
     }
     try {
         const success = await songsDataFunctions.addSeenSong(songId, req.user.uid, liked);
+
+        // need to remove the redis cache for swiping songs
         if (success.success) {
+            await leaderboardFunctions.removeRedisCacheForSwipingSongs(req.user.uid);
             return res.status(200).json({success: true, message: 'Song seen successfully'});
         } else {
             return res.status(500).json({error: success.message});

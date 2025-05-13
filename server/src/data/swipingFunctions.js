@@ -8,6 +8,15 @@ const redis = client;
 //     await redis.connect();
 // }
 
+
+export const checkIfSessionExists = async (uid) => {
+    const session = await redis.get(`swipe:session:${uid}`);
+    if (session === null) {
+        return false;
+    }
+    return true;
+}
+
 export const incrementIndex = async (uid) => {
     const session = await redis.get(`swipe:session:${uid}`);
     if (!session) {

@@ -11,11 +11,9 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Stack from '@mui/material/Stack';
-import SongModal from '../../common/SongModal';
 import Grid from '@mui/material/Grid';
 import ButtonBase from '@mui/material/ButtonBase';
-import Skeleton from '@mui/material/Skeleton';
-
+import SongModal from '../../common/SongModal';
 const genres = [
     "Pop", "Rap/Hip Hop", "Reggaeton", "Rock", "Dance", "R&B", "Alternative",
     "Christian", "Electro", "Folk", "Reggae", "Jazz", "Country", "Salsa",
@@ -143,44 +141,25 @@ const Leaderboard = () => {
             <div className='center-leaderboard-filter mt-4 mb-3'>
                 <LeaderBoardFilter genres={genres} setGenreList={setGenreList} />
             </div>
-
+            
             <br />
 
-            {listLoading ?
-                <div spacing={2} sx={{ marginBottom: 2 }} className='leaderboard-skeleton '>
-                    <Stack spacing={2} direction="row" sx={{ marginBottom: 2 }} className='center-leaderboard-item'>
-                        <Skeleton variant="rounded" width="2.5rem" height="3rem" />
-                        <Skeleton variant="rounded" width={800} height={130} />
-                    </Stack>
-                    <Stack spacing={2} direction="row" sx={{ marginBottom: 2 }} className='center-leaderboard-item'>
-                        <Skeleton variant="rounded" width="2.5rem" height="3rem" />
-                        <Skeleton variant="rounded" width={800} height={130} />
-                    </Stack>
-                    <Stack spacing={2} direction="row" sx={{ marginBottom: 2 }} className='center-leaderboard-item'>
-                        <Skeleton variant="rounded" width="2.5rem" height="3rem" />
-                        <Skeleton variant="rounded" width={800} height={130} />
-                    </Stack>
-                    <Stack spacing={2} direction="row" sx={{ marginBottom: 2 }} className='center-leaderboard-item'>
-                        <Skeleton variant="rounded" width="2.5rem" height="3rem" />
-                        <Skeleton variant="rounded" width={800} height={130} />
-                    </Stack>
-                </div>
-                :
+            {listLoading ? <LoadingSpinner /> :
                 <div className="center-leaderboard">
                     {trendingSongs && trendingSongs.map((song, index) => (
                         <Stack key={song.id} spacing={2} direction="row" sx={{ marginBottom: 2 }} className='center-leaderboard-item'>
                             <div className='center-leaderboard-rank'>
                                 <h1>{`${index + 1}.`}</h1>
                             </div>
-                            <ButtonBase sx={{ width: '100%',  display: "flex"}} onClick={() => handleOpenModal(song)}>
-                                <Card sx={{ display: 'flex', minWidth: 800, maxWidth: 800 }}>
+                            <ButtonBase sx={{ width: '100%' }} onClick={() => handleOpenModal(song)}>
+                                <Card sx={{ display: 'flex', minWidth: 800, maxWidth: 800}}>
                                     <CardMedia
                                         component="img"
                                         sx={{ width: 130 }}
                                         image={song.artist.artistImage}
                                         alt={song.artist.artistName}
                                     />
-
+                                    
                                     <CardContent sx={{ flex: 'flex', alignContent: 'center', width: '100%' }} >
 
                                         <Grid container spacing={2} alignItems="center" >
