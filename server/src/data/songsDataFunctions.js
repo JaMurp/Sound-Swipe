@@ -238,7 +238,7 @@ export const addSeenSong = async (songId, userId, liked) => {
     .collection("seenSongs")
     .doc(songId)
     .set(newSeenSong);
-  return { success: true, message: "Song added to seen songs" };
+  return { success: true, message: "Song added to seen songs", addedSong: newSeenSong };
 };
 
 const shuffleArray = (array) => {

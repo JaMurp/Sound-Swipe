@@ -14,10 +14,10 @@ export const incrementIndex = async (uid) => {
         throw new Error('Session not found');
     }
     const sessionData = JSON.parse(session);
-    const timeToExpire = sessionData.expires_at - Date.now();
+    const timeToExpire = Math.max(sessionData.expires_at - Date.now(), 60); // Ensure at least 1 minute expiration
 
     sessionData.index++;
-    await redis.set(`swipe:session:${uid}`, JSON.stringify(sessionData), {EX: timeToExpire});
+    await redis.set(`swipe:session:${uid}`, JSON.stringify(sessionData), {EX: Math.floor(timeToExpire / 1000)}); // Convert to seconds
 }
 
 

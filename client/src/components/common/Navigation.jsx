@@ -61,6 +61,7 @@ export const PrivateNavigation = () => {
             {/* <Nav.Link href="/dashboard">Dashboard</Nav.Link> */}
             <Nav.Link href="/leaderboard">Leaderboard</Nav.Link>
             <Nav.Link href="/feed">Feed</Nav.Link>
+            <Nav.Link href="/live-feed">Live Feed</Nav.Link>
           </Nav>
           {/* <Nav>
             <Nav.Link href={`/friends/${currentUser.uid}`}>Friends</Nav.Link>
