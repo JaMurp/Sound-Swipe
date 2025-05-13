@@ -2,6 +2,7 @@ import { db } from "../db/firebase.js";
 import { FieldValue } from "firebase-admin/firestore";
 import axios from "axios";
 import client from "../config/redis.js";
+import userDataFunctions from "./index.js";
 import { exists } from "fs";
 
 const redis = client;
@@ -342,6 +343,23 @@ const getSongByIdFromApi = async (songId) => {
   }
 
   return response.preview;
+};
+
+export const addFriendLikeToFeed = async (uid, song) => {
+  try {
+    const userData = await userDataFunctions.getUser(uid);
+    const response = await db.collection('likedSongsFeed').add({
+      uid,
+      username: userData.username,
+      songId: song.song_id,
+      song_name: song.song_name,
+      artist_name: song.artist_name,
+      likedAt: new Date(),
+    });
+    return response;
+  } catch (e) {
+    throw e;
+  }
 };
 
 export const getSong = async (songId) => {

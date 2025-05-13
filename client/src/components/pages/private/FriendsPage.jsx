@@ -38,6 +38,7 @@ const FriendsPage = () => {
                 let url = `http://localhost:3000/api/users/profile/${userId}`;
                 if (currentUser.uid === userId) {
                     setProfileOwner(true);
+                    console.log("ALWAYS HAPPENS")
                     url = `http://localhost:3000/api/users/profile/`;
                 }
                 const { data } = await axios.get(url, {

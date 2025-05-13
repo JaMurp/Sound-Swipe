@@ -1,4 +1,4 @@
-import {Router} from 'express';
+import { Router } from 'express';
 import * as songsDataFunctions from '../data/songsDataFunctions.js';
 import * as userDataFunctions from '../data/userDataFunctions.js';
 import * as swipingFunctions from '../data/swipingFunctions.js';
@@ -14,40 +14,40 @@ router.get('/get-audio', async (req, res) => {
     // #TODO check the inputs
     let songIdString = null;
     try {
-        const {songId} = req.query;
+        const { songId } = req.query;
         if (!songId) {
             throw new Error("Song ID is required");
         }
         songIdString = songId.toString();
     } catch (e) {
         console.log(e);
-        return res.status(400).json({error: e});
+        return res.status(400).json({ error: e });
     }
     try {
         const song = await songsDataFunctions.getSong(songIdString);
         if (!song || !song.preview_url) {
-            return res.status(404).json({error: "Song not found"});
+            return res.status(404).json({ error: "Song not found" });
         }
-        return res.status(200).json({previewUrl: song.preview_url});
+        return res.status(200).json({ previewUrl: song.preview_url });
     } catch (e) {
         console.log(e);
-        return res.status(500).json({error: e});
+        return res.status(500).json({ error: e });
     }
 })
 
 
 router.post('/', async (req, res) => {
     // #TODO check the inputs
-    const {genres} = req.body; 
+    const { genres } = req.body;
 
 
     let explicitFlag = false;
     try {
-        const {explicitData} = await userDataFunctions.getUser(req.user.uid);
+        const { explicitData } = await userDataFunctions.getUser(req.user.uid);
         explicitFlag = explicitData;
     } catch (e) {
         console.log(e);
-        return res.status(500).json({error: e});
+        return res.status(500).json({ error: e });
     }
 
     try {
@@ -57,7 +57,7 @@ router.post('/', async (req, res) => {
     } catch (e) {
 
         console.log(e);
-        return res.status(500).json({error: e});
+        return res.status(500).json({ error: e });
 
     }
 });
@@ -69,68 +69,76 @@ router.patch('/unlike', async (req, res) => {
     try {
         songId = songValidation.checkSongId(req.body.songId);
     } catch (e) {
-        return res.status(400).json({error: e});
+        return res.status(400).json({ error: e });
     }
     try {
         const status = await songsDataFunctions.removeLikedSong(req.user.uid, songId);
         return res.status(200).json(status);
     } catch (e) {
         console.log(e);
-        return res.status(500).json({error: e});
+        return res.status(500).json({ error: e });
     }
 });
+
 router.patch('/add-liked-seen-song', async (req, res) => {
     let songId = null;
     try {
         songId = songValidation.checkSongId(req.body.songId);
     } catch (e) {
-        return res.status(400).json({error: e});
+        return res.status(400).json({ error: e });
     }
     try {
         const status = await songsDataFunctions.addLikedSeenSong(req.user.uid, songId);
         return res.status(200).json(status);
     } catch (e) {
         console.log(e);
-        return res.status(500).json({error: e});
+        return res.status(500).json({ error: e });
     }
 })
 
 
 router.post('/like', async (req, res) => {
     // #TODO check the inputs
-    const {songId} = req.body;
+    const { songId } = req.body;
     try {
         const success = await songsDataFunctions.incrementSongLikes(songId.toString());
-        if (success.success) {
-            return res.status(200).json({success: true, message: 'Song liked successfully'});
-        } else {
-            return res.status(500).json({error: success.message});
+        if (!success.success) {
+            return res.status(500).json({ error: success.message });
         }
+        const song = await songsDataFunctions.getSong(songId.toString());
+
+        if (!song) {
+            return res.status(404).json({ error: "Song not found" });
+        }
+        await songsDataFunctions.addFriendLikeToFeed(req.user.uid, song);
+        return res.status(200).json({ success: true, message: 'Song liked and added to feed' });
+
     } catch (e) {
         console.log(e);
-        return res.status(500).json({error: e});
+        return res.status(500).json({ error: e });
     }
 });
+
 router.post('/decrement-song-likes', async (req, res) => {
 
-    const {songId} = req.body;
+    const { songId } = req.body;
     try {
         const success = await songsDataFunctions.decrementSongLikes(songId.toString());
         if (success.success) {
-            return res.status(200).json({success: true, message: 'Song disliked successfully'});
+            return res.status(200).json({ success: true, message: 'Song disliked successfully' });
         } else {
-            return res.status(500).json({error: success.message});
+            return res.status(500).json({ error: success.message });
         }
     } catch (e) {
         console.log(e);
-        return res.status(500).json({error: e});
+        return res.status(500).json({ error: e });
     }
-    
+
 })
 
 router.post('/seen', async (req, res) => {
     // #TODO check the inputs
-    const {songId, liked} = req.body;
+    const { songId, liked } = req.body;
     //increment the index of the song in the swipe session
     try {
         await swipingFunctions.incrementIndex(req.user.uid);
@@ -151,7 +159,7 @@ router.post('/seen', async (req, res) => {
         return res.status(404).json({error: e});
     }
 
-
+    
     try {
         console.log(songId, req.user.uid, liked, "adding seen song");
         const {addedSong} = await songsDataFunctions.addSeenSong(songId, req.user.uid, liked);
@@ -173,40 +181,40 @@ router.post('/seen', async (req, res) => {
         return res.status(200).json({success: true, message: 'Song seen successfully'});
     } catch (e) {
         console.log(e, "error adding seen song");
-        return res.status(500).json({error: e});
+        return res.status(500).json({ error: e });
     }
 });
 
 router.post('/trending', async (req, res) => {
-    const {filters} = req.body;
+    const { filters } = req.body;
     try {
         const trendingSongs = await songsDataFunctions.getTopLikedSongs(filters);
         return res.status(200).json(trendingSongs);
     } catch (e) {
         console.log(e);
-        return res.status(500).json({error: e});
+        return res.status(500).json({ error: e });
     }
 });
 
 router.post('/song/alreadyLiked', async (req, res) => {
-    const {songId} = req.body;
+    const { songId } = req.body;
     try {
         const alreadyLiked = await songsDataFunctions.likedSongExist(songId, req.user.uid);
-        return res.status(200).json({alreadyLiked: alreadyLiked});
+        return res.status(200).json({ alreadyLiked: alreadyLiked });
     } catch (e) {
         console.log(e);
-        return res.status(500).json({error: e});
+        return res.status(500).json({ error: e });
     }
 });
 
 router.get('/:songId', async (req, res) => {
-    const {songId} = req.params;
+    const { songId } = req.params;
     try {
         const song = await songsDataFunctions.getSong(songId);
         return res.status(200).json(song);
     } catch (e) {
         console.log(e);
-        return res.status(500).json({error: e});
+        return res.status(500).json({ error: e });
     }
 })
 
