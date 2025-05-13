@@ -24,8 +24,9 @@ const DashboardPage = () => {
     const [refresh, setRefresh] = useState(false);
 
 
-    const [dissableDislike, setDissableDislike] = useState(false);
-    const [dissableLike, setDissableLike] = useState(false);
+    const [disabledButtons, setDisabledButtons] = useState(false);
+    // const [dissableDislike, setDissableDislike] = useState(false);
+    // const [dissableLike, setDissableLike] = useState(false);
 
 
 
@@ -86,10 +87,10 @@ const DashboardPage = () => {
     }, [refresh])
 
     const handleDislikeButton = async () => {
-        if (dissableDislike) {
+        if (disabledButtons) {
             return;
         }
-        setDissableDislike(true);
+        setDisabledButtons(true);
 
         // if (index >= swipeSongs.length - 1) {
         //     setRefresh(!refresh);
@@ -114,23 +115,23 @@ const DashboardPage = () => {
             }
             if (index >= swipeSongs.length - 1) {
                 setRefresh(!refresh);
-                setDissableDislike(false);
+                setDisabledButtons(false);
                 return;
             }
-            setDissableDislike(false);
+            setDisabledButtons(false);
         } catch (error) {
             setError(error);
-            setDissableDislike(false);
+            setDisabledButtons(false);
         }
     };
 
     const handleLikeButton = async () => {
 
-        if (dissableLike) {
+        if (disabledButtons) {
             return;
         }
 
-        setDissableLike(true);
+        setDisabledButtons(true);
 
         // if (index >= swipeSongs.length - 1) {
         //     setRefresh(!refresh);
@@ -169,15 +170,15 @@ const DashboardPage = () => {
             
             if (index >= swipeSongs.length - 1) {
                 setRefresh(!refresh);
-                setDissableLike(false);
+                setDisabledButtons(false);
                 return;
             }
 
 
-            setDissableLike(false);
+            setDisabledButtons(false);
         } catch (error) {
             setError(error);
-            setDissableLike(false);
+            setDisabledButtons(false);
         }
     };
 
