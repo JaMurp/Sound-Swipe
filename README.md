@@ -8,26 +8,21 @@ To run **Sound Swipe** locally using Docker, you’ll first need to install Dock
 
 ### Windows Installation
 
-1. **Check Requirements**
-   - Windows 10 64-bit: Pro, Enterprise, or Education (Build 15063 or later), or Windows 11.
-   - For Windows Home editions, **WSL 2** is required.
-   - Docker Desktop installer will help you install WSL 2 if needed.
-
-2. **Download Docker Desktop**
+1. **Download Docker Desktop**
    - Visit the official Docker website:  
      [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
    - Click **Download for Windows (WSL2)**.
 
-3. **Install Docker**
+2. **Install Docker**
    - Run the downloaded installer.
    - Follow the setup wizard.
    - Make sure **WSL 2** and **integration with your preferred terminal (e.g., PowerShell)** are selected.
 
-4. **Start Docker Desktop**
+3. **Start Docker Desktop**
    - Launch Docker Desktop from the Start Menu.
    - Wait for the Docker whale icon to appear in your system tray.
 
-5. **Verify Installation**
+4. **Verify Installation**
    Open a terminal (e.g., PowerShell) and run:
    ```bash
    docker --version
@@ -36,14 +31,6 @@ To run **Sound Swipe** locally using Docker, you’ll first need to install Dock
 ## Docker Installation Guide (macOS)
 
 To run **Sound Swipe** locally using Docker on your Mac, follow the steps below:
-
----
-
-### Requirements
-
-- macOS Monterey 12.0 or newer recommended.
-- Compatible with both **Intel** and **Apple Silicon (M1/M2)** Macs.
-- Administrative privileges on your machine.
 
 ---
 
