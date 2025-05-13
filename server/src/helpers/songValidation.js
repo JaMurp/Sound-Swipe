@@ -2,14 +2,15 @@
 
 
 export const checkSongId = (songId) => {
-    songId = songId.trim();
     if (!songId) {
         throw new Error("Song ID is required");
     }
-    if (typeof songId !== 'string') {
+    songId = String(songId);
+    songId = songId.trim();
+
+    if (typeof songId !== 'string' || songId.length <= 0) {
         throw 'Invalid song ID';
     }
-    songId = String(songId);
     return songId;
 };
 

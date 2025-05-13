@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as swipingFunctions from '../data/swipingFunctions.js'
 import userDataFunctions from '../data/index.js'
-import { isValidUid, isValidString, isNotEmpty } from '../helpers/userHelpers.jsjs';
+import { isValidUid, isValidString, isNotEmpty, isValidUsername } from '../helpers/userHelpers.js';
 
 
 const router = Router();
@@ -104,10 +104,6 @@ router.delete('/notifications/:id', async (req, res) => {
 
 router.post('/sync-user', async (req, res) => {
   try {
-    const { uid, displayName, photoURL } = req.user;
-    if (!isValidUid(uid) || !isValidUsername(displayName) || !isValidString(photoURL)) {
-      return res.status(400).json({ error: 'Invalid user data' });
-    }
 
     const userExists = await userDataFunctions.userExists(req.user.uid);
 
@@ -117,7 +113,10 @@ router.post('/sync-user', async (req, res) => {
       if (!insertedUser) {
         return res.status(500).json({ error: 'Failed to insert user' });
       }
-
+      if (!isValidUid(insertedUser.uid) || !isValidString(insertedUser.photoURL)) {
+        console.log(!isValidUsername(username) || !isValidString(photoURL))
+        return res.status(400).json({ error: 'Invalid user data' });
+      }
       return res.status(200).json({ success: true, message: 'synced profile' });
     }
 

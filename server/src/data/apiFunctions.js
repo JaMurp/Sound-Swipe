@@ -1,6 +1,6 @@
 
 import axios from 'axios';
-import { checkSongId } from '../helpers/songValidation'
+import { checkSongId } from '../helpers/songValidation.js'
 
 export const getSong = async (songId) => {
     songId = checkSongId(songId);
