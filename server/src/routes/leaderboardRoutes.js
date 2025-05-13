@@ -48,7 +48,13 @@ router.post('/decrement-song-likes', async (req, res) => {
 
 
 router.post('/add-seen-song', async (req, res) => {
-    const {songId, liked} = req.body;
+    let songId, liked = null;
+    try {
+        songId = songValidation.checkSongId(req.body.songId);
+        liked = songValidation.checkLikedFlag(req.body.liked);
+    } catch (e) {
+        return res.status(400).json({ error: e });
+    }
     try {
         const success = await songsDataFunctions.addSeenSong(songId, req.user.uid, liked);
         if (success.success) {
@@ -66,8 +72,13 @@ router.post('/add-seen-song', async (req, res) => {
 
 
 router.get('/has-seen-song', async (req, res) => {
-    // #TODO check the inputs
-    const { songId } = req.query;
+    let songId = null;
+    try {
+        songId = songValidation.checkSongId(req.query.songId);
+    } catch (e) {
+        return res.status(400).json({ error: e });
+    }
+
     try {
         const haveSeen = await leaderboardFunctions.getAndCheckIfUserHasSeenSong(songId, req.user.uid);
         return res.status(200).json(haveSeen);
