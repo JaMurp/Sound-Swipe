@@ -2,6 +2,7 @@ import { db } from "../db/firebase.js";
 import { FieldValue } from "firebase-admin/firestore";
 import axios from "axios";
 import client from "../config/redis.js";
+import { exists } from "fs";
 
 const redis = client;
 if (!redis.isReady) {
@@ -32,24 +33,23 @@ export const addSong = async (songObj) => {
     throw new Error("Invalid song object structure");
   }
 
-    const newSong = {
-        id: songObj.songId,
-        songTitle: songObj.songTitle,
-        songPreview: songObj.songPreview,
-        artist: {
-            artistId: songObj.artist.artistId,
-            artistName: songObj.artist.artistName,
-            artistImage: songObj.artist.artistImage
-        },
-        genre: {
-            genreId: songObj.genre.genreId,
-            genre: songObj.genre.genre
-        },
-        randomSeed: songObj.randomSeed || Math.random(),
-        likeCounter: 0,
-        explicitFlag: songObj.explicitLyrics || false,
-
-    };
+  const newSong = {
+    id: songObj.songId,
+    songTitle: songObj.songTitle,
+    songPreview: songObj.songPreview,
+    artist: {
+      artistId: songObj.artist.artistId,
+      artistName: songObj.artist.artistName,
+      artistImage: songObj.artist.artistImage,
+    },
+    genre: {
+      genreId: songObj.genre.genreId,
+      genre: songObj.genre.genre,
+    },
+    randomSeed: songObj.randomSeed || Math.random(),
+    likeCounter: 0,
+    explicitFlag: songObj.explicitLyrics || false,
+  };
 
   await db.collection("songs").doc(newSong.id.toString()).set(newSong);
   return newSong;
@@ -64,25 +64,27 @@ const sizeOfCollection = async (collection) => {
 //https://stackoverflow.com/questions/46798981/firestore-how-to-get-random-documents-in-a-collection
 // #TODO add the ability to filter by explicit tag and also for more then 1 genre
 export const getSongsByGenreRandom = async (genre, explicitFlag) => {
-    console.log(genre, explicitFlag);
-  const seed = Math.random(); 
+  console.log(genre, explicitFlag);
+  const seed = Math.random();
   const arr = [];
 
-  let ref = db.collection('songs')
-    .where('genre.genre', '==', genre)
-    .where('explicitFlag', '==', explicitFlag)
-    .where('randomSeed', '>=', seed)
-    .orderBy('randomSeed')
+  let ref = db
+    .collection("songs")
+    .where("genre.genre", "==", genre)
+    .where("explicitFlag", "==", explicitFlag)
+    .where("randomSeed", ">=", seed)
+    .orderBy("randomSeed")
     .limit(5);
 
   let snapshot = await ref.get();
 
   if (snapshot.empty) {
-    ref = db.collection('songs')
-      .where('genre.genre', '==', genre)
-      .where('explicitFlag', '==', explicitFlag)
-      .where('randomSeed', '<', seed)
-      .orderBy('randomSeed', 'desc')
+    ref = db
+      .collection("songs")
+      .where("genre.genre", "==", genre)
+      .where("explicitFlag", "==", explicitFlag)
+      .where("randomSeed", "<", seed)
+      .orderBy("randomSeed", "desc")
       .limit(5);
 
     snapshot = await ref.get();
@@ -98,27 +100,43 @@ export const getSongsByGenreRandom = async (genre, explicitFlag) => {
 // https://www.netguru.com/blog/querying-and-sorting-firestore-data
 //https://firebase.google.com/docs/firestore/query-data/queries
 export const getTopLikedSongs = async (filters) => {
+  let genreList = [];
+  let cacheKey = "leaderboard";
+
+  if (filters.genres.length > 0) {
+
+    genreList = filters.genres.map((genre) => genre);
+    genreList.sort();
+    cacheKey = `leaderboard:${genreList.join(",")}`;
+  }
+
+  const songCache = await redis.exists(cacheKey);
+  if (songCache) {
+    const cachedData = await redis.get(cacheKey);
+    return JSON.parse(cachedData);
+  } 
+
   const songsRef = db.collection("songs");
   let execQuery = null;
-  if (filters.genres.length === 0) {
+
+  if (genreList.length === 0) {
     execQuery = await songsRef.orderBy("likeCounter", "desc").limit(10).get();
   } else {
+
     execQuery = await songsRef
-      .where("genre.genre", "in", filters.genres)
+      .where("genre.genre", "in", genreList)
       .orderBy("likeCounter", "desc")
       .limit(10)
       .get();
   }
+
   if (execQuery.empty) {
-    throw new Error("There are no songs in the db");
-  }
+    throw new Error("There are no songs in the database");
 
-  const results = [];
-  for (const doc of execQuery.docs) {
-    results.push({ id: doc.id, ...doc.data() });
   }
-
-  return results;
+  const result = execQuery.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  await redis.set(cacheKey, JSON.stringify(result), { EX: 60 * 5 });
+  return result;  
 };
 
 // # TODO chech input
@@ -130,15 +148,23 @@ export const getSongById = async (songId) => {
 };
 // # TODO check input (depricated)
 export const likedSongExist = async (songId, userId) => {
-    const likedSongRef = db.collection('users').doc(userId).collection('likedSongs').doc(songId.toString());
-    const likedSongDoc = await likedSongRef.get();
-    return likedSongDoc.exists;
+  const likedSongRef = db
+    .collection("users")
+    .doc(userId)
+    .collection("likedSongs")
+    .doc(songId.toString());
+  const likedSongDoc = await likedSongRef.get();
+  return likedSongDoc.exists;
 };
-// # TODO check input 
+// # TODO check input
 export const seenSongExist = async (songId, userId) => {
-    const seenSongRef = db.collection('users').doc(userId).collection('seenSongs').doc(songId.toString());
-    const seenSongDoc = await seenSongRef.get();
-    return seenSongDoc.exists;
+  const seenSongRef = db
+    .collection("users")
+    .doc(userId)
+    .collection("seenSongs")
+    .doc(songId.toString());
+  const seenSongDoc = await seenSongRef.get();
+  return seenSongDoc.exists;
 };
 
 //https://stackoverflow.com/questions/50762923/how-to-increment-existing-number-field-in-cloud-firestore
@@ -182,35 +208,37 @@ export const addLikedSong = async (songId, userId) => {
   const success = await incrementSongLikes(songId);
   if (!success) throw "Failed to increment the like counter";
 
-    return {success: true, message: 'Song added to liked songs'}
-
+  return { success: true, message: "Song added to liked songs" };
 };
 
 // #TODO check input
 export const addSeenSong = async (songId, userId, liked) => {
-    // check to make sure it is a valid song
-    songId = String(songId);
+  // check to make sure it is a valid song
+  songId = String(songId);
 
-    const getSong = await getSongById(songId);
-    if (!getSong) throw "Song not found"
+  const getSong = await getSongById(songId);
+  if (!getSong) throw "Song not found";
 
-    // check to make sure the song is not in the collection
-    const inCollectionFlag = await seenSongExist(songId, userId);  
-    if (inCollectionFlag) throw "Song already seen"
+  // check to make sure the song is not in the collection
+  const inCollectionFlag = await seenSongExist(songId, userId);
+  if (inCollectionFlag) throw "Song already seen";
 
-    // need to add the song to the seen sub collection
-    const newSeenSong = {
-        songId: songId,
-        songTitle: getSong.songTitle,
-        artistName: getSong.artist.artistName,
-        artistImage: getSong.artist.artistImage,
-        genre: getSong.genre,
-        youLiked: liked,
-
-    }
-    await db.collection('users').doc(userId).collection('seenSongs').doc(songId).set(newSeenSong);
-    return {success: true, message: 'Song added to seen songs'}
-
+  // need to add the song to the seen sub collection
+  const newSeenSong = {
+    songId: songId,
+    songTitle: getSong.songTitle,
+    artistName: getSong.artist.artistName,
+    artistImage: getSong.artist.artistImage,
+    genre: getSong.genre,
+    youLiked: liked,
+  };
+  await db
+    .collection("users")
+    .doc(userId)
+    .collection("seenSongs")
+    .doc(songId)
+    .set(newSeenSong);
+  return { success: true, message: "Song added to seen songs" };
 };
 
 const shuffleArray = (array) => {
@@ -219,57 +247,54 @@ const shuffleArray = (array) => {
 
 // #TODO check the inputs
 export const getSongsByGenre = async (genres, explicitFlag, userId) => {
-    const selectedGenres = shuffleArray(genres).slice(0, 5);
-    let songs = [];
-    for (const genre of selectedGenres) {
-        const songsByGenre = await getSongsByGenreRandom(genre, explicitFlag);
-        for (const song of songsByGenre) {
-            const inCollectionFlag = await seenSongExist(song.id, userId);
-            if (song.explicitFlag === explicitFlag && !inCollectionFlag) {
-                songs.push(song);
-            }
-        }
+  const selectedGenres = shuffleArray(genres).slice(0, 5);
+  let songs = [];
+  for (const genre of selectedGenres) {
+    const songsByGenre = await getSongsByGenreRandom(genre, explicitFlag);
+    for (const song of songsByGenre) {
+      const inCollectionFlag = await seenSongExist(song.id, userId);
+      if (song.explicitFlag === explicitFlag && !inCollectionFlag) {
+        songs.push(song);
+      }
+    }
 
     songs.push(...songsByGenre);
   }
   // shuffle the songs
   songs = shuffleArray(songs);
 
-
-    // remove duplicates
-    const uniqueSongs = new Set();
-    const filteredSongs = [];
-    for (const song of songs) {
-        if (!uniqueSongs.has(song.id)) {
-            uniqueSongs.add(song.id);
-            filteredSongs.push(song);
-        }
+  // remove duplicates
+  const uniqueSongs = new Set();
+  const filteredSongs = [];
+  for (const song of songs) {
+    if (!uniqueSongs.has(song.id)) {
+      uniqueSongs.add(song.id);
+      filteredSongs.push(song);
     }
+  }
 
-
-    return filteredSongs;
-}
-
-
-
+  return filteredSongs;
+};
 
 export const getRandomSongs = async (userId, explicitFlag) => {
   const seed = Math.random();
   const arr = [];
 
-  let ref = db.collection('songs')
-    .where('explicitFlag', '==', explicitFlag)
-    .where('randomSeed', '>=', seed)
-    .orderBy('randomSeed')
+  let ref = db
+    .collection("songs")
+    .where("explicitFlag", "==", explicitFlag)
+    .where("randomSeed", ">=", seed)
+    .orderBy("randomSeed")
     .limit(15);
 
   let snapshot = await ref.get();
 
   if (snapshot.empty) {
-    ref = db.collection('songs')
-      .where('explicitFlag', '==', explicitFlag)
-      .where('randomSeed', '<', seed)
-      .orderBy('randomSeed', 'desc')
+    ref = db
+      .collection("songs")
+      .where("explicitFlag", "==", explicitFlag)
+      .where("randomSeed", "<", seed)
+      .orderBy("randomSeed", "desc")
       .limit(15);
 
     snapshot = await ref.get();
@@ -286,31 +311,38 @@ export const getRandomSongs = async (userId, explicitFlag) => {
   return arr;
 };
 
-
 export const removeLikedSong = async (userId, songId) => {
-  const seenCollectionRef = db.collection('users').doc(userId).collection('seenSongs');
+  const seenCollectionRef = db
+    .collection("users")
+    .doc(userId)
+    .collection("seenSongs");
   await seenCollectionRef.doc(songId).update({
-    youLiked: false
+    youLiked: false,
   });
 
-  return {success: true, message: 'Song removed from liked songs'}
-}
+  return { success: true, message: "Song removed from liked songs" };
+};
 export const addLikedSeenSong = async (userId, songId) => {
-  const seenCollectionRef = db.collection('users').doc(userId).collection('seenSongs');
+  const seenCollectionRef = db
+    .collection("users")
+    .doc(userId)
+    .collection("seenSongs");
   await seenCollectionRef.doc(songId).update({
-    youLiked: true
+    youLiked: true,
   });
-  return {success: true, message: 'Song added to liked songs'}
-}
+  return { success: true, message: "Song added to liked songs" };
+};
 
 const getSongByIdFromApi = async (songId) => {
-  const {data: response} = await axios.get(`https://api.deezer.com/track/${songId}`);
+  const { data: response } = await axios.get(
+    `https://api.deezer.com/track/${songId}`
+  );
   if (!response || !response.preview) {
     throw new Error("Song not found");
   }
 
   return response.preview;
-}
+};
 
 export const getSong = async (songId) => {
   const songCache = await redis.get(`song:${songId}`);
@@ -321,16 +353,15 @@ export const getSong = async (songId) => {
 
   const songDb = await getSongById(songId);
   const songApi = await getSongByIdFromApi(songId);
-  
+
   const songObj = {
     song_id: parseInt(songId),
     song_name: songDb.songTitle,
     artist_name: songDb.artist.artistName,
     artist_pfp: songDb.artist.artistImage,
-    preview_url: songApi
+    preview_url: songApi,
   };
 
-  await redis.set(`song:${songId}`, JSON.stringify(songObj), {EX: 60 * 15});
+  await redis.set(`song:${songId}`, JSON.stringify(songObj), { EX: 60 * 15 });
   return songObj;
-}
-
+};
