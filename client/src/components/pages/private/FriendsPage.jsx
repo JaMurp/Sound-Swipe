@@ -11,6 +11,10 @@ import Typography from '@mui/material/Typography';
 import ButtonBase from '@mui/material/ButtonBase';
 import Grid from '@mui/material/Grid';
 import Divider from '@mui/material/Divider';
+import Box from '@mui/material/Box';
+import SearchIcon from '@mui/icons-material/Search';
+import TextField from '@mui/material/TextField';
+
 
 
 const FriendsPage = () => {
@@ -22,6 +26,7 @@ const FriendsPage = () => {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const { userId } = useParams();
+    const [searchQuery, setSearchQuery] = useState('');
 
     useEffect(() => {
         const getFriendsList = async () => {
@@ -60,6 +65,10 @@ const FriendsPage = () => {
         getFriendsList();
     }, [currentUser, navigate, userId]);
 
+    const search = friends.filter(friend =>
+        friend.username.toLowerCase().includes(searchQuery.trim().toLowerCase())
+    )
+
     const handleFriendClick = (friendId) => {
         navigate(`/profile/${friendId}`);
     };
@@ -88,21 +97,35 @@ const FriendsPage = () => {
                     ) : (
 
                         <div>
-                            <h3>Your Friends: {friends.length}</h3>
-                            {friends.map(friend => (
-                                <div
-                                    key={friend.id}
-                                    className="friend-container"
-                                    onClick={() => handleFriendClick(friend.id)}
-                                >
+                            <h3>Your Friends: {friends.length} </h3>
+                                <Box sx={{ display: 'flex', alignItems: 'flex-end', marginBottom: 2 }}>
+                                    <SearchIcon className='search-icon me-2' />
 
-                                    <img src={friend.avatar_url} alt={friend.username} width={75} />
-                                    <h3>{friend.username}</h3>
+                                    <TextField
+                                        id="input-with-sx"
+                                        label="Search"
+                                        variant="standard"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        sx={{ width: '100%' }}
+                                    />
+                                </Box>
+                            {search.length === 0 ? (<p>No usernames match your search.</p>) : (
+                                friends.map(friend => (
+                                    <div
+                                        key={friend.id}
+                                        className="friend-container"
+                                        onClick={() => handleFriendClick(friend.id)}
+                                    >
 
-                                </div>
-                            ))}
-                        </div>)
-                    }
+                                        <img src={friend.avatar_url} alt={friend.username} width={75} />
+                                        <h3>{friend.username}</h3>
+
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    )}
                     < Divider aria-hidden="true" />
 
                     {profileOwner && (
