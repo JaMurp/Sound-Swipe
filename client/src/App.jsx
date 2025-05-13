@@ -11,7 +11,7 @@ import SettingsPage from './components/pages/public/SettingsPage.jsx';
 import FriendsPage from './components/pages/private/FriendsPage.jsx';
 import Leaderboard from './components/pages/private/Leaderboard.jsx';
 import FeedPage from './components/pages/public/FeedPage.jsx';
-import LibraryPage from './components/pages/private/LibraryPage.jsx';
+import LikedSongsPage from './components/pages/private/LikedSongsPage.jsx';
 import Notifications from './components/pages/private/Notifications.jsx';
 
 function App() {
@@ -35,7 +35,7 @@ function App() {
           <Route path='/leaderboard' element={<Leaderboard />} />
           <Route path='/notifications' element={<Notifications />} />
           <Route path='/feed' element={<FeedPage />} />
-          <Route path='/library' element={<LibraryPage />} />
+          <Route path='/likes' element={<LikedSongsPage />} />
         </Route>
 
         <Route path='*' element={<Navigate to='/' />} />

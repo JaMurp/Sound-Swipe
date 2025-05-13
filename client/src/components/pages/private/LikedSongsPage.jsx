@@ -16,6 +16,9 @@ import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
+import { red } from '@mui/material/colors';
+import Skeleton from '@mui/material/Skeleton';
+import Stack from '@mui/material/Stack';
 
 const LikedSongsPage = () => {
 
@@ -132,113 +135,127 @@ const LikedSongsPage = () => {
         }
     };
 
-
-    if (loading) {
-        return <div><LoadingSpinner /></div>;
-    }
+    // if (loading) {
+    //     return <div><LoadingSpinner /></div>;
+    // }
 
     if (error) {
         return <div>Error: {error.message}</div>;
     }
-
 
     return (
         <>
             <div className="centertext mt-4">
                 <h1>Liked Songs</h1>
             </div>
-            {likedSongs.length === 0 ?
-                (
-                    <div className="centertext mt-4">
-                        <div className='middle mt-5'>
-                            <h5>No liked songs found</h5>
-                            <Button variant="outlined" onClick={() => navigate('/dashboard')} className='mt-3'>Go to Dashboard</Button>
-                        </div>
-                    </div>
+            {loading ? (
+                <div className="leaderboard-skeleton mt-2">
+                    <Stack spacing={2} sx={{ width: '100%', marginTop: 3 }} className="mt-2 leaderboard-skeleton">
+                        <Skeleton variant="text" width={200} height={40} sx={{ marginBottom: 2}} />
+                        <Skeleton variant="rounded" width={800} height={130} sx={{ marginBottom: 2 }} />
+                        <Skeleton variant="rounded" width={800} height={130} sx={{ marginBottom: 2 }} />
+                        <Skeleton variant="rounded" width={800} height={130} sx={{ marginBottom: 2 }} />
+                        <Skeleton variant="rounded" width={800} height={130} sx={{ marginBottom: 2 }} />
+                    </Stack>
+                </div>
+            ) :
+                <div>
 
-                ) : (
-                    <div className="leaderboard-skeleton mt-2">
-                        <Box sx={{ display: 'flex', alignItems: 'flex-end', marginBottom: 2 }}>
-                            <SearchIcon className='search-icon me-2'/>
+                    {likedSongs.length === 0 ?
+                        (
+                            <div className="centertext mt-4">
+                                <div className='middle mt-5'>
+                                    <h5>No liked songs found</h5>
+                                    <Button variant="outlined" onClick={() => navigate('/dashboard')} className='mt-3'>Go to Dashboard</Button>
+                                </div>
+                            </div>
 
-                            <TextField
-                                id="input-with-sx"
-                                label="Search"
-                                variant="standard"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                sx={{ width: '100%' }}
-                            />
-                        </Box>
+                        ) : (
+                            <div className="leaderboard-skeleton mt-2">
+                                <Box sx={{ display: 'flex', alignItems: 'flex-end', marginBottom: 2 }}>
+                                    <SearchIcon className='search-icon me-2' />
 
-
-                        {search.length === 0 ? (<p>No songs match your search.</p>) : (
-                            search.map((song) => (
-                                <Card sx={{ display: 'flex', minWidth: 800, maxWidth: 800, marginBottom: 2 }} key={song.id}>
-                                    <CardMedia
-                                        component="img"
-                                        sx={{ width: 130 }}
-                                        image={song.artistImage}
-                                        alt={song.artistName}
+                                    <TextField
+                                        id="input-with-sx"
+                                        label="Search"
+                                        variant="standard"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        sx={{ width: '100%' }}
                                     />
+                                </Box>
 
-                                    <CardContent sx={{ flex: 'flex', alignContent: 'center', width: '100%' }} >
-                                        <Grid container spacing={2} alignItems="center" >
-                                            <Grid size={4}>
-                                                <Typography
-                                                    variant="h6"
-                                                    component="div"
-                                                    sx={{ color: 'text.primary' }}
-                                                >
-                                                    {song.songTitle}
-                                                </Typography>
-                                            </Grid>
-                                            <Grid size={4}>
-                                                <Typography
-                                                    variant="subtitle1"
-                                                    component="div"
-                                                    sx={{ color: 'text.secondary' }}
-                                                >
-                                                    {song.artistName}
-                                                </Typography>
-                                            </Grid>
-                                            <Grid size={2}>
-                                                <AudioPlayer
-                                                    getUrl={() => getAudioUrl(song.id)}
-                                                    songId={song.id}
-                                                    currentlyPlayingId={currentlyPlayingId}
-                                                    setCurrentlyPlayingId={setCurrentlyPlayingId}
-                                                />
-                                            </Grid>
-                                            <Grid size={2}>
 
-                                                <Tooltip title="Unlike" placement="top" slotProps={{
-                                                    popper: {
-                                                        modifiers: [
-                                                            {
-                                                                name: 'offset',
-                                                                options: {
-                                                                    offset: [0, -14],
-                                                                },
+                                {search.length === 0 ? (<p>No songs match your search.</p>) : (
+                                    search.map((song) => (
+                                        <Card sx={{ display: 'flex', minWidth: 800, maxWidth: 800, marginBottom: 2 }} key={song.id}>
+                                            <CardMedia
+                                                component="img"
+                                                sx={{ width: 130 }}
+                                                image={song.artistImage}
+                                                alt={song.artistName}
+                                            />
+
+                                            <CardContent sx={{ flex: 'flex', alignContent: 'center', width: '100%' }} >
+                                                <Grid container spacing={2} alignItems="center" >
+                                                    <Grid size={4}>
+                                                        <Typography
+                                                            variant="h6"
+                                                            component="div"
+                                                            sx={{ color: 'text.primary' }}
+                                                        >
+                                                            {song.songTitle}
+                                                        </Typography>
+                                                    </Grid>
+                                                    <Grid size={4}>
+                                                        <Typography
+                                                            variant="subtitle1"
+                                                            component="div"
+                                                            sx={{ color: 'text.secondary' }}
+                                                        >
+                                                            {song.artistName}
+                                                        </Typography>
+                                                    </Grid>
+                                                    <Grid size={2}>
+                                                        <AudioPlayer
+                                                            getUrl={() => getAudioUrl(song.id)}
+                                                            songId={song.id}
+                                                            currentlyPlayingId={currentlyPlayingId}
+                                                            setCurrentlyPlayingId={setCurrentlyPlayingId}
+                                                        />
+                                                    </Grid>
+                                                    <Grid size={2}>
+
+                                                        <Tooltip title="Unlike" placement="top" slotProps={{
+                                                            popper: {
+                                                                modifiers: [
+                                                                    {
+                                                                        name: 'offset',
+                                                                        options: {
+                                                                            offset: [0, -14],
+                                                                        },
+                                                                    },
+                                                                ],
                                                             },
-                                                        ],
-                                                    },
-                                                }}>
-                                                    <IconButton onClick={() => handleUnlike(song.id)} aria-label="unlike" size="large">
-                                                        <HeartBrokenIcon fontSize="large" />
-                                                    </IconButton>
-                                                </Tooltip>
+                                                        }}>
+                                                            <IconButton onClick={() => handleUnlike(song.id)} aria-label="unlike" size="large">
+                                                                <HeartBrokenIcon fontSize="large" sx={{ color: red[300] }} />
+                                                            </IconButton>
+                                                        </Tooltip>
 
-                                            </Grid>
-                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
 
-                                    </CardContent>
-                                </Card>
+                                            </CardContent>
+                                        </Card>
 
-                            )
-                            ))}
-                    </div>)}
-
+                                    )
+                                    ))}
+                            </div>
+                        )
+                    }
+                </div>
+            }
         </>
 
     );

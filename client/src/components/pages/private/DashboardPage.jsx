@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import { useAuth } from "../../../context/AuthContext.jsx";
-import { useNavigate } from "react-router-dom";
-import Dropdown from "react-bootstrap/Dropdown";
-import Switch from '@mui/material/Switch';
 import Button from '@mui/material/Button';
 import axios from "axios";
 import Card from '@mui/material/Card';
@@ -13,6 +10,9 @@ import IconButton from '@mui/material/IconButton';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CloseIcon from '@mui/icons-material/Close';
 import Grid from '@mui/material/Grid';
+import { red, blue } from '@mui/material/colors';
+import Skeleton from '@mui/material/Skeleton';
+import Stack from '@mui/material/Stack';
 
 
 const DashboardPage = () => {
@@ -167,13 +167,12 @@ const DashboardPage = () => {
             } else {
                 setError(data.error);
             }
-            
+
             if (index >= swipeSongs.length - 1) {
                 setRefresh(!refresh);
                 setDisabledButtons(false);
                 return;
             }
-
 
             setDisabledButtons(false);
         } catch (error) {
@@ -184,25 +183,51 @@ const DashboardPage = () => {
 
     //https://www.geeksforgeeks.org/how-to-use-addeventlistener-in-react/
     useEffect(() => {
-        
+        if (loading) return;
+
+        let like = false;
+        let dislike = false;
+
         const handleKeyDown = (event) => {
             if (event.key === 'ArrowLeft') {
+                if (like) {
+                    return;
+                }
+                dislike = true;
                 handleDislikeButton();
-            } else if (event.key === 'ArrowRight') {
+            }
+            if (event.key === 'ArrowRight') {
+                if (dislike) {
+                    return;
+                }
+                like = true;
                 handleLikeButton();
             }
         };
 
+        const handleKeyUp = (event) => {
+            if (event.key === 'ArrowLeft') dislike = false;
+            if (event.key === 'ArrowRight') like = false;
+        };
+
         window.addEventListener('keydown', handleKeyDown);
+        window.addEventListener('keyup', handleKeyUp);
 
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
+            window.removeEventListener('keyup', handleKeyUp);
         };
     }, [index, handleDislikeButton, handleLikeButton]);
 
 
     if (loading) {
-        return <LoadingSpinner />
+        return (
+            <div className="centeritems">
+                <Stack sx={{ display: 'flex', alignItems: 'center' }} spacing={1}>
+                    <Skeleton variant="rectangular" width={350} height={600} sx={{ marginTop: 2 }} />
+                </Stack>
+            </div>
+        )
     }
 
     if (error) {
@@ -222,6 +247,8 @@ const DashboardPage = () => {
     return (
         <>
             <div className="centeritems">
+
+
                 {swipeSongs && swipeSongs.length > 0 && index !== null && index < swipeSongs.length && (
                     <Card sx={{ maxWidth: 350 }} className="dashsong">
                         <CardMedia
@@ -242,18 +269,18 @@ const DashboardPage = () => {
                                 >
                                     Your browser does not support the audio element.
                                 </audio>
-                                <Grid container spacing={2} >
+                                <Grid container spacing={0} display={"flex"} marginTop={2} >
                                     <Grid size={6} className="centertext">
 
                                         <IconButton onClick={handleDislikeButton} aria-label="dislike" size="large">
-                                            <CloseIcon fontSize="large" />
+                                            <CloseIcon fontSize="large" sx={{ color: blue[300] }} />
                                         </IconButton>
 
                                     </Grid>
                                     <Grid size={6} className="centertext">
 
                                         <IconButton onClick={handleLikeButton} aria-label="like" color="success.light" size="large">
-                                            <FavoriteIcon fontSize="large" />
+                                            <FavoriteIcon fontSize="large" sx={{ color: red[300] }} />
                                         </IconButton>
 
                                     </Grid>
@@ -262,10 +289,16 @@ const DashboardPage = () => {
                         </CardContent>
 
                     </Card>
+
                 )}
             </div>
+
+
+
+
+
         </>
-    )   
+    )
 }
 
 

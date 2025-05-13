@@ -14,6 +14,7 @@ import IconButton from '@mui/material/IconButton';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import Tooltip from '@mui/material/Tooltip';
+import { red } from '@mui/material/colors';
 
 const style = {
     position: 'absolute',
@@ -343,7 +344,7 @@ const SongModal = ({ song, isOpen, onClose, onLike, userProfile }) => {
                                 },
                             }}>
                                 <IconButton onClick={handleLikedSongUnlike} aria-label="like" size="large">
-                                    <FavoriteIcon fontSize="large" />
+                                    <FavoriteIcon fontSize="large"  sx={{color: red[300]}}/>
                                 </IconButton>
                             </Tooltip>
                         )}
