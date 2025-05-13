@@ -70,7 +70,7 @@ export const PrivateNavigation = () => {
           </Nav>
 
           <Nav>
-            <Nav.Link href="/library">Library</Nav.Link>
+            <Nav.Link href="/likes">Likes</Nav.Link>
           </Nav>
 
           <Nav>

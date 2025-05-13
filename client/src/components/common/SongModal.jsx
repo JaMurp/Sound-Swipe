@@ -5,15 +5,16 @@ import Typography from '@mui/material/Typography';
 import Fade from '@mui/material/Fade';
 import Backdrop from '@mui/material/Backdrop';
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import LoadingSpinner from '../../common/LoadingSpinner';
+// import LoadingSpinner from '../../common/LoadingSpinner';
 import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import Tooltip from '@mui/material/Tooltip';
+import { red } from '@mui/material/colors';
 
 const style = {
     position: 'absolute',
@@ -343,7 +344,7 @@ const SongModal = ({ song, isOpen, onClose, onLike, userProfile }) => {
                                 },
                             }}>
                                 <IconButton onClick={handleLikedSongUnlike} aria-label="like" size="large">
-                                    <FavoriteIcon fontSize="large" />
+                                    <FavoriteIcon fontSize="large"  sx={{color: red[300]}}/>
                                 </IconButton>
                             </Tooltip>
                         )}

@@ -1,4 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import StopIcon from '@mui/icons-material/Stop';
+import PlayArrowOutlinedIcon from '@mui/icons-material/PlayArrowOutlined';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import { green, grey } from '@mui/material/colors';
 
 //https://stackoverflow.com/questions/48748063/react-refs-audio-playback-unhandled-rejection-notsupportederror-on-ios
 const AudioPlayer = ({getUrl, songId, currentlyPlayingId, setCurrentlyPlayingId}) => {
@@ -59,9 +65,15 @@ const AudioPlayer = ({getUrl, songId, currentlyPlayingId, setCurrentlyPlayingId}
         Your browser does not support the
         <code>audio</code> element.
       </audio>
-      <button onClick={(!playing ? play : stop)} disabled={loading}>
+      {/* <button onClick={(!playing ? play : stop)} disabled={loading}>
         {loading ? 'Loading...' : (playing ? 'Pause' : 'Play')}
-      </button>
+      </button> */}
+      <Tooltip title={playing ? 'Stop' : 'Play'} placement="top" arrow>
+        <IconButton onClick={(!playing ? play : stop)} disabled={loading} size="large">
+          {loading ? <PlayArrowOutlinedIcon fontSize="large" sx={{color: green[300]}}/> : (playing ? <StopIcon fontSize="large" sx={{color: grey[600]}}/> : <PlayArrowIcon fontSize="large" sx={{color: green[300]}}/>)}
+        </IconButton>
+      </Tooltip>
+
     </div>
   )
 }
