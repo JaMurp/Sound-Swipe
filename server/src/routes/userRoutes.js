@@ -114,7 +114,6 @@ router.post('/sync-user', async (req, res) => {
         return res.status(500).json({ error: 'Failed to insert user' });
       }
       if (!isValidUid(insertedUser.uid) || !isValidString(insertedUser.photoURL)) {
-        console.log(!isValidUsername(username) || !isValidString(photoURL))
         return res.status(400).json({ error: 'Invalid user data' });
       }
       return res.status(200).json({ success: true, message: 'synced profile' });
