@@ -126,21 +126,14 @@ const DashboardPage = () => {
     };
 
     const handleLikeButton = async () => {
-
         if (disabledButtons) {
             return;
         }
 
         setDisabledButtons(true);
 
-        // if (index >= swipeSongs.length - 1) {
-        //     setRefresh(!refresh);
-        //     setDissableLike(false);
-        //     return;
-        // }
         try {
             const idToken = await currentUser.getIdToken();
-
 
             const response = await axios.post('http://localhost:3000/api/songs/like', {
                 songId: swipeSongs[index].song_id,
@@ -151,7 +144,7 @@ const DashboardPage = () => {
             });
 
             if (!response.data.success) {
-                throw new Error(response.data.error);
+                throw new Error(response.data.error || 'Failed to like song');
             }
 
             const { data } = await axios.post('http://localhost:3000/api/songs/seen', {
@@ -162,10 +155,11 @@ const DashboardPage = () => {
                     'Authorization': `Bearer ${idToken}`
                 }
             });
+            
             if (data.success) {
                 setIndex(index + 1);
             } else {
-                setError(data.error);
+                setError(data.error || 'Failed to mark song as seen');
             }
 
             if (index >= swipeSongs.length - 1) {
@@ -176,7 +170,7 @@ const DashboardPage = () => {
 
             setDisabledButtons(false);
         } catch (error) {
-            setError(error);
+            setError(error.response?.data?.message || error.message || 'An error occurred while processing your request');
             setDisabledButtons(false);
         }
     };
@@ -231,7 +225,14 @@ const DashboardPage = () => {
     }
 
     if (error) {
-        return <div>{error}</div>
+        return (
+            <div className="centeritems">
+                <div style={{ color: 'red', padding: '20px' }}>
+                    {typeof error === 'string' ? error : 'An unexpected error occurred'}
+                </div>
+                <Button variant="contained" onClick={() => setRefresh(!refresh)}>Try Again</Button>
+            </div>
+        );
     }
 
 
