@@ -78,6 +78,14 @@ export const usernameTaken = async (username) => {
 };
 
 
+export const checkShowLikesOnProfile = async (uid) => {
+    const userRef = db.collection('users').doc(uid);
+    const userDoc = await userRef.get();
+    if (!userDoc.exists) throw "User not found";
+    return userDoc.data().showLikesOnProfile;
+}
+
+
 export const updateUser = async (uid, userObj) => {
     // #TODO check the inputs and the abilit 
     let hasInput = false;
@@ -86,6 +94,16 @@ export const updateUser = async (uid, userObj) => {
     if (userObj.bio) {
         hasInput = true
         updatedObj['bio'] = updatedObj.bio;
+    }
+
+    if (userObj.showLikes) {
+        hasInput = true;
+        updatedObj['showLikes'] = userObj.showLikes;
+    }
+
+    if (userObj.showLikesOnProfile) {
+        hasInput = true;
+        updatedObj['showLikesOnProfile'] = userObj.showLikesOnProfile;
     }
 
     if (userObj.genres) {
@@ -405,7 +423,9 @@ export const createUser = async (uid, displayName, photoUrl) => {
             },
             lastNotified: null,
             friends: [],
-            incomingRequests: []
+            incomingRequests: [],
+            showLikes: true,
+            showLikesOnProfile: true
         }
         // Use set with document ID instead of add
         await db.collection("users").doc(uid).set(newUser);

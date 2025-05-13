@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import './LiveFeed.css';
-
+import { Link } from 'react-router-dom';
 const socket = io('http://localhost:3000');
 
 const LiveFeed = () => {
@@ -33,7 +33,7 @@ const LiveFeed = () => {
                 {chat.map((item, index) => (
                     <div key={index} className="feed-item">
                         <div className="user-info">
-                            <span className="user-name">{item.user}</span> liked a song
+                            <Link to={`/profile/${item.user}`} className="user-name">{item.user}</Link> liked a song
                         </div>
                         <div className="song-info">
                             <img 

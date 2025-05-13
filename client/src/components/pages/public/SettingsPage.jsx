@@ -396,6 +396,8 @@ const AccountContent = () => {
 
 const SettingsContent = () => {
     const [explicitData, setExplicitData] = useState(null)
+    const [showLikes, setShowLikes] = useState(null)
+    const [showLikesOnProfile, setShowLikesOnProfile] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
@@ -404,6 +406,12 @@ const SettingsContent = () => {
 
 
     useEffect(() => {
+
+        setLoading(true)
+        setError(null)
+        setShowLikesOnProfile(null)
+        setShowLikes(null)
+        setExplicitData(null)
         const getUserData = async () => {
             try {
                 if (!currentUser) {
@@ -419,6 +427,8 @@ const SettingsContent = () => {
                 });
 
                 setExplicitData(data.explicitData)
+                setShowLikes(data.showLikes)
+                setShowLikesOnProfile(data.showLikesOnProfile)
                 setLoading(false)
 
             } catch(e) {
@@ -461,6 +471,58 @@ const SettingsContent = () => {
             }
     };
 
+    const toggleShowLikes = async () => {
+        try {
+            const idToken = await currentUser.getIdToken();
+            const { data } = await axios.patch('http://localhost:3000/api/users/profile', 
+                {
+                    showLikes: !showLikes
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (!data.success){
+                setError(data.error)
+                return;
+            } 
+
+            setShowLikes(!showLikes);
+        } catch(e) {
+            setError(e.message)
+        }
+    };
+
+    const toggleShowLikesOnProfile = async () => {
+        try {
+            const idToken = await currentUser.getIdToken();
+            const { data } = await axios.patch('http://localhost:3000/api/users/profile', 
+                {
+                    showLikesOnProfile: !showLikesOnProfile
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (!data.success){
+                setError(data.error)
+                return;
+            } 
+
+            setShowLikesOnProfile(!showLikesOnProfile);
+        } catch(e) {
+            setError(e.message)
+        }
+    };
+
 
     return (
         <>
@@ -472,6 +534,22 @@ const SettingsContent = () => {
             <Switch 
                 checked={explicitData} 
                 onChange={toggleExplicitData}
+            />
+            <h2 style={{marginTop: '24px'}}>Toggle Show Likes on Public Feed</h2>
+            <div style={darkStyles.fieldValueStyle}>
+                {showLikes ? 'Likes are visible' : 'Likes are hidden'}
+            </div>
+            <Switch 
+                checked={showLikes} 
+                onChange={toggleShowLikes}
+            />
+            <h2 style={{marginTop: '24px'}}>Toggle Show Likes on Profile</h2>
+            <div style={darkStyles.fieldValueStyle}>
+                {showLikesOnProfile ? 'Profile likes are visible' : 'Profile likes are hidden'}
+            </div>
+            <Switch 
+                checked={showLikesOnProfile} 
+                onChange={toggleShowLikesOnProfile}
             />
             {error && <div style={darkStyles.errorStyle}>{error}</div>}
         </>

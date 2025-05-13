@@ -5,6 +5,12 @@ import { useRef } from "react";
 import axios from "axios";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import styled from 'styled-components';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Grid';
+import AudioPlayer from '../../common/AudioPlayer';
 
 const ProfileContainer = styled.div`
     width: 100%;
@@ -195,6 +201,18 @@ const FriendCounter = styled.span`
     }
 `;
 
+const LikedSongsSection = styled.div`
+    margin-top: 24px;
+    padding: 0 32px;
+`;
+
+const LikedSongsGrid = styled.div`
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+`;
+
 const ProfilePage = () => {
     const [userData, setUserData] = useState(null);
     const [friendsCount, setFriendsCount] = useState(0);
@@ -206,10 +224,11 @@ const ProfilePage = () => {
     const [receivedRequest, setRecievedRequest] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [likedSongs, setLikedSongs] = useState([]);
+    const [currentlyPlayingId, setCurrentlyPlayingId] = useState(null);
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const { userId } = useParams();
-
 
     useEffect(() => {
         const getProfileData = async () => {
@@ -278,6 +297,31 @@ const ProfilePage = () => {
 
         getProfileData();
     }, [currentUser, navigate, userId, refresh]);
+
+    useEffect(() => {
+        const fetchLikedSongs = async () => {
+            if (!friended || !userId) return;
+            
+            try {
+                const idToken = await currentUser.getIdToken();
+                const { data } = await axios.get(`http://localhost:3000/api/users/liked-songs/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`
+                    }
+                });
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                setLikedSongs(data);
+            } catch (error) {
+                console.error('Error fetching liked songs:', error);
+            }
+        };
+
+        fetchLikedSongs();
+    }, [friended, userId, currentUser]);
 
     const fileInputRef = useRef(null);
     const [uploading, setUploading] = useState(false);
@@ -417,6 +461,28 @@ const ProfilePage = () => {
         }
     };
 
+    const getAudioUrl = async (songId) => {
+        try {
+            const idToken = await currentUser.getIdToken();
+            const { data } = await axios.get(`http://localhost:3000/api/songs/get-audio`, {
+                params: {
+                    songId: songId
+                },
+                headers: {
+                    'Authorization': `Bearer ${idToken}`
+                }
+            });
+
+            if (!data.previewUrl) {
+                throw "No preview URL found";
+            }
+            return data.previewUrl;
+        } catch (error) {
+            console.error("Error fetching audio URL:", error);
+            return null;
+        }
+    };
+
     if (loading) return <LoadingContainer><LoadingSpinner /></LoadingContainer>;
     if (error) return <ErrorContainer>Error: {error}</ErrorContainer>;
 
@@ -494,6 +560,47 @@ const ProfilePage = () => {
                             </ProfileText>
                         </ProfileInfo>
                     </ProfileHeader>
+                    <ContentContainer>
+                        {friended && !profileOwner && (
+                            <LikedSongsSection>
+                                <SectionHeader>
+                                    <SectionTitle>Liked Songs</SectionTitle>
+                                </SectionHeader>
+                                {likedSongs && likedSongs.private ? (
+                                    <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
+                                        This user has hidden their liked songs
+                                    </Typography>
+                                ) : (
+                                    <LikedSongsGrid>
+                                        {likedSongs && likedSongs.map((song) => (
+                                            <Card key={song.id} sx={{ maxWidth: 345 }}>
+                                                <CardMedia
+                                                    component="img"
+                                                    height="140"
+                                                    image={song.artistImage}
+                                                    alt={song.artistName}
+                                                />
+                                                <CardContent>
+                                                    <Typography gutterBottom variant="h6" component="div">
+                                                        {song.songTitle}
+                                                    </Typography>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        {song.artistName}
+                                                    </Typography>
+                                                    <AudioPlayer
+                                                        getUrl={() => getAudioUrl(song.id)}
+                                                        songId={song.id}
+                                                        currentlyPlayingId={currentlyPlayingId}
+                                                        setCurrentlyPlayingId={setCurrentlyPlayingId}
+                                                    />
+                                                </CardContent>
+                                            </Card>
+                                        ))}
+                                    </LikedSongsGrid>
+                                )}
+                            </LikedSongsSection>
+                        )}
+                    </ContentContainer>
                 </>
             )}
         </ProfileContainer>

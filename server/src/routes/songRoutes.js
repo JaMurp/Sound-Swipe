@@ -161,9 +161,13 @@ router.post('/seen', async (req, res) => {
         }
         const song = addedSong;
         if (liked) {
-            // emit the song to the socket
-            const io = req.app.get('io');
-            io.emit('new_liked_song_public', {song: song, user: user.username});
+            // emit the song to the socket 
+            if (user.showLikes === true) {
+                const io = req.app.get('io');
+                setImmediate(() => {
+                    io.emit('new_liked_song_public', {song: song, user: user.username});
+                });
+            }
         }
 
         return res.status(200).json({success: true, message: 'Song seen successfully'});
