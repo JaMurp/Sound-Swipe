@@ -20,50 +20,50 @@ export default function FeedPage() {
   const [editedText, setEditedText] = useState("");
   const [editedImage, setEditedImage] = useState(null);
 
-  // useEffect(() => {
-  //   const fetchFriendsLikes = async () => {
-  //     const q = query(collection(db, "likedSongsFeed"), orderBy("likedAt", "desc"));
-  //     const snapshot = await getDocs(q);
+  const groupLikesByUserSession = async (likes, thresholdMinutes = 45) => {
+    const grouped = [];
 
-  //     const likes = await Promise.all(snapshot.docs.map(async docSnap => {
-  //       const data = docSnap.data();
-  //       const userDoc = await getDoc(doc(db, "users", data.userId));
-  //       const username = userDoc.exists() ? userDoc.data().username : "Unknown User";
-  //       return { ...data, id: docSnap.id, username };
-  //     }));
+    likes.forEach(like => {
+      const lastGroup = grouped[grouped.length - 1];
+      const likeTime = new Date(like.likedAt.toDate());
 
-  //     setFriendLikes(likes);
-  //   };
-  //   fetchFriendsLikes();
-  // }, []);
+      if (
+        lastGroup &&
+        lastGroup.userId === like.userId &&
+        (likeTime - lastGroup.lastLikeTime) / 60000 < thresholdMinutes
+      ) {
+        lastGroup.songs.push(like);
+        lastGroup.lastLikeTime = likeTime;
+      } else {
+        grouped.push({
+          userId: like.userId,
+          username: like.username,
+          songs: [like],
+          lastLikeTime: likeTime,
+        });
+      }
+    });
 
-  // const groupLikesByUserSession = async (likes, thresholdMinutes = 45) => {
-  //   const grouped = [];
+    return grouped;
+  };
 
-  //   likes.forEach(like => {
-  //     const lastGroup = grouped[grouped.length - 1];
-  //     const likeTime = new Date(like.likedAt.toDate());
+  useEffect(() => {
+    const fetchFriendsLikes = async () => {
+      const q = query(collection(db, "likedSongsFeed"), orderBy("likedAt", "desc"));
+      const likedSongsFeedDoc = await getDocs(q);
 
-  //     if (
-  //       lastGroup &&
-  //       lastGroup.userId === like.userId &&
-  //       (likeTime - lastGroup.lastLikeTime) / 60000 < thresholdMinutes
-  //     ) {
-  //       lastGroup.songs.push(like);
-  //       lastGroup.lastLikeTime = likeTime;
-  //     } else {
-  //       grouped.push({
-  //         userId: like.userId,
-  //         username: like.username,
-  //         songs: [like],
-  //         lastLikeTime: likeTime,
-  //       });
-  //     }
-  //   });
+      const likes = await Promise.all(likedSongsFeedDoc.docs.map(async doc => {
+        const data = doc.data();
+        const userDoc = await getDoc(doc(db, "users", data.userId));
+        const username = userDoc.exists() ? userDoc.data().username : "Unknown User";
+        return { ...data, id: docSnap.id, username };
+      }));
 
-  //   return grouped;
-  // };
-  // const groupedLikes = groupLikesByUserSession(friendLikes);
+      const grouped = await groupLikesByUserSession(likes);
+      setFriendLikes(grouped);
+    };
+    fetchFriendsLikes();
+  }, []);
 
   const fetchPosts = async () => {
     const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
@@ -99,23 +99,23 @@ export default function FeedPage() {
       formData.append("postUid", postUid);
       const idToken = await currentUser.getIdToken();
       const response = await fetch("http://localhost:3000/api/profile-photo/upload-feed-photo", {
-            method: "POST",
-            headers: {
-            Authorization: `Bearer ${idToken}`,
-            },
-            body: formData,
-        });
-        const data = await response.json();
-        if (data.imageUrl) {
-            imageUrl = data.imageUrl;
-        }
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: formData,
+      });
+      const data = await response.json();
+      if (data.imageUrl) {
+        imageUrl = data.imageUrl;
+      }
     }
     await setDoc(doc(db, "posts", postUid), {
       text,
       imageUrl,
       imagePath: `feed_photos/${currentUser.uid}/${postUid}.jpg`,
       timestamp: new Date(),
-      postUid,  
+      postUid,
       uid: currentUser.uid
     });
 
@@ -127,9 +127,9 @@ export default function FeedPage() {
 
   const handleDelete = async (post) => {
     if (!auth.currentUser) {
-  alert("You must be logged in to delete posts.");
-  return;
-}
+      alert("You must be logged in to delete posts.");
+      return;
+    }
     if (post.imagePath) {
       const imageRef = ref(storage, post.imagePath);
       await deleteObject(imageRef);
@@ -154,16 +154,16 @@ export default function FeedPage() {
       formData.append("postUid", post.postUid);
       const idToken = await currentUser.getIdToken();
       const response = await fetch("http://localhost:3000/api/profile-photo/change-feed-photo", {
-            method: "POST",
-            headers: {
-            Authorization: `Bearer ${idToken}`,
-            },
-            body: formData,
-        });
-        const data = await response.json();
-        if (data.imageUrl) {
-            updatedData.imageUrl = data.imageUrl;
-        }
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: formData,
+      });
+      const data = await response.json();
+      if (data.imageUrl) {
+        updatedData.imageUrl = data.imageUrl;
+      }
     }
     await updateDoc(postRef, updatedData);
     setEditingPostId(null);
@@ -192,21 +192,20 @@ export default function FeedPage() {
         </form>
       )}
 
-      {/* not working */}
-      {/* <div className="friend-likes">
-        {groupedLikes.length > 0 && groupedLikes.map((session, index) => (
+      <div className="friend-likes">
+        {friendLikes.length > 0 && friendLikes.map((session, index) => (
           <div key={index} className="friend-likes">
             <p><strong>{session.username}</strong> liked {session.songs.length} song{session.songs.length > 1 ? 's' : ''}</p>
             <ul>
               {session.songs.map(song => (
                 <li key={song.id}>
-                  <p>{song.songTitle} – {song.artistName}</p>
+                  <p>{song.songTitle} - {song.artistName}</p>
                 </li>
               ))}
             </ul>
           </div>
         ))}
-      </div> */}
+      </div>
 
 
       <div className="posts-list">
