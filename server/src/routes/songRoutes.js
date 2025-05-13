@@ -14,11 +14,7 @@ router.get('/get-audio', async (req, res) => {
     // #TODO check the inputs
     let songIdString = null;
     try {
-        const { songId } = req.query;
-        if (!songId) {
-            throw new Error("Song ID is required");
-        }
-        songIdString = songId.toString();
+        songIdString = songValidation.checkSongId(req.query.songId);
     } catch (e) {
         console.log(e);
         return res.status(400).json({ error: e });
@@ -31,14 +27,13 @@ router.get('/get-audio', async (req, res) => {
         return res.status(200).json({ previewUrl: song.preview_url });
     } catch (e) {
         console.log(e);
-        return res.status(500).json({ error: e });
+        return res.status(500).json({ error: 'Internal Server Error' });
     }
-})
+});
 
 
 router.post('/', async (req, res) => {
-    // #TODO check the inputs
-    const { genres } = req.body;
+    const genres = songValidation.checkGenres(req.body.genres);
 
 
     let explicitFlag = false;
@@ -47,7 +42,7 @@ router.post('/', async (req, res) => {
         explicitFlag = explicitData;
     } catch (e) {
         console.log(e);
-        return res.status(500).json({ error: e });
+        return res.status(500).json({ error: 'Internal Server Error'});
     }
 
     try {
@@ -57,14 +52,13 @@ router.post('/', async (req, res) => {
     } catch (e) {
 
         console.log(e);
-        return res.status(500).json({ error: e });
+        return res.status(500).json({ error: 'Internal Server Error'});
 
     }
 });
 
 
 router.patch('/unlike', async (req, res) => {
-    // #TODO check the inputs
     let songId = null;
     try {
         songId = songValidation.checkSongId(req.body.songId);
@@ -76,7 +70,7 @@ router.patch('/unlike', async (req, res) => {
         return res.status(200).json(status);
     } catch (e) {
         console.log(e);
-        return res.status(500).json({ error: e });
+        return res.status(500).json({ error: 'Internal Server Error'});
     }
 });
 
@@ -92,15 +86,14 @@ router.patch('/add-liked-seen-song', async (req, res) => {
         return res.status(200).json(status);
     } catch (e) {
         console.log(e);
-        return res.status(500).json({ error: e });
+        return res.status(500).json({ error: 'Internal Server Error'});
     }
-})
+});
 
 
 router.post('/like', async (req, res) => {
-    // #TODO check the inputs
-    const { songId } = req.body;
     try {
+        const songId = songValidation.checkSongId(req.body.songId);
         const success = await songsDataFunctions.incrementSongLikes(songId.toString());
         if (!success.success) {
             return res.status(500).json({ error: success.message });
@@ -115,14 +108,14 @@ router.post('/like', async (req, res) => {
 
     } catch (e) {
         console.log(e);
-        return res.status(500).json({ error: e });
+        return res.status(500).json({ error: 'Internal Server Error'});
     }
 });
 
 router.post('/decrement-song-likes', async (req, res) => {
 
-    const { songId } = req.body;
     try {
+        const songId = songValidation.checkSongId(req.body.songId);
         const success = await songsDataFunctions.decrementSongLikes(songId.toString());
         if (success.success) {
             return res.status(200).json({ success: true, message: 'Song disliked successfully' });
@@ -131,14 +124,21 @@ router.post('/decrement-song-likes', async (req, res) => {
         }
     } catch (e) {
         console.log(e);
-        return res.status(500).json({ error: e });
+        return res.status(500).json({ error: 'Internal Server Error'});
     }
 
-})
+});
 
 router.post('/seen', async (req, res) => {
-    // #TODO check the inputs
-    const { songId, liked } = req.body;
+    let songId, liked = null;
+    try {
+        songId = songValidation.checkSongId(req.body.songId);
+        liked = songValidation.checkLikedFlag(req.body.liked);
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({ error: 'Internal Server Error'});
+    }
+
     //increment the index of the song in the swipe session
     // but only if the session exists
 
@@ -150,7 +150,7 @@ router.post('/seen', async (req, res) => {
             needToRefresh = false;
         } catch (e) {
             console.log(e);
-            return res.status(500).json({error: e});
+            return res.status(500).json({ error: 'Internal Server Error'});
         }
     }
 
@@ -160,19 +160,19 @@ router.post('/seen', async (req, res) => {
         user = await userDataFunctions.getUser(req.user.uid);
         console.log(user);
         if (!user) {
-            return res.status(404).json({error: 'User not found'});
+            return res.status(404).json({ error: 'User not found' });
         }
-    } catch(e) {
-        return res.status(404).json({error: e});
+    } catch (e) {
+        return res.status(404).json({ error: e });
     }
 
-    
+
     try {
         console.log(songId, req.user.uid, liked, "adding seen song");
-        const {addedSong} = await songsDataFunctions.addSeenSong(songId, req.user.uid, liked);
+        const { addedSong } = await songsDataFunctions.addSeenSong(songId, req.user.uid, liked);
 
         if (!addedSong) {
-            return res.status(500).json({error: 'Song not added to seen songs'});
+            return res.status(500).json({ error: 'Song not added to seen songs' });
         }
         const song = addedSong;
         if (liked) {
@@ -180,7 +180,7 @@ router.post('/seen', async (req, res) => {
             if (user.showLikes === true) {
                 const io = req.app.get('io');
                 setImmediate(() => {
-                    io.emit('new_liked_song_public', {song: song, user: user.username});
+                    io.emit('new_liked_song_public', { song: song, user: user.username });
                 });
             }
         }
@@ -188,41 +188,41 @@ router.post('/seen', async (req, res) => {
         return res.status(200).json({success: true, message: 'Song seen successfully', needToRefresh: needToRefresh});
     } catch (e) {
         console.log(e, "error adding seen song");
-        return res.status(500).json({ error: e });
+        return res.status(500).json({ error: 'Internal Server Error'});
     }
 });
 
 router.post('/trending', async (req, res) => {
-    const { filters } = req.body;
+    const filters = songValidation.checkFilters(req.body.filters);
     try {
         const trendingSongs = await songsDataFunctions.getTopLikedSongs(filters);
         return res.status(200).json(trendingSongs);
     } catch (e) {
         console.log(e);
-        return res.status(500).json({ error: e });
+        return res.status(500).json({ error: 'Internal Server Error'});
     }
 });
 
 router.post('/song/alreadyLiked', async (req, res) => {
-    const { songId } = req.body;
+    const songId = songValidation.checkSongId(req.body.songId);
     try {
         const alreadyLiked = await songsDataFunctions.likedSongExist(songId, req.user.uid);
         return res.status(200).json({ alreadyLiked: alreadyLiked });
     } catch (e) {
         console.log(e);
-        return res.status(500).json({ error: e });
+        return res.status(500).json({ error: 'Internal Server Error'});
     }
 });
 
 router.get('/:songId', async (req, res) => {
-    const { songId } = req.params;
+    const songId = songValidation.checkSongId(req.params.songId);
     try {
         const song = await songsDataFunctions.getSong(songId);
         return res.status(200).json(song);
     } catch (e) {
         console.log(e);
-        return res.status(500).json({ error: e });
+        return res.status(500).json({ error: 'Internal Server Error'});
     }
-})
+});
 
 export default router;

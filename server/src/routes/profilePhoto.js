@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 import { exec } from "child_process";
 import admin from "firebase-admin";
 import { v4 as uuidv4 } from "uuid";
+import { checkPostUid, validateUploadedFile } from '../helpers/uploadValidation.js'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,7 +37,11 @@ router.post(
     const uid = req.user.uid;
     const tempInput = req.file.path;
     const tempOutput = path.join(__dirname, "..", "uploads", `${uid}.jpg`);
-
+    try {
+      validateUploadedFile(req.file);
+    } catch (e) {
+      return res.status(400).json({ error: e });
+    }
     try {
 
       // Ensure uploads directory exists
@@ -63,38 +68,38 @@ router.post(
       });
 
       const bucket = admin.storage().bucket();
-  const destination = `profile_photos/${uid}.jpg`;
+      const destination = `profile_photos/${uid}.jpg`;
 
-  // Generate a download token
-  const downloadToken = uuidv4();
+      // Generate a download token
+      const downloadToken = uuidv4();
 
-  const metadata = {
-    metadata: {
-      firebaseStorageDownloadTokens: downloadToken, // Required for token-based access
-    },
-    contentType: req.file.mimetype,
-  };
+      const metadata = {
+        metadata: {
+          firebaseStorageDownloadTokens: downloadToken, // Required for token-based access
+        },
+        contentType: req.file.mimetype,
+      };
 
-  // Upload the image
-  await bucket.upload(tempOutput, {
-    destination,
-    metadata,
-  });
+      // Upload the image
+      await bucket.upload(tempOutput, {
+        destination,
+        metadata,
+      });
 
-  fs.unlinkSync(tempOutput); // Clean up processed image
+      fs.unlinkSync(tempOutput); // Clean up processed image
 
-  // Construct correct Firebase download URL
-  const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(destination)}?alt=media&token=${downloadToken}`;
+      // Construct correct Firebase download URL
+      const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(destination)}?alt=media&token=${downloadToken}`;
 
-  // Store the download URL in Firestore
-  await admin.firestore().collection("users").doc(uid).set(
-    {
-      avatar_url: imageUrl,
-    },
-    { merge: true }
-  );
+      // Store the download URL in Firestore
+      await admin.firestore().collection("users").doc(uid).set(
+        {
+          avatar_url: imageUrl,
+        },
+        { merge: true }
+      );
 
-  res.json({ success: true, imageUrl });
+      res.json({ success: true, imageUrl });
 
     } catch (err) {
       console.error("Upload failed:", err);
@@ -113,7 +118,12 @@ router.post("/upload-feed-photo",
     const uid = req.user.uid;
     const tempInput = req.file.path;
     const tempOutput = path.join(__dirname, "..", "uploads", `${postUid}.jpg`);
-
+    try {
+      checkPostUid(req.body.postUid);
+      validateUploadedFile(req.file);
+    } catch (e) {
+      return res.status(400).json({ error: e });
+    }
     try {
 
       // Ensure uploads directory exists
@@ -137,31 +147,31 @@ router.post("/upload-feed-photo",
       });
 
       const bucket = admin.storage().bucket();
-  const destination = `feed_photos/${uid}/${postUid}.jpg`;
+      const destination = `feed_photos/${uid}/${postUid}.jpg`;
 
-  // Generate a download token
-  const downloadToken = uuidv4();
+      // Generate a download token
+      const downloadToken = uuidv4();
 
-  const metadata = {
-    metadata: {
-      firebaseStorageDownloadTokens: downloadToken, // Required for token-based access
-    },
-    contentType: req.file.mimetype,
-  };
+      const metadata = {
+        metadata: {
+          firebaseStorageDownloadTokens: downloadToken, // Required for token-based access
+        },
+        contentType: req.file.mimetype,
+      };
 
-  // Upload the image
-  await bucket.upload(tempOutput, {
-    destination,
-    metadata,
-  });
+      // Upload the image
+      await bucket.upload(tempOutput, {
+        destination,
+        metadata,
+      });
 
-  fs.unlinkSync(tempOutput); // Clean up processed image
+      fs.unlinkSync(tempOutput); // Clean up processed image
 
-  // Construct correct Firebase download URL
-  const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(destination)}?alt=media&token=${downloadToken}`;
+      // Construct correct Firebase download URL
+      const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(destination)}?alt=media&token=${downloadToken}`;
 
-  
-  res.json({ success: true, imageUrl, postUid: postUid });
+
+      res.json({ success: true, imageUrl, postUid: postUid });
 
     } catch (err) {
       console.error("Upload failed:", err);
@@ -179,7 +189,12 @@ router.post("/change-feed-photo",
     const tempInput = req.file.path;
     const uid = req.user.uid;
     const tempOutput = path.join(__dirname, "..", "uploads", `${postUid}.jpg`);
-
+    try {
+      checkPostUid(req.body.postUid);
+      validateUploadedFile(req.file);
+    } catch (e) {
+      return res.status(400).json({ error: e });
+    }
     try {
 
       // Ensure uploads directory exists
@@ -203,31 +218,31 @@ router.post("/change-feed-photo",
       });
 
       const bucket = admin.storage().bucket();
-  const destination = `feed_photos/${uid}/${postUid}.jpg`;
+      const destination = `feed_photos/${uid}/${postUid}.jpg`;
 
-  // Generate a download token
-  const downloadToken = uuidv4();
+      // Generate a download token
+      const downloadToken = uuidv4();
 
-  const metadata = {
-    metadata: {
-      firebaseStorageDownloadTokens: downloadToken, // Required for token-based access
-    },
-    contentType: req.file.mimetype,
-  };
+      const metadata = {
+        metadata: {
+          firebaseStorageDownloadTokens: downloadToken, // Required for token-based access
+        },
+        contentType: req.file.mimetype,
+      };
 
-  // Upload the image
-  await bucket.upload(tempOutput, {
-    destination,
-    metadata,
-  });
+      // Upload the image
+      await bucket.upload(tempOutput, {
+        destination,
+        metadata,
+      });
 
-  fs.unlinkSync(tempOutput); // Clean up processed image
+      fs.unlinkSync(tempOutput); // Clean up processed image
 
-  // Construct correct Firebase download URL
-  const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(destination)}?alt=media&token=${downloadToken}`;
+      // Construct correct Firebase download URL
+      const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(destination)}?alt=media&token=${downloadToken}`;
 
-  
-  res.json({ success: true, imageUrl, postUid: postUid });
+
+      res.json({ success: true, imageUrl, postUid: postUid });
 
     } catch (err) {
       console.error("Upload failed:", err);
