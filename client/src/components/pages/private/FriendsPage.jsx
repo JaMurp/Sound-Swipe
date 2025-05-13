@@ -14,6 +14,7 @@ import Divider from '@mui/material/Divider';
 import Box from '@mui/material/Box';
 import SearchIcon from '@mui/icons-material/Search';
 import TextField from '@mui/material/TextField';
+import Stack from '@mui/material/Stack';
 
 
 
@@ -97,33 +98,50 @@ const FriendsPage = () => {
                     ) : (
 
                         <div>
-                            <h3>Your Friends: {friends.length} </h3>
-                                <Box sx={{ display: 'flex', alignItems: 'flex-end', marginBottom: 2 }}>
+                            <Box sx={{ display: 'flex', justifyContent: "space-between", margin: 2, alignItems: "center" }}>
+                                <h3 className="mb-0">Your Friends: {friends.length} </h3>
+                                <Stack direction="row" alignItems="center" display={"flex"}>
                                     <SearchIcon className='search-icon me-2' />
-
                                     <TextField
                                         id="input-with-sx"
                                         label="Search"
                                         variant="standard"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        sx={{ width: '100%' }}
+                                        sx={{ width: '20rem', marginBottom: 2 }}
                                     />
-                                </Box>
-                            {search.length === 0 ? (<p>No usernames match your search.</p>) : (
-                                friends.map(friend => (
-                                    <div
-                                        key={friend.id}
-                                        className="friend-container"
-                                        onClick={() => handleFriendClick(friend.id)}
-                                    >
+                                </Stack>
+                            </Box>
+                            < Divider aria-hidden="true" />
 
-                                        <img src={friend.avatar_url} alt={friend.username} width={75} />
-                                        <h3>{friend.username}</h3>
+                            <Grid container spacing={2} sx={{ marginTop: 2 }}>
+                                {search.length === 0 ? (<p className="centertext mt-4">No usernames match your search.</p>) : (
+                                    friends.map(friend => (
+                                        <Grid size={{ md: 6, lg: 4 }} key={friend.id}>
+                                            <ButtonBase
+                                                onClick={() => handleFriendClick(friend.id)}
+                                                sx={{ width: "100%", marginBottom: 2 }}
+                                            >
+                                                <Card sx={{ width: "100%" }} className="leaderboard-skeleton">
+                                                    <CardMedia>
+                                                        <Avatar alt={friend.username} src={friend.avatar_url} sx={{ width: 250, height: 250 }} />
+                                                    </CardMedia>
+                                                    <CardContent sx={{ textAlign: 'center' }} className="mt-3 mb-3">
+                                                        <Typography variant="h5" component="div" sx={{ color: 'text.primary' }}>
+                                                            {friend.username}
+                                                        </Typography>
+                                                    </CardContent>
+                                                </Card>
 
-                                    </div>
-                                ))
-                            )}
+                                            </ButtonBase>
+                                        </Grid>
+
+
+                                    ))
+
+                                )}
+                            </Grid>
+
                         </div>
                     )}
                     < Divider aria-hidden="true" />
