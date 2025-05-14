@@ -20,6 +20,9 @@ export default function FeedPage() {
   const [editedText, setEditedText] = useState("");
   const [editedImage, setEditedImage] = useState(null);
 
+
+  const [buttonSemaphore, setButtonSemaphore] = useState(false);
+
   const groupLikesByUserSession = async (likes, thresholdMinutes = 45) => {
     const grouped = [];
     const userSessions = new Map();
@@ -49,6 +52,9 @@ export default function FeedPage() {
 
   useEffect(() => {
     const fetchFriendsLikes = async () => {
+
+      setButtonSemaphore(false);
+
       const q = query(collection(db, "likedSongsFeed"), orderBy("likedAt", "desc"));
       const likedSongsFeedDoc = await getDocs(q);
 
@@ -95,6 +101,10 @@ export default function FeedPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (buttonSemaphore) return;
+    setButtonSemaphore(true);
+
     const currentUser = auth.currentUser;
     if (!currentUser || (!text.trim() && !image)) return;
     let postUid = uuidv4();
@@ -130,6 +140,7 @@ export default function FeedPage() {
     setImage(null);
     setShowForm(false);
     fetchPosts();
+    setButtonSemaphore(false);
   };
 
   const handleDelete = async (post) => {

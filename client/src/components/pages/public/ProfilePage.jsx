@@ -38,6 +38,12 @@ const ProfilePage = () => {
     const { userId } = useParams();
     const [loadingSongs, setLoadingSongs] = useState(true);
 
+
+
+    const [buttonSemaphore, setButtonSemaphore] = useState(false);
+
+
+
     useEffect(() => {
         const getProfileData = async () => {
             console.log("Fetching profile data..."); // Add this
@@ -54,6 +60,7 @@ const ProfilePage = () => {
                 setRequested(false);
                 setRecievedRequest(false);
                 setFriendDefault(false);
+                setButtonSemaphore(false);
 
                 if (!currentUser) {
                     navigate('/');
@@ -179,6 +186,9 @@ const ProfilePage = () => {
 
     const handleRequestFriend = async () => {
         try {
+            if (buttonSemaphore) return;
+            setButtonSemaphore(true);
+
             const idToken = await currentUser.getIdToken();
             const response = await axios.post(`http://localhost:3000/api/users/friend-request/${userId}`, {
             }, {
@@ -194,14 +204,19 @@ const ProfilePage = () => {
                 setRequested(false);
                 setError(response.data.message);
             }
+            setButtonSemaphore(false);
         } catch (e) {
             setError(e);
             setRequested(false);
+            setButtonSemaphore(false);
         }
     };
 
     const handleAcceptFriend = async () => {
         try {
+            if (buttonSemaphore) return;
+            setButtonSemaphore(true);
+
             const idToken = await currentUser.getIdToken();
             const response = await axios.post(`http://localhost:3000/api/users/accept-request/${userId}`, {
             }, {
@@ -218,14 +233,19 @@ const ProfilePage = () => {
                 setFriended(false);
                 setError(response.data.message);
             }
+            setButtonSemaphore(false);
         } catch (e) {
             setFriended(false);
             setError(e);
+            setButtonSemaphore(false);
         }
     };
 
     const handleRejectFriend = async () => {
         try {
+            if (buttonSemaphore) return;
+            setButtonSemaphore(true);
+
             const idToken = await currentUser.getIdToken();
             const response = await axios.post(`http://localhost:3000/api/users/reject-request/${userId}`, {
             }, {
@@ -241,14 +261,19 @@ const ProfilePage = () => {
                 setFriendDefault(false);
                 setError(response.data.message);
             }
+            setButtonSemaphore(false)
         } catch (e) {
             setFriendDefault(false);
             setError(e);
+            setButtonSemaphore(false);
         }
     };
 
     const handleRemoveFriend = async () => {
         try {
+            if (buttonSemaphore) return;
+            setButtonSemaphore(true);
+
             setFriended(false)
             const idToken = await currentUser.getIdToken();
             const response = await axios.post(`http://localhost:3000/api/users/remove-friend/${userId}`, {
@@ -266,10 +291,12 @@ const ProfilePage = () => {
                 setFriended(true);
                 setError(response.data.message);
             }
+            setButtonSemaphore(false);
             setRefresh(!refresh);
         } catch (e) {
             setFriended(true);
             setError(e);
+            setButtonSemaphore(false);
         }
     };
 
