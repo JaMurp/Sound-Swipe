@@ -1,14 +1,19 @@
 import { Router } from 'express';
 import * as swipingFunctions from '../data/swipingFunctions.js'
 import userDataFunctions from '../data/index.js'
-import { isValidUid, isValidString, isNotEmpty, isValidUsername } from '../helpers/userHelpers.js';
-
+import * as serverHelpers from '../helpers/serverHelpers.js'
 
 const router = Router();
 
 router.get('/profile', async (req, res) => {
   try {
     const currentUserId = req.user.uid;
+    try {
+      serverHelpers.checkUserId(currentUserId)
+    } catch (e) {
+      console.log(e)
+      return res.status(400).json({ error: e })
+    }
     const userExists = await userDataFunctions.userExists(currentUserId);
     if (!userExists) {
       return res.status(404).json({ error: `Could not fetch profile ${currentUserId}` });
@@ -25,8 +30,12 @@ router.get('/profile', async (req, res) => {
 router.get('/profile/:id', async (req, res) => {
   try {
     const userId = req.params.id;
-    if (!isValidUid(userId)) {
-      return res.status(400).json({ error: 'Invalid user ID format' });
+
+    try {
+      serverHelpers.checkUserId(userId)
+    } catch (e) {
+      console.log(e)
+      return res.status(400).json({ error: e })
     }
     const userExists = await userDataFunctions.userExists(userId);
     if (!userExists) {
@@ -77,6 +86,7 @@ router.patch('/profile', async (req, res) => {
 router.delete('/profile', async (req, res) => {
 
   try {
+
     await userDataFunctions.deleteUser(req.user.uid)
     return res.status(200).json({ success: true, message: 'deleted profile successfully' });
   } catch (e) {
@@ -90,8 +100,6 @@ router.delete('/profile', async (req, res) => {
 
 router.delete('/notifications/:id', async (req, res) => {
   try {
-    console.log(req.user.uid)
-    console.log(req.params.id)
     await userDataFunctions.deleteNotif(req.user.uid, req.params.id)
     return res.status(200).json({ success: true, message: 'deleted notification successfully' });
   } catch (e) {

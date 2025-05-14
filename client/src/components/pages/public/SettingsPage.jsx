@@ -113,10 +113,34 @@ const AccountContent = () => {
 
             const changedFields = {};
             if (formData.username !== userData.username) {
+                if (!formData.username) throw "Username is required";
                 changedFields.username = formData.username.trim();
+
+                if (changedFields.username.length < 3 || changedFields.username.length > 15) {
+                    setError('Username must be between 3 and 15 characters');
+                    return;
+                }
+                for (let i = 0; i < changedFields.username.length; i++) {
+                    const char = changedFields.username[i];
+                    const isLowercase = char >= "a" && char <= "z";
+                    const isNumber = char >= "0" && char <= "9";
+                    const isUnderscore = char === "_";
+                    
+                    if (!(isLowercase || isNumber || isUnderscore)) {
+                        setError('Username can only contain lowercase letters, numbers, and underscores');
+                        return;
+                    }
+                }
+
             }
             if (formData.bio !== userData.bio) {
+                if (!formData.bio) throw "Bio is required";
                 changedFields.bio = formData.bio?.trim() || '';
+                if (changedFields.bio.length > 160) {
+                    setError('Bio must be less than 160 characters');
+                    return;
+                }
+
             }
 
             // Check if any changes were made
@@ -127,6 +151,7 @@ const AccountContent = () => {
 
             setLoading(true);
             const jwtToken = await currentUser.getIdToken();
+            console.log(changedFields)
             const { data } = await axios.patch(
                 'http://localhost:3000/api/users/profile',
                 changedFields,
@@ -149,7 +174,7 @@ const AccountContent = () => {
             setIsEditing(false);
             setError(null);
         } catch (err) {
-            setError(err.error);
+            setError(err.response.data.error || 'Failed to update profile');
         } finally {
             setLoading(false);
         }
@@ -330,19 +355,22 @@ const SettingsContent = () => {
 
 
     const toggleExplicitData = async () => {
-        try {
-            const idToken = await currentUser.getIdToken();
-            const { data } = await axios.patch('http://localhost:3000/api/users/profile',
-                {
-                    explicitData: !explicitData
-                },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${idToken}`,
-                        'Content-Type': 'application/json'
+            try {
+                if (explicitData === null) throw "Explicit data is not set";
+                if (typeof explicitData !== "boolean") throw "Explicit data is not a boolean";
+
+                const idToken = await currentUser.getIdToken();
+                const { data } = await axios.patch('http://localhost:3000/api/users/profile', 
+                    {
+                        explicitData: !explicitData
+                    },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${idToken}`,
+                            'Content-Type': 'application/json'
+                        }
                     }
-                }
-            );
+                );
 
             if (!data.success) {
                 setError(data.error)
@@ -357,6 +385,9 @@ const SettingsContent = () => {
 
     const toggleShowLikes = async () => {
         try {
+            if (showLikes === null) throw "Show likes is not set";
+            if (typeof showLikes !== "boolean") throw "Show likes is not a boolean";
+
             const idToken = await currentUser.getIdToken();
             const { data } = await axios.patch('http://localhost:3000/api/users/profile',
                 {
@@ -383,6 +414,9 @@ const SettingsContent = () => {
 
     const toggleShowLikesOnProfile = async () => {
         try {
+            if (showLikesOnProfile === null) throw "Show likes on profile is not set";
+            if (typeof showLikesOnProfile !== "boolean") throw "Show likes on profile is not a boolean";
+
             const idToken = await currentUser.getIdToken();
             const { data } = await axios.patch('http://localhost:3000/api/users/profile',
                 {

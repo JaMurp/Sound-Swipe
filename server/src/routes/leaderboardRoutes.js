@@ -2,6 +2,8 @@ import { Router } from 'express';
 import * as songsDataFunctions from '../data/songsDataFunctions.js';
 import * as leaderboardFunctions from '../data/leaderboardFunctions.js';
 import * as songValidation from '../helpers/songValidation.js';
+import * as helpers from '../helpers/serverHelpers.js';
+
 const router = Router();
 
 
@@ -48,13 +50,15 @@ router.post('/decrement-song-likes', async (req, res) => {
 
 
 router.post('/add-seen-song', async (req, res) => {
-    let songId, liked = null;
+    const {songId, liked} = req.body;
+
     try {
-        songId = songValidation.checkSongId(req.body.songId);
-        liked = songValidation.checkLikedFlag(req.body.liked);
+        songId = helpers.checkSongId(songId);
+        liked = helpers.checkLiked(liked);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return res.status(400).json({error: e});
     }
+
     try {
         const success = await songsDataFunctions.addSeenSong(songId, req.user.uid, liked);
 
@@ -75,11 +79,12 @@ router.post('/add-seen-song', async (req, res) => {
 
 
 router.get('/has-seen-song', async (req, res) => {
+    // #TODO check the inputs
     let songId = null;
     try {
-        songId = songValidation.checkSongId(req.query.songId);
+        songId = helpers.checkSongId(req.query.songId);
     } catch (e) {
-        return res.status(400).json({ error: e });
+        return res.status(400).json({error: e});
     }
 
     try {
