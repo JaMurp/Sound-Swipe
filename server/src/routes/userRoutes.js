@@ -1,23 +1,19 @@
 import { Router } from 'express';
 import * as swipingFunctions from '../data/swipingFunctions.js'
 import userDataFunctions from '../data/index.js'
-import * as helpers from '../helpers/serverHelpers.js'
-
-
+import * as serverHelpers from '../helpers/serverHelpers.js'
 
 const router = Router();
 
 router.get('/profile', async (req, res) => {
-
   try {
     const currentUserId = req.user.uid;
-
     try {
-      helpers.checkUserId(currentUserId);
+      serverHelpers.checkUserId(currentUserId)
     } catch (e) {
+      console.log(e)
       return res.status(400).json({ error: e })
     }
-
     const userExists = await userDataFunctions.userExists(currentUserId);
     if (!userExists) {
       return res.status(404).json({ error: `Could not fetch profile ${currentUserId}` });
@@ -36,11 +32,11 @@ router.get('/profile/:id', async (req, res) => {
     const userId = req.params.id;
 
     try {
-      helpers.checkUserId(userId);
+      serverHelpers.checkUserId(userId)
     } catch (e) {
+      console.log(e)
       return res.status(400).json({ error: e })
     }
-
     const userExists = await userDataFunctions.userExists(userId);
     if (!userExists) {
       return res.status(404).json({ error: `Could not fetch profile with id '${userId}'` });
@@ -82,14 +78,6 @@ router.get('/notifications', async (req, res) => {
 router.patch('/profile', async (req, res) => {
   // #TODO check body and make sure the atleast 1 param provided also check the params if they are provided
   try {
-
-    try {
-      helpers.checkRequestBody(req.body);
-      helpers.checkUserId(req.user.uid);
-    } catch (e) {
-      return res.status(400).json({ error: e })
-    }
-
     await userDataFunctions.updateUser(req.user.uid, req.body)
     return res.status(200).json({ success: true, message: 'succesfully updated the user' });
   } catch (e) {
@@ -101,11 +89,6 @@ router.patch('/profile', async (req, res) => {
 router.delete('/profile', async (req, res) => {
   // #TODO check uid
   try {
-    try {
-      helpers.checkUserId(req.user.uid);
-    } catch (e) {
-      return res.status(400).json({ error: e })
-    }
 
     await userDataFunctions.deleteUser(req.user.uid)
     return res.status(200).json({ success: true, message: 'deleted profile successfully' })
@@ -120,8 +103,6 @@ router.delete('/profile', async (req, res) => {
 
 router.delete('/notifications/:id', async (req, res) => {
   try {
-    console.log(req.user.uid)
-    console.log(req.params.id)
     await userDataFunctions.deleteNotif(req.user.uid, req.params.id)
     return res.status(200).json({ success: true, message: 'deleted notification successfully' })
   } catch (e) {
@@ -158,12 +139,6 @@ router.post('/sync-user', async (req, res) => {
 
 router.post('/friend-request/:id', async (req, res) => {
   try {
-    try {
-      helpers.checkUserId(req.user.uid);
-    } catch (e) {
-      return res.status(400).json({ error: e })
-    }
-
     const currentUserId = req.user.uid;
     const friendId = req.params.id;
     const userExists = await userDataFunctions.userExists(currentUserId);
@@ -189,12 +164,6 @@ router.post('/friend-request/:id', async (req, res) => {
 
 router.post('/accept-request/:id', async (req, res) => {
   try {
-    try {
-      helpers.checkUserId(req.user.uid);
-    } catch (e) {
-      return res.status(400).json({ error: e })
-    }
-
     const currentUserId = req.user.uid;
     const friendId = req.params.id;
     const userExists = await userDataFunctions.userExists(currentUserId);
@@ -220,13 +189,6 @@ router.post('/accept-request/:id', async (req, res) => {
 
 router.post('/reject-request/:id', async (req, res) => {
   try {
-
-    try {
-      helpers.checkUserId(req.user.uid);
-    } catch (e) {
-      return res.status(400).json({ error: e })
-    }
-
     const currentUserId = req.user.uid;
     const friendId = req.params.id;
     const userExists = await userDataFunctions.userExists(currentUserId);
@@ -252,12 +214,6 @@ router.post('/reject-request/:id', async (req, res) => {
 
 router.post('/remove-friend/:id', async (req, res) => {
   try {
-    try {
-      helpers.checkUserId(req.user.uid);
-    } catch (e) {
-      return res.status(400).json({ error: e })
-    }
-
     const currentUserId = req.user.uid;
     const friendId = req.params.id;
     const userExists = await userDataFunctions.userExists(currentUserId);
@@ -304,12 +260,6 @@ router.post('/login-recommendations', async (req, res) => {
 router.get('/liked-songs/:id', async (req, res) => {
   if (req.params.id === 'me') {
     try {
-
-      try {
-        helpers.checkUserId(req.user.uid);
-      } catch (e) {
-        return res.status(400).json({ error: e })
-      }
       const getLikesSongs = await userDataFunctions.getLikedSongs(req.user.uid);
       if (!getLikesSongs) return res.status(404).json({ error: 'No liked songs found' });
       return res.status(200).json(getLikesSongs);
@@ -362,11 +312,6 @@ router.get('/liked-songs/:id', async (req, res) => {
 router.get('/swipe-songs', async (req, res) => {
   // #TODO check the inputs
   try {
-    try {
-      helpers.checkUserId(req.user.uid);
-    } catch (e) {
-      return res.status(400).json({ error: e })
-    }
 
     const getSongs = await swipingFunctions.getSwipeSongs(req.user.uid);
     return res.status(200).json(getSongs);
