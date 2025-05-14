@@ -97,8 +97,13 @@ export default function FeedPage() {
     e.preventDefault();
     const currentUser = auth.currentUser;
     if (!currentUser || (!text.trim() && !image)) return;
-    let postUid = uuidv4();
+  
+    if (text.length > 300) {
+      alert("Post text cannot exceed 300 characters.");
+      return;
+    }
 
+    let postUid = uuidv4();
     let imageUrl = "";
     if (image) {
       const formData = new FormData();
@@ -183,17 +188,21 @@ export default function FeedPage() {
 
   return (
     <div className="feed-container">
+      {/* ///////////////////////////////////////////////////////////////// */}
       <button className="create-post-btn" onClick={() => setShowForm(!showForm)}>
         {showForm ? "Cancel" : "Create Post"}
       </button>
 
       {showForm && (
+        //{/* ///////////////////////////////////////////////////////////////// */}
+
         <form onSubmit={handleSubmit} className="post-form">
           <textarea
             placeholder="What's on your mind? (Optional)"
             value={text}
             onChange={(e) => setText(e.target.value)}
-          />
+          />      
+           {/* ///////////////////////////////////////////////////////////////// */}
           <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} />
           <button type="submit">Post</button>
         </form>
@@ -227,6 +236,7 @@ export default function FeedPage() {
                     value={editedText}
                     onChange={(e) => setEditedText(e.target.value)}
                   />
+    {/* ///////////////////////////////////////////////////////////////// */}
                   <input
                     type="file"
                     accept="image/*"
@@ -240,6 +250,8 @@ export default function FeedPage() {
                   {post.text && <p>{post.text}</p>}
                   {post.imageUrl && <img src={post.imageUrl} alt="post" className="post-image" />}
                   {currentUser?.uid === post.uid && (
+ //      {/* ///////////////////////////////////////////////////////////////// */}
+
                     <div className="post-actions">
                       <button onClick={() => handleEdit(post)}>Edit</button>
                       <button onClick={() => handleDelete(post)}>Delete</button>

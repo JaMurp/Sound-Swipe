@@ -60,18 +60,21 @@ router.patch('/profile', async (req, res) => {
       return res.status(400).json({ error: `Invalid value for ${key}` });
     }
   }
-  if (req.body.username && !isValidUsername(req.body.username)) return res.status(400).json({ error: `Username cannot contain spaces or be more than 12 characters long` });
-  if (await userDataFunctions.getUser(req.body.username)) {
-      return res.status(400).json({ error: 'username is taken'}) 
-      // I said username in the error as I don't want to potentially reveal that this is someones uid, for security purposes
-  }
+  if (req.body.username && !isValidUsername(req.body.username)) return res.status(400).json({ error: `Username cannot contain spaces or be more than 15 characters long` });
   try {
-    await userDataFunctions.updateUser(req.user.uid, req.body)
-    return res.status(200).json({ success: true, message: 'succesfully updated the user' });
-  } catch (e) {
-    console.log(e)
-    return res.status(500).json({ error: 'Internal Server Error' });
+    await userDataFunctions.userExists(req.body.username)
+  } catch {
+    try {
+      await userDataFunctions.updateUser(req.user.uid, req.body)
+      return res.status(200).json({ success: true, message: 'succesfully updated the user' });
+    } catch (e) {
+      console.log(e)
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
   }
+  return res.status(400).json({ error: 'username is taken'}) 
+      // I said username in the error as I don't want to potentially reveal that this is someones uid, for security purposes
+
 });
 
 router.delete('/profile', async (req, res) => {
@@ -99,7 +102,6 @@ router.delete('/notifications/:id', async (req, res) => {
     return res.status(500).json({ error: 'Internal Server Error' });
 
   }
-
 });
 
 router.post('/sync-user', async (req, res) => {
@@ -112,9 +114,6 @@ router.post('/sync-user', async (req, res) => {
 
       if (!insertedUser) {
         return res.status(500).json({ error: 'Failed to insert user' });
-      }
-      if (!isValidUid(insertedUser.uid) || !isValidString(insertedUser.photoURL)) {
-        return res.status(400).json({ error: 'Invalid user data' });
       }
       return res.status(200).json({ success: true, message: 'synced profile' });
     }

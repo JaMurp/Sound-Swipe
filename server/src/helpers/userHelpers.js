@@ -1,6 +1,5 @@
 export function isValidUid(uid) {
-    uid = uid.trim();
-    return typeof uid === 'string' && uid.length > 0;
+    return typeof uid === 'string' && uid.trim().length > 0;
 };
 
 export function isValidString(str, minLength = 1, maxLength = 1000) {
@@ -13,5 +12,5 @@ export function isNotEmpty(obj) {
 };
 
 export function isValidUsername(username){
-    return !username.includes(' ') && !(username.length > 12)
+    return !username.includes(' ') && !(username.length > 15)
 }
