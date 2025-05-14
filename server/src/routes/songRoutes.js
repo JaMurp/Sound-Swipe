@@ -166,9 +166,7 @@ router.post('/seen', async (req, res) => {
         return res.status(404).json({error: e});
     }
 
-    
     try {
-        console.log(songId, req.user.uid, liked, "adding seen song");
         const {addedSong} = await songsDataFunctions.addSeenSong(songId, req.user.uid, liked);
 
         if (!addedSong) {
@@ -184,7 +182,6 @@ router.post('/seen', async (req, res) => {
                 });
             }
         }
-
         return res.status(200).json({success: true, message: 'Song seen successfully', needToRefresh: needToRefresh});
     } catch (e) {
         console.log(e, "error adding seen song");

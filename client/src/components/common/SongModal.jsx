@@ -140,6 +140,7 @@ const SongModal = ({ song, isOpen, onClose, onLike, userProfile }) => {
         setButtonDisabled(true);
 
         try {
+            console.log('Attempting to add seen song:', { songId: song.id, liked: true });
             // 1. First api call is to add the song to the user's seen songs
             const idToken = await currentUser.getIdToken();
             const { data: likeResponse } = await axios.post('http://localhost:3000/api/leaderboards/add-seen-song', {

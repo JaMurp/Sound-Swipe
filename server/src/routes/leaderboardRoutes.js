@@ -9,12 +9,9 @@ const router = Router();
 
 
 router.post('/increment-song-likes', async (req, res) => {
-    let songId = null;
-    try {
-        songId = songValidation.checkSongId(req.body.songId);
-    } catch (e) {
-        return res.status(400).json({error: e});
-    }
+    let {songId} = req.body;
+
+    songId = songId.toString();
     try {
         const success = await songsDataFunctions.incrementSongLikes(songId);
         if (success.success) {
@@ -29,12 +26,9 @@ router.post('/increment-song-likes', async (req, res) => {
 });
 
 router.post('/decrement-song-likes', async (req, res) => {
-    let songId = null;
-    try {
-        songId = songValidation.checkSongId(req.body.songId);
-    } catch (e) {
-        return res.status(400).json({error: e});
-    }
+    let {songId} = req.body;
+
+    songId = songId.toString();
     try {
         const success = await songsDataFunctions.decrementSongLikes(songId);
         if (success.success) {
@@ -50,14 +44,9 @@ router.post('/decrement-song-likes', async (req, res) => {
 
 
 router.post('/add-seen-song', async (req, res) => {
-    const {songId, liked} = req.body;
+    let {songId, liked} = req.body;
 
-    try {
-        songId = helpers.checkSongId(songId);
-        liked = helpers.checkLiked(liked);
-    } catch (e) {
-        return res.status(400).json({error: e});
-    }
+    songId = songId.toString();
 
     try {
         const success = await songsDataFunctions.addSeenSong(songId, req.user.uid, liked);
@@ -80,12 +69,9 @@ router.post('/add-seen-song', async (req, res) => {
 
 router.get('/has-seen-song', async (req, res) => {
     // #TODO check the inputs
-    let songId = null;
-    try {
-        songId = helpers.checkSongId(req.query.songId);
-    } catch (e) {
-        return res.status(400).json({error: e});
-    }
+    let {songId} = req.query;
+
+    songId = songId.toString();
 
     try {
         const haveSeen = await leaderboardFunctions.getAndCheckIfUserHasSeenSong(songId, req.user.uid);
