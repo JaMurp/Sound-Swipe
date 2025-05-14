@@ -10,7 +10,7 @@ import IconButton from '@mui/material/IconButton';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CloseIcon from '@mui/icons-material/Close';
 import Grid from '@mui/material/Grid';
-import { red, blue } from '@mui/material/colors';
+import { red, blue, grey } from '@mui/material/colors';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 
@@ -155,7 +155,7 @@ const DashboardPage = () => {
                     'Authorization': `Bearer ${idToken}`
                 }
             });
-            
+
             if (data.needToRefresh) {
                 setRefresh(!refresh);
             }
@@ -232,12 +232,12 @@ const DashboardPage = () => {
                     'Authorization': `Bearer ${idToken}`
                 }
             });
-            
+
             if (data.previewUrl) {
-                setSwipeSongs(prevSongs => 
-                    prevSongs.map(song => 
-                        song.song_id === swipeSongs[index].song_id 
-                            ? { ...song, preview_url: data.previewUrl } 
+                setSwipeSongs(prevSongs =>
+                    prevSongs.map(song =>
+                        song.song_id === swipeSongs[index].song_id
+                            ? { ...song, preview_url: data.previewUrl }
                             : song
                     )
                 );
@@ -247,7 +247,7 @@ const DashboardPage = () => {
         }
     };
 
- 
+
 
     if (loading) {
         return (
@@ -312,10 +312,10 @@ const DashboardPage = () => {
                                         >
                                             Your browser does not support the audio element.
                                         </audio>
-                                        <div style={{ 
+                                        <div style={{
                                             display: 'none',
-                                            width: '100%', 
-                                            marginTop: '10px', 
+                                            width: '100%',
+                                            marginTop: '10px',
                                             padding: '10px',
                                             backgroundColor: '#f5f5f5',
                                             borderRadius: '4px',
@@ -325,19 +325,20 @@ const DashboardPage = () => {
                                             gap: '10px'
                                         }}>
                                             <div>Audio preview is no longer available</div>
-                                            <Button 
-                                                variant="contained" 
+                                            <Button
+                                                variant="contained"
                                                 size="small"
                                                 onClick={handleAudioRefresh}
+
                                             >
                                                 Refresh Song
                                             </Button>
                                         </div>
                                     </div>
                                 ) : (
-                                    <div style={{ 
-                                        width: '100%', 
-                                        marginTop: '10px', 
+                                    <div style={{
+                                        width: '100%',
+                                        marginTop: '10px',
                                         padding: '10px',
                                         backgroundColor: '#f5f5f5',
                                         borderRadius: '4px',
@@ -346,19 +347,25 @@ const DashboardPage = () => {
                                         No audio preview available for this song
                                     </div>
                                 )}
-                                <Grid container spacing={0} display={"flex"} marginTop={2} >
+                                <Grid container spacing={1} display={"flex"} marginTop={2} >
                                     <Grid size={6} className="centertext">
-
-                                        <IconButton onClick={handleDislikeButton} aria-label="dislike" size="large">
+                                        <Button onClick={handleDislikeButton} aria-label="dislike" variant="outlined" sx={{ width: "100%", height: "100%", borderColor: grey[300]}} >
                                             <CloseIcon fontSize="large" sx={{ color: blue[300] }} />
-                                        </IconButton>
+                                        </Button>
+
+                                        {/* <IconButton onClick={handleDislikeButton} aria-label="dislike" size="large">
+                                            <CloseIcon fontSize="large" sx={{ color: blue[300] }} />
+                                        </IconButton> */}
 
                                     </Grid>
                                     <Grid size={6} className="centertext">
 
-                                        <IconButton onClick={handleLikeButton} aria-label="like" color="success.light" size="large">
+                                        {/* <IconButton onClick={handleLikeButton} aria-label="like" color="success.light" size="large">
                                             <FavoriteIcon fontSize="large" sx={{ color: red[300] }} />
-                                        </IconButton>
+                                        </IconButton> */}
+                                        <Button onClick={handleLikeButton} aria-label="like" variant="outlined" sx={{ width: "100%", height: "100%", borderColor: grey[300] }} >
+                                            <FavoriteIcon fontSize="large" sx={{ color: red[300] }} />
+                                        </Button>
 
                                     </Grid>
                                 </Grid>

@@ -110,7 +110,6 @@ const SongModal = ({ song, isOpen, onClose, onLike, userProfile }) => {
             <Modal
                 open={isOpen}
                 onClose={onClose}
-                aria-labelledby="explicit-content-modal"
             >
                 <Box sx={style}>
                     <Typography variant="h6" component="h2">
@@ -251,8 +250,6 @@ const SongModal = ({ song, isOpen, onClose, onLike, userProfile }) => {
         <Modal
             open={isOpen}
             onClose={onClose}
-            aria-labelledby="song-modal-title"
-            aria-describedby="song-modal-description"
             closeAfterTransition
             slots={{ backdrop: Backdrop }}
             slotProps={{

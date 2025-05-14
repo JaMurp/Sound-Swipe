@@ -151,7 +151,8 @@ const Leaderboard = () => {
                             <div className='center-leaderboard-rank'>
                                 <h1>{`${index + 1}.`}</h1>
                             </div>
-                            <ButtonBase sx={{ width: '100%' }} onClick={() => handleOpenModal(song)}>
+                            <ButtonBase 
+                            component="div" sx={{ width: '100%' }} onClick={() => handleOpenModal(song)}>
                                 <Card sx={{ display: 'flex', minWidth: 800, maxWidth: 800}}>
                                     <CardMedia
                                         component="img"
@@ -160,7 +161,7 @@ const Leaderboard = () => {
                                         alt={song.artist.artistName}
                                     />
                                     
-                                    <CardContent sx={{ flex: 'flex', alignContent: 'center', width: '100%' }} >
+                                    <CardContent sx={{ alignContent: 'center', width: '100%' }} >
 
                                         <Grid container spacing={2} alignItems="center" >
                                             <Grid size={4}>

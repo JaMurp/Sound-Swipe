@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Nav, Spinner, Modal, Button } from 'react-bootstrap';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGithub, faTwitter, faLinkedin } from '@fortawesome/free-brands-svg-icons';
+import { Nav, Spinner, Modal } from 'react-bootstrap';
 import LoadingSpinner from "../../common/LoadingSpinner";
 import Switch from '@mui/material/Switch';
 import { useAuth } from "../../../context/AuthContext";
@@ -9,6 +7,9 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { doSignOut } from "../../../firebase/FirebaseFunctions";
 import './SettingsPage.css';
+import Avatar from '@mui/material/Avatar';
+import { red } from '@mui/material/colors';
+import { Button } from "@mui/material";
 
 // Dark Theme Styles
 
@@ -16,22 +17,22 @@ const DeleteAccountModal = ({ open, onClose }) => {
     const [error, setError] = useState(null)
     const [loading, setLoading] = useState(false);
 
-    const {currentUser} = useAuth()
+    const { currentUser } = useAuth()
 
     const handleDeleteAccount = async () => {
         try {
             setLoading(true);
-                const jwtToken = await currentUser.getIdToken();
-                const { data } = await axios.delete('http://localhost:3000/api/users/profile', {
-                    headers: {
-                        'Authorization': `Bearer ${jwtToken}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                if (!data.success) throw "Error deleting"
-                await doSignOut();
+            const jwtToken = await currentUser.getIdToken();
+            const { data } = await axios.delete('http://localhost:3000/api/users/profile', {
+                headers: {
+                    'Authorization': `Bearer ${jwtToken}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            if (!data.success) throw "Error deleting"
+            await doSignOut();
 
-        } catch(e){
+        } catch (e) {
             setLoading(false);
             setError(e.message);
         }
@@ -49,8 +50,8 @@ const DeleteAccountModal = ({ open, onClose }) => {
                 <p>This action cannot be undone. All your data will be permanently deleted.</p>
             </Modal.Body>
             <Modal.Footer>
-                <Button variant="secondary" onClick={onClose}>Cancel</Button>
-                <Button variant="danger" onClick={handleDeleteAccount}>Delete Account</Button>
+                <Button variant="outlined" onClick={onClose} sx={{marginRight: 1}}>Cancel</Button>
+                <Button variant="contained" sx={{ background: red[500], color: "white", borderColor: red[500]}} onClick={handleDeleteAccount}>Delete Account</Button>
             </Modal.Footer>
         </Modal>
     );
@@ -162,7 +163,7 @@ const AccountContent = () => {
 
     if (loading) {
         return (
-            <div> 
+            <div>
                 <LoadingSpinner />
             </div>
         );
@@ -180,10 +181,11 @@ const AccountContent = () => {
             <div className="settings-form-container">
                 <div className="settings-profile-pic">
                     {userData?.avatar_url ? (
-                        <img
-                            src={userData.avatar_url}
+
+                        <Avatar
                             alt="Profile"
-                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                            src={userData.avatar_url}
+                            sx={{ width: "100%", height: "100%", objectFit: "cover" }}
                         />
                     ) : (
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="#8b949e">
@@ -204,6 +206,7 @@ const AccountContent = () => {
                             disabled={!isEditing}
                             maxLength={30}
                         />
+
                         <div className="settings-input-helper">
                             This is your public display name
                         </div>
@@ -229,15 +232,17 @@ const AccountContent = () => {
 
             <div className="settings-action-bar">
                 {!isEditing ? (
-                    <button
-                        className="settings-button settings-button-primary"
+
+                    <Button
+                        variant="contained"
                         onClick={() => setIsEditing(true)}
                     >
                         Edit Profile
-                    </button>
+                    </Button>
+
                 ) : (
                     <>
-                        <button
+                        {/* <button
                             className="settings-button settings-button-secondary"
                             onClick={handleCancel}
                         >
@@ -249,7 +254,22 @@ const AccountContent = () => {
                             disabled={loading}
                         >
                             {loading ? 'Saving...' : 'Save Changes'}
-                        </button>
+                        </button> */}
+                        <Button
+                            variant="outlined"
+                            onClick={() => setIsEditing(false)}
+                            sx={{ marginLeft: '8px' }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="contained"
+                            onClick={handleSave}
+                            disabled={loading}
+                            sx={{ marginLeft: '8px' }}
+                        >
+                            {loading ? 'Saving...' : 'Save Changes'}
+                        </Button>
                     </>
                 )}
             </div>
@@ -265,7 +285,7 @@ const SettingsContent = () => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
-    const {currentUser} = useAuth(); 
+    const { currentUser } = useAuth();
     const navigate = useNavigate();
 
 
@@ -295,7 +315,7 @@ const SettingsContent = () => {
                 setShowLikesOnProfile(data.showLikesOnProfile)
                 setLoading(false)
 
-            } catch(e) {
+            } catch (e) {
                 setError(e.message)
                 setLoading(false);
             }
@@ -310,35 +330,35 @@ const SettingsContent = () => {
 
 
     const toggleExplicitData = async () => {
-            try {
-                const idToken = await currentUser.getIdToken();
-                const { data } = await axios.patch('http://localhost:3000/api/users/profile', 
-                    {
-                        explicitData: !explicitData
-                    },
-                    {
-                        headers: {
-                            'Authorization': `Bearer ${idToken}`,
-                            'Content-Type': 'application/json'
-                        }
+        try {
+            const idToken = await currentUser.getIdToken();
+            const { data } = await axios.patch('http://localhost:3000/api/users/profile',
+                {
+                    explicitData: !explicitData
+                },
+                {
+                    headers: {
+                        'Authorization': `Bearer ${idToken}`,
+                        'Content-Type': 'application/json'
                     }
-                );
+                }
+            );
 
-                if (!data.success){
-                    setError(data.error)
-                    return;
-                } 
-
-                setExplicitData(!explicitData);
-            } catch(e) {
-                setError(e.message)
+            if (!data.success) {
+                setError(data.error)
+                return;
             }
+
+            setExplicitData(!explicitData);
+        } catch (e) {
+            setError(e.message)
+        }
     };
 
     const toggleShowLikes = async () => {
         try {
             const idToken = await currentUser.getIdToken();
-            const { data } = await axios.patch('http://localhost:3000/api/users/profile', 
+            const { data } = await axios.patch('http://localhost:3000/api/users/profile',
                 {
                     showLikes: !showLikes
                 },
@@ -350,13 +370,13 @@ const SettingsContent = () => {
                 }
             );
 
-            if (!data.success){
+            if (!data.success) {
                 setError(data.error)
                 return;
-            } 
+            }
 
             setShowLikes(!showLikes);
-        } catch(e) {
+        } catch (e) {
             setError(e.message)
         }
     };
@@ -364,7 +384,7 @@ const SettingsContent = () => {
     const toggleShowLikesOnProfile = async () => {
         try {
             const idToken = await currentUser.getIdToken();
-            const { data } = await axios.patch('http://localhost:3000/api/users/profile', 
+            const { data } = await axios.patch('http://localhost:3000/api/users/profile',
                 {
                     showLikesOnProfile: !showLikesOnProfile
                 },
@@ -376,13 +396,13 @@ const SettingsContent = () => {
                 }
             );
 
-            if (!data.success){
+            if (!data.success) {
                 setError(data.error)
                 return;
-            } 
+            }
 
             setShowLikesOnProfile(!showLikesOnProfile);
-        } catch(e) {
+        } catch (e) {
             setError(e.message)
         }
     };
@@ -395,24 +415,24 @@ const SettingsContent = () => {
             <div className="settings-field-value">
                 {explicitData ? 'Explicit content enabled' : 'Explicit content disabled'}
             </div>
-            <Switch 
-                checked={explicitData} 
+            <Switch
+                checked={explicitData}
                 onChange={toggleExplicitData}
             />
-            <h2 style={{marginTop: '24px'}}>Toggle Show Likes on Public Feed</h2>
+            <h2 style={{ marginTop: '24px' }}>Toggle Show Likes on Public Feed</h2>
             <div className="settings-field-value">
                 {showLikes ? 'Likes are visible' : 'Likes are hidden'}
             </div>
-            <Switch 
-                checked={showLikes} 
+            <Switch
+                checked={showLikes}
                 onChange={toggleShowLikes}
             />
-            <h2 style={{marginTop: '24px'}}>Toggle Show Likes on Profile</h2>
+            <h2 style={{ marginTop: '24px' }}>Toggle Show Likes on Profile</h2>
             <div className="settings-field-value">
                 {showLikesOnProfile ? 'Profile likes are visible' : 'Profile likes are hidden'}
             </div>
-            <Switch 
-                checked={showLikesOnProfile} 
+            <Switch
+                checked={showLikesOnProfile}
                 onChange={toggleShowLikesOnProfile}
             />
             {error && <div className="settings-error">{error}</div>}
@@ -431,15 +451,23 @@ const DeleteContent = () => {
             <div className="settings-field-value">
                 This action cannot be undone. All your data will be permanently deleted.
             </div>
-            
-            <button 
+
+            {/* <button
                 onClick={() => setShowDeleteModal(true)}
                 className="settings-button settings-button-danger"
             >
                 Delete Account
-            </button>
+            </button> */}
+            <Button
+                variant="contained"
 
-            <DeleteAccountModal 
+                onClick={() => setShowDeleteModal(true)}
+                sx={{ background: red[500], color: "white", borderColor: red[500]}}
+            >
+                Delete Account
+            </Button>
+
+            <DeleteAccountModal
                 open={showDeleteModal}
                 onClose={() => setShowDeleteModal(false)}
             />
@@ -454,25 +482,25 @@ const SettingsPage = () => {
     return (
         <div className="settings-container">
             <div className="settings-sidebar">
-                <Nav 
-                    className="flex-column" 
+                <Nav
+                    className="flex-column"
                     activeKey={activeKey}
                     onSelect={(selectedKey) => setActiveKey(selectedKey)}
                 >
-                    <Nav.Link 
-                        eventKey="account" 
+                    <Nav.Link
+                        eventKey="account"
                         className={`settings-nav-link ${activeKey === "account" ? "active" : ""}`}
                     >
                         Account
                     </Nav.Link>
-                    <Nav.Link 
-                        eventKey="settings" 
+                    <Nav.Link
+                        eventKey="settings"
                         className={`settings-nav-link ${activeKey === "settings" ? "active" : ""}`}
                     >
-                       Settings 
+                        Settings
                     </Nav.Link>
-                    <Nav.Link 
-                        eventKey="delete" 
+                    <Nav.Link
+                        eventKey="delete"
                         className={`settings-nav-link ${activeKey === "delete" ? "active" : ""}`}
                     >
                         Delete Account
@@ -482,8 +510,8 @@ const SettingsPage = () => {
 
             <div className="settings-main">
                 {activeKey === "account" ? <AccountContent /> :
-                 activeKey === "settings" ? <SettingsContent/> :
-                 <DeleteContent />}
+                    activeKey === "settings" ? <SettingsContent /> :
+                        <DeleteContent />}
             </div>
         </div>
     );
