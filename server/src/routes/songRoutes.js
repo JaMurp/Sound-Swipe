@@ -46,7 +46,6 @@ router.post('/', async (req, res) => {
     }
 
     try {
-        console.log(genres, explicitFlag, req.user.uid);
         const getSongs = await songsDataFunctions.getSongsByGenre(genres, explicitFlag, req.user.uid);
         return res.status(200).json(getSongs);
     } catch (e) {
@@ -158,7 +157,6 @@ router.post('/seen', async (req, res) => {
     let user = null;
     try {
         user = await userDataFunctions.getUser(req.user.uid);
-        console.log(user);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }

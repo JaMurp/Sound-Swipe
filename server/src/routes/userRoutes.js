@@ -93,8 +93,6 @@ router.delete('/profile', async (req, res) => {
 
 router.delete('/notifications/:id', async (req, res) => {
   try {
-    console.log(req.user.uid)
-    console.log(req.params.id)
     await userDataFunctions.deleteNotif(req.user.uid, req.params.id)
     return res.status(200).json({ success: true, message: 'deleted notification successfully' });
   } catch (e) {
@@ -257,7 +255,6 @@ router.post('/login-recommendations', async (req, res) => {
     const getProfile = await userDataFunctions.getUser(currentUserId);
     if (!getProfile) return res.status(404).json({ error: `Could not fetch profile ${req.user.username}` });
     const status = await userDataFunctions.notifyRecommendations(currentUserId);
-    console.log(status);
     return res.status(200).json(status);
   } catch (e) {
     console.log(e);
