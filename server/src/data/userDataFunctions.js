@@ -2,6 +2,7 @@ import { db, auth } from "../db/firebase.js"
 import * as songsDataFunctions from './songsDataFunctions.js'
 import client from '../config/redis.js'
 import e from "express";
+import * as serverHelpers from '../helpers/serverHelpers.js'
 
 const redis = client;
 // if (!redis.isReady) {
@@ -10,6 +11,8 @@ const redis = client;
 
 export const deleteUser = async (uid) => {
     // delete the swipe session
+    uid = serverHelpers.checkUserId(uid)
+
     await redis.del(`swipe:session:${uid}`);
 
     const uidRef = db.collection('users').doc(uid);
@@ -71,6 +74,9 @@ export const deleteUser = async (uid) => {
 
 
 export const usernameTaken = async (username) => {
+
+    username = serverHelpers.checkUsername(username)
+
     const usersRef = db.collection('users');
     const querySnapshot = await usersRef.where('username', '==', username).limit(1).get();
 
@@ -79,6 +85,9 @@ export const usernameTaken = async (username) => {
 
 
 export const checkShowLikesOnProfile = async (uid) => {
+
+    uid = serverHelpers.checkUserId(uid)
+
     const userRef = db.collection('users').doc(uid);
     const userDoc = await userRef.get();
     if (!userDoc.exists) throw "User not found";
@@ -144,6 +153,10 @@ export const updateUser = async (uid, userObj) => {
 
 
 export const requestFriend = async (currentUserId, friendId) => {
+
+    currentUserId = serverHelpers.checkUserId(currentUserId)
+    friendId = serverHelpers.checkUserId(friendId)
+
     const uidRef = db.collection('users').doc(currentUserId);
     const fidRef = db.collection('users').doc(friendId);
     const user = await uidRef.get()
@@ -175,6 +188,10 @@ export const requestFriend = async (currentUserId, friendId) => {
 };
 
 export const acceptRequest = async (currentUserId, friendId) => {
+
+    currentUserId = serverHelpers.checkUserId(currentUserId)
+    friendId = serverHelpers.checkUserId(friendId)
+
     const uidRef = db.collection('users').doc(currentUserId);
     const fidRef = db.collection('users').doc(friendId);
     const user = await uidRef.get()
@@ -208,6 +225,10 @@ export const acceptRequest = async (currentUserId, friendId) => {
 };
 
 export const rejectRequest = async (currentUserId, friendId) => {
+
+    currentUserId = serverHelpers.checkUserId(currentUserId)
+    friendId = serverHelpers.checkUserId(friendId)
+
     const uidRef = db.collection('users').doc(currentUserId);
     const user = await uidRef.get();
 
@@ -221,6 +242,10 @@ export const rejectRequest = async (currentUserId, friendId) => {
 };
 
 export const removeFriend = async (currentUserId, friendId) => {
+
+    currentUserId = serverHelpers.checkUserId(currentUserId)
+    friendId = serverHelpers.checkUserId(friendId)
+
     const uidRef = db.collection('users').doc(currentUserId);
     const fidRef = db.collection('users').doc(friendId);
     const user = await uidRef.get()
@@ -238,7 +263,9 @@ export const removeFriend = async (currentUserId, friendId) => {
 };
 
 export const getUser = async (uid) => {
-    // #TODO check the uid 
+
+    uid = serverHelpers.checkUserId(uid)
+
     const users = db.collection("users");
     const uidRef = users.doc(uid)
     const foundUser = await uidRef.get()
@@ -369,7 +396,10 @@ export const notifyRecommendations = async (uid) => {
 };
 
 export const userExists = async (uid) => {
+
     try {
+        uid = serverHelpers.checkUserId(uid)
+
         const usersRef = db.collection("users");
         const userDoc = await usersRef.doc(uid).get();
         if (userDoc.exists) {
@@ -385,6 +415,8 @@ export const userExists = async (uid) => {
 // #TODO input validation
 export const createUser = async (uid, displayName, photoUrl) => {
     try {
+        uid = serverHelpers.checkUserId(uid)
+
         const newUser = {
             id: uid,
             explicitData: true,
@@ -439,6 +471,9 @@ export const createUser = async (uid, displayName, photoUrl) => {
 
 
 export const getLikedSongs = async (uid) => {
+    uid = serverHelpers.checkUserId(uid)
+
+
     const userSeenCollectionRef = db.collection('users').doc(uid).collection('seenSongs');
     const likedSongsSnapshot = await userSeenCollectionRef.where('youLiked', '==', true).get();
     if (likedSongsSnapshot.empty) {

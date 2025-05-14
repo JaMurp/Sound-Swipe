@@ -1,5 +1,3 @@
-
-
 export const checkBio = (bio) => {
     if (!bio) throw "Bio is required";
     if (typeof bio !== "string") throw "Bio must be a string";
@@ -11,16 +9,24 @@ export const checkBio = (bio) => {
 export const checkUsername = (username) => {
     if (!username) throw "Username is required";
     if (typeof username !== "string") throw "Username must be a string";
-    if (username.trim().length === 0) throw "Username cannot be empty";
     username = username.trim();
+    if (username.length === 0) throw "Username cannot be empty";
 
-    for (let i = 0; i < username.length; i++) {
-        if (username[i] < "a" || username[i] > "z" && username[i] < "0" || username[i] > "9" && username[i] < "A" || username[i] > "Z" && username[i] !== "_") throw "Username can only contain lowercase letters, numbers, and underscores";
-        if (username[i] === " ") throw "Username cannot contain spaces";
+    if (username.length < 3 || username.length > 15) {
+        throw "Username must be between 3 and 15 characters";
     }
 
-    if (username.length < 3) throw "Username must be at least 3 characters";
-    if (username.length > 15) throw "Username must be less than 20 characters";
+    for (let i = 0; i < username.length; i++) {
+        const char = username[i];
+        const isLowercase = char >= "a" && char <= "z";
+        const isNumber = char >= "0" && char <= "9";
+        const isUnderscore = char === "_";
+        
+        if (!(isLowercase || isNumber || isUnderscore)) {
+            throw "Username can only contain lowercase letters, numbers, and underscores";
+        }
+    }
+
     return username;
 };
 
