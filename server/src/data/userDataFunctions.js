@@ -93,15 +93,15 @@ export const updateUser = async (uid, userObj) => {
 
     if (userObj.bio) {
         hasInput = true
-        updatedObj['bio'] = updatedObj.bio;
+        updatedObj['bio'] = userObj.bio;
     }
 
-    if (userObj.showLikes) {
+    if (userObj.showLikes !== undefined && userObj.showLikes !== null) {
         hasInput = true;
         updatedObj['showLikes'] = userObj.showLikes;
     }
 
-    if (userObj.showLikesOnProfile) {
+    if (userObj.showLikesOnProfile !== undefined && userObj.showLikesOnProfile !== null) {
         hasInput = true;
         updatedObj['showLikesOnProfile'] = userObj.showLikesOnProfile;
     }
@@ -121,27 +121,27 @@ export const updateUser = async (uid, userObj) => {
         hasInput = true;
         const isTaken = await usernameTaken(newUserName);
         if (isTaken) throw "username is taken";
-        updateUser['username'] = newUserName;
-
+        updatedObj['username'] = newUserName;
     }
-    if (userObj.explicitData !== null) {
+    if (userObj.explicitData !== undefined && userObj.explicitData !== null) {
         hasInput = true;
         // delete the swiping session if it exists
         const swipingSession = await redis.get(`swipe:session:${uid}`);
         if (swipingSession) {
             await redis.del(`swipe:session:${uid}`);
         }
-        updateUser['explicitData'] = userObj.explicitData;
+        updatedObj['explicitData'] = userObj.explicitData;
     }
 
     if (!hasInput) throw "Must provide atleast 1 fields to update";
 
     // updates the doc
     const uidRef = db.collection('users').doc(uid);
-    await uidRef.update(userObj)
+    await uidRef.update(updatedObj)
     return;
 
 };
+
 
 export const requestFriend = async (currentUserId, friendId) => {
     const uidRef = db.collection('users').doc(currentUserId);

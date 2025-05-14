@@ -46,7 +46,7 @@ const songs = [];
 const getTopTracksFromArtist = async (artistAndGenre) => {
     for (let i = 0; i < artistAndGenre.length; i++){
         // you can change the amount of artist here 
-        const {data} = await axios.get("https://api.deezer.com/artist/" + artistAndGenre[i].artist.artistId.toString() + "/top?limit=3")
+        const {data} = await axios.get("https://api.deezer.com/artist/" + artistAndGenre[i].artist.artistId.toString() + "/top?limit=5")
         for (let j = 0; j < data.data.length; j++) {
             if (!data.data[j].id || !data.data[j].title || !data.data[j].preview || data.data[j].explicit_lyrics === undefined || data.data[j].explicit_lyrics === null) continue; 
 

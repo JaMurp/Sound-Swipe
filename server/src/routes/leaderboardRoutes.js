@@ -2,6 +2,8 @@ import { Router } from 'express';
 import * as songsDataFunctions from '../data/songsDataFunctions.js';
 import * as leaderboardFunctions from '../data/leaderboardFunctions.js';
 import * as songValidation from '../helpers/songValidation.js';
+import * as helpers from '../helpers/serverHelpers.js';
+
 const router = Router();
 
 
@@ -49,6 +51,14 @@ router.post('/decrement-song-likes', async (req, res) => {
 
 router.post('/add-seen-song', async (req, res) => {
     const {songId, liked} = req.body;
+
+    try {
+        songId = helpers.checkSongId(songId);
+        liked = helpers.checkLiked(liked);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+
     try {
         const success = await songsDataFunctions.addSeenSong(songId, req.user.uid, liked);
 
@@ -70,7 +80,13 @@ router.post('/add-seen-song', async (req, res) => {
 
 router.get('/has-seen-song', async (req, res) => {
     // #TODO check the inputs
-    const { songId } = req.query;
+    let songId = null;
+    try {
+        songId = helpers.checkSongId(req.query.songId);
+    } catch (e) {
+        return res.status(400).json({error: e});
+    }
+
     try {
         const haveSeen = await leaderboardFunctions.getAndCheckIfUserHasSeenSong(songId, req.user.uid);
         return res.status(200).json(haveSeen);

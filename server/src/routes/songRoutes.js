@@ -4,7 +4,7 @@ import * as userDataFunctions from '../data/userDataFunctions.js';
 import * as swipingFunctions from '../data/swipingFunctions.js';
 import * as songValidation from '../helpers/songValidation.js';
 import { io } from '../server.js';
-
+import * as helpers from '../helpers/serverHelpers.js';
 
 
 const router = Router();
@@ -99,7 +99,12 @@ router.patch('/add-liked-seen-song', async (req, res) => {
 
 router.post('/like', async (req, res) => {
     // #TODO check the inputs
-    const { songId } = req.body;
+    let songId = null;
+    try {
+        songId = helpers.checkSongId(req.body.songId);
+    } catch (e) {
+        return res.status(400).json({ error: e });
+    }
     try {
         const success = await songsDataFunctions.incrementSongLikes(songId.toString());
         if (!success.success) {
@@ -123,6 +128,11 @@ router.post('/decrement-song-likes', async (req, res) => {
 
     const { songId } = req.body;
     try {
+        songId = helpers.checkSongId(songId);
+    } catch (e) {
+        return res.status(400).json({ error: e });
+    }
+    try {
         const success = await songsDataFunctions.decrementSongLikes(songId.toString());
         if (success.success) {
             return res.status(200).json({ success: true, message: 'Song disliked successfully' });
@@ -139,6 +149,11 @@ router.post('/decrement-song-likes', async (req, res) => {
 router.post('/seen', async (req, res) => {
     // #TODO check the inputs
     const { songId, liked } = req.body;
+    try {
+        liked = helpers.checkLiked(liked);
+    } catch (e) {
+        return res.status(400).json({ error: e });
+    }
     //increment the index of the song in the swipe session
     // but only if the session exists
 
@@ -205,6 +220,13 @@ router.post('/trending', async (req, res) => {
 
 router.post('/song/alreadyLiked', async (req, res) => {
     const { songId } = req.body;
+
+    try {
+        songId = helpers.checkSongId(songId);
+    } catch (e) {
+        return res.status(400).json({ error: e });
+    }
+
     try {
         const alreadyLiked = await songsDataFunctions.likedSongExist(songId, req.user.uid);
         return res.status(200).json({ alreadyLiked: alreadyLiked });
@@ -216,6 +238,11 @@ router.post('/song/alreadyLiked', async (req, res) => {
 
 router.get('/:songId', async (req, res) => {
     const { songId } = req.params;
+    try {
+        songId = helpers.checkSongId(songId);
+    } catch (e) {
+        return res.status(400).json({ error: e });
+    }
     try {
         const song = await songsDataFunctions.getSong(songId);
         return res.status(200).json(song);
