@@ -368,7 +368,7 @@ const ProfilePage = () => {
                                 </Grid>
 
                                 <Grid size={{ sm: 12, md: 9 }}>
-                                    <Stack direction="column" spacing={2} alignItems="left" padding={4}>
+                                    <Stack direction="column" spacing={2} padding={4}>
                                         <Typography variant="h4">{userData.username}</Typography>
                                         <Stack direction="row" spacing={3} alignItems="center">
                                             <Typography variant="body1">

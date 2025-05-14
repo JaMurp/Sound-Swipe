@@ -1,166 +1,157 @@
 .settings-container {
     display: flex;
-    background: #0d1117;
     height: calc(100vh - 50px);
     overflow: hidden;
     font-family: Inter, system-ui, -apple-system, sans-serif;
-}
-
-.settings-sidebar {
+  }
+  
+  .settings-sidebar {
     width: 220px;
-    background: #0d1117;
     padding: 0;
     border-right: 1px solid #30363d;
     box-sizing: border-box;
     flex: 0 0 auto;
-}
-
-.settings-nav-link {
+  }
+  
+  .settings-nav-link {
     padding: 16px 24px;
     font-size: 16px;
     font-weight: 400;
-    color: #c9d1d9;
+    color: #101010;
     cursor: pointer;
     border-left: 4px solid transparent;
-}
-
-.settings-nav-link.active {
+  }
+  
+  .settings-nav-link.active {
     font-weight: 700;
     color: #58a6ff;
-    background: #161b22;
+    background: #c8cacd;
     border-left: 4px solid #58a6ff;
-}
-
-.settings-main {
+  }
+  
+  .settings-main {
     flex: 1;
-    background: #161b22;
     margin: 16px;
     border: 1px solid #30363d;
     border-radius: 6px;
     padding: 32px 48px;
     overflow-y: auto;
     height: calc(100vh - 82px);
-}
-
-.settings-label {
+  }
+  
+  .settings-label {
     font-weight: 600;
     font-size: 24px;
     margin-bottom: 24px;
-    color: #ffffff;
-}
-
-.settings-field-label {
+    color: #101010;
+  }
+  
+  .settings-field-label {
     font-weight: 600;
     font-size: 16px;
     margin-top: 16px;
     margin-bottom: 4px;
-    color: #ffffff;
-}
-
-.settings-field-value {
+    color: #101010;
+  }
+  
+  .settings-field-value {
     font-size: 16px;
     margin-bottom: 12px;
-    color: #c9d1d9;
-}
-
-.settings-input {
+    color: #101010;
+  }
+  
+  .settings-input {
     width: 100%;
     padding: 6px 10px;
     font-size: 14px;
     border: 1px solid #30363d;
     border-radius: 4px;
-    background: #21262d;
-    color: #c9d1d9;
-}
-
-.settings-button {
+    color: #101010;
+  }
+  
+  .settings-button {
     padding: 8px 24px;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
     font-size: 16px;
     margin-right: 12px;
-}
-
-.settings-button-primary {
+  }
+  
+  .settings-button-primary {
     background: #58a6ff;
     color: white;
     border: none;
     padding: 6px 16px;
-}
-
-.settings-button-secondary {
-    background: #21262d;
-    color: #c9d1d9;
+  }
+  
+  .settings-button-secondary {
+    color: #101010;
     border: 1px solid #30363d;
     padding: 6px 16px;
-}
-
-.settings-button-danger {
+  }
+  
+  .settings-button-danger {
     background: #ff4444;
-    color: white;
     border: none;
-}
-
-.settings-profile-pic {
+  }
+  
+  .settings-profile-pic {
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background-color: #21262d;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #30363d;
     overflow: hidden;
-}
-
-.settings-input-helper {
+  }
+  
+  .settings-input-helper {
     font-size: 12px;
     color: #8b949e;
     margin-top: 2px;
-}
-
-.settings-error {
-    color: white;
+  }
+  
+  .settings-error {
+    color: #101010;
     padding: 12px 16px;
-    background-color: #3d1c24;
     border-radius: 4px;
     margin-bottom: 24px;
     border: 1px solid #f5c6cb33;
-}
-
-.settings-action-bar {
+  }
+  
+  .settings-action-bar {
     position: sticky;
     bottom: 0;
-    background: #161b22;
     padding: 12px 0;
     border-top: 1px solid #30363d;
     margin-top: 24px;
     display: flex;
     gap: 8px;
     justify-content: flex-end;
-}
-
-.settings-form-container {
+  }
+  
+  .settings-form-container {
     display: flex;
     gap: 24px;
     margin-bottom: 24px;
-}
-
-.settings-form-fields {
+  }
+  
+  .settings-form-fields {
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 16px;
-}
-
-.settings-form-field {
+  }
+  
+  .settings-form-field {
     display: flex;
     flex-direction: column;
     gap: 4px;
-}
-
-.settings-textarea {
+  }
+  
+  .settings-textarea {
     min-height: 100px;
     resize: vertical;
-} 
+  }
+  

@@ -10,7 +10,7 @@ import IconButton from '@mui/material/IconButton';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import CloseIcon from '@mui/icons-material/Close';
 import Grid from '@mui/material/Grid';
-import { red, blue } from '@mui/material/colors';
+import { red, blue, grey } from '@mui/material/colors';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 
@@ -349,16 +349,22 @@ const DashboardPage = () => {
                                 <Grid container spacing={0} display={"flex"} marginTop={2} >
                                     <Grid size={6} className="centertext">
 
-                                        <IconButton onClick={handleDislikeButton} aria-label="dislike" size="large">
+                                        {/* <IconButton onClick={handleDislikeButton} aria-label="dislike" size="large">
                                             <CloseIcon fontSize="large" sx={{ color: blue[300] }} />
-                                        </IconButton>
+                                        </IconButton> */}
+                                         <Button onClick={handleDislikeButton} aria-label="dislike" variant="outlined" sx={{ width: "100%", height: "100%", borderColor: grey[300]}} >
+                                            <CloseIcon fontSize="large" sx={{ color: blue[300] }} />
+                                        </Button>
 
                                     </Grid>
                                     <Grid size={6} className="centertext">
 
-                                        <IconButton onClick={handleLikeButton} aria-label="like" color="success.light" size="large">
+                                        {/* <IconButton onClick={handleLikeButton} aria-label="like" color="success.light" size="large">
                                             <FavoriteIcon fontSize="large" sx={{ color: red[300] }} />
-                                        </IconButton>
+                                        </IconButton> */}
+                                        <Button onClick={handleLikeButton} aria-label="like" variant="outlined" sx={{ width: "100%", height: "100%", borderColor: grey[300] }} >
+                                            <FavoriteIcon fontSize="large" sx={{ color: red[300] }} />
+                                        </Button>
 
                                     </Grid>
                                 </Grid>

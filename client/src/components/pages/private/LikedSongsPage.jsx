@@ -11,7 +11,7 @@ import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
-import HeartBrokenIcon from '@mui/icons-material/HeartBroken';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import Button from '@mui/material/Button';
 import SearchIcon from '@mui/icons-material/Search';
 import Box from '@mui/material/Box';
@@ -196,7 +196,7 @@ const LikedSongsPage = () => {
                                                 alt={song.artistName}
                                             />
 
-                                            <CardContent sx={{ flex: 'flex', alignContent: 'center', width: '100%' }} >
+                                            <CardContent sx={{alignContent: 'center', width: '100%' }} >
                                                 <Grid container spacing={2} alignItems="center" >
                                                     <Grid size={4}>
                                                         <Typography
@@ -239,7 +239,7 @@ const LikedSongsPage = () => {
                                                             },
                                                         }}>
                                                             <IconButton onClick={() => handleUnlike(song.id)} aria-label="unlike" size="large">
-                                                                <HeartBrokenIcon fontSize="large" sx={{ color: red[300] }} />
+                                                                <FavoriteIcon fontSize="large" sx={{ color: red[300] }} />
                                                             </IconButton>
                                                         </Tooltip>
 
