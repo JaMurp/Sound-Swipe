@@ -64,7 +64,7 @@ const LoginModalBootstrap = ({ isOpen, onClose }) => {
             <label className="form-check-label" htmlFor="termsCheckbox">
               I've read and agree to the{' '}
               <a
-                href="/terms"
+                href="/tos"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-decoration-none"

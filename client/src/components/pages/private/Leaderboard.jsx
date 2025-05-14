@@ -151,7 +151,7 @@ const Leaderboard = () => {
                             <div className='center-leaderboard-rank'>
                                 <h1>{`${index + 1}.`}</h1>
                             </div>
-                            <ButtonBase sx={{ width: '100%' }} onClick={() => handleOpenModal(song)}>
+                            <ButtonBase sx={{ width: '100%' }} onClick={() => handleOpenModal(song)} component="div">
                                 <Card sx={{ display: 'flex', minWidth: 800, maxWidth: 800}}>
                                     <CardMedia
                                         component="img"
