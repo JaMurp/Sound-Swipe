@@ -32,6 +32,10 @@ export const checkUsername = (username) => {
 
 export const checkUserId = (userId) => {
     if (!userId) throw "User ID is required";
+
+    // chang this back if error
+    userId = userId.toString();
+
     if (typeof userId !== "string") throw "User ID must be a string";
     if (userId.trim().length === 0) throw "User ID cannot be empty";
     return userId;
