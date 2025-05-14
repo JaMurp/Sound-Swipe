@@ -121,6 +121,7 @@ const FriendsPage = () => {
                                             <ButtonBase
                                                 onClick={() => handleFriendClick(friend.id)}
                                                 sx={{ width: "100%", marginBottom: 2 }}
+                                                component="div"
                                             >
                                                 <Card sx={{ width: "100%" }} className="leaderboard-skeleton">
                                                     <CardMedia>
@@ -157,7 +158,7 @@ const FriendsPage = () => {
                                 {recommendedFriends.map(user => (
                                     <Grid size={{ md: 6, lg: 4 }} key={user.id}>
                                         <ButtonBase
-
+                                            component="div"
                                             onClick={() => handleFriendClick(user.id)}
                                             sx={{ width: "100%", marginBottom: 2 }}
                                         >

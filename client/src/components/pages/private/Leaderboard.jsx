@@ -14,6 +14,7 @@ import Stack from '@mui/material/Stack';
 import Grid from '@mui/material/Grid';
 import ButtonBase from '@mui/material/ButtonBase';
 import SongModal from '../../common/SongModal';
+import Skeleton from '@mui/material/Skeleton';
 const genres = [
     "Pop", "Rap/Hip Hop", "Reggaeton", "Rock", "Dance", "R&B", "Alternative",
     "Christian", "Electro", "Folk", "Reggae", "Jazz", "Country", "Salsa",
@@ -144,7 +145,26 @@ const Leaderboard = () => {
             
             <br />
 
-            {listLoading ? <LoadingSpinner /> :
+            {listLoading ?
+                <div spacing={2} sx={{ marginBottom: 2 }} className='leaderboard-skeleton '>
+                    <Stack spacing={2} direction="row" sx={{ marginBottom: 2 }} className='center-leaderboard-item'>
+                        <Skeleton variant="rounded" width="2.5rem" height="3rem" />
+                        <Skeleton variant="rounded" width={800} height={130} />
+                    </Stack>
+                    <Stack spacing={2} direction="row" sx={{ marginBottom: 2 }} className='center-leaderboard-item'>
+                        <Skeleton variant="rounded" width="2.5rem" height="3rem" />
+                        <Skeleton variant="rounded" width={800} height={130} />
+                    </Stack>
+                    <Stack spacing={2} direction="row" sx={{ marginBottom: 2 }} className='center-leaderboard-item'>
+                        <Skeleton variant="rounded" width="2.5rem" height="3rem" />
+                        <Skeleton variant="rounded" width={800} height={130} />
+                    </Stack>
+                    <Stack spacing={2} direction="row" sx={{ marginBottom: 2 }} className='center-leaderboard-item'>
+                        <Skeleton variant="rounded" width="2.5rem" height="3rem" />
+                        <Skeleton variant="rounded" width={800} height={130} />
+                    </Stack>
+                </div>
+                :
                 <div className="center-leaderboard">
                     {trendingSongs && trendingSongs.map((song, index) => (
                         <Stack key={song.id} spacing={2} direction="row" sx={{ marginBottom: 2 }} className='center-leaderboard-item'>

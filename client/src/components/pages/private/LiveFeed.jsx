@@ -30,6 +30,7 @@ const LiveFeed = () => {
         <div className="live-feed-container">
             <h1 className="feed-title">Live Feed</h1>
             <div className="feed-items">
+                {chat.length === 0 && <h6 className='centertext'>No one has liked a song yet.</h6>}
                 {chat.map((item, index) => (
                     <div key={index} className="feed-item">
                         <div className="user-info">

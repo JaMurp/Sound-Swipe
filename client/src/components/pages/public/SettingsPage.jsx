@@ -282,7 +282,7 @@ const AccountContent = () => {
                         </button> */}
                         <Button
                             variant="outlined"
-                            onClick={() => setIsEditing(false)}
+                            onClick={handleCancel}
                             sx={{ marginLeft: '8px' }}
                         >
                             Cancel
@@ -290,7 +290,6 @@ const AccountContent = () => {
                         <Button
                             variant="contained"
                             onClick={handleSave}
-                            disabled={loading}
                             sx={{ marginLeft: '8px' }}
                         >
                             {loading ? 'Saving...' : 'Save Changes'}
