@@ -53,18 +53,26 @@ router.get('/notifications', async (req, res) => {
 
 router.patch('/profile', async (req, res) => {
   if (!isNotEmpty(req.body)) {
+    console.log('err')
     return res.status(400).json({ error: 'At least one field is required for update' });
   }
   for (const [key, value] of Object.entries(req.body)) {
     if (!isValidString(value)) {
+      console.log('1' + value)
       return res.status(400).json({ error: `Invalid value for ${key}` });
     }
   }
-  if (req.body.username && !isValidUsername(req.body.username)) return res.status(400).json({ error: `Username cannot contain spaces or be more than 15 characters long` });
+  if (req.body.username && !isValidUsername(req.body.username)) {
+    console.log('here')
+    return res.status(400).json({ error: `Username cannot contain spaces or be more than 15 characters long` });
+  }
   try {
-    await userDataFunctions.userExists(req.body.username)
+    const response = await userDataFunctions.userExists(req.body.username)
+    if (!response) throw 'success';
+    console.log(response);
   } catch {
     try {
+      console.log('update');
       await userDataFunctions.updateUser(req.user.uid, req.body)
       return res.status(200).json({ success: true, message: 'succesfully updated the user' });
     } catch (e) {
@@ -72,8 +80,9 @@ router.patch('/profile', async (req, res) => {
       return res.status(500).json({ error: 'Internal Server Error' });
     }
   }
-  return res.status(400).json({ error: 'username is taken'}) 
-      // I said username in the error as I don't want to potentially reveal that this is someones uid, for security purposes
+  console.log('joe')
+  return res.status(400).json({ error: 'username is taken' })
+  // I said username in the error as I don't want to potentially reveal that this is someones uid, for security purposes
 
 });
 
